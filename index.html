@@ -1435,16 +1435,8 @@ function renderPriceBanner() {
 // wallRows — все стены и перегородки 1-го этажа одним списком (как в исходном
 // экселе, лист «= Расчет куб.м этап 1.»: просто список длин, без деления на
 // «наружные» и «внутренние» — это деление ни на что не влияло в расчёте).
-// По умолчанию — пример из книги: 8,00×6,00 м, Т-образная перегородка, h 2,5 м.
-// Длины 8+8+6+6 (наружные стены) + 6+0,5+0,5+4,222 (перегородка и выступы) = 39,222 м
-let wallRows = [
-  { len: 8,     qty: 2 },
-  { len: 6,     qty: 2 },
-  { len: 6,     qty: 1 },
-  { len: 0.5,   qty: 1 },
-  { len: 0.5,   qty: 1 },
-  { len: 4.222, qty: 1 },
-];
+// По умолчанию список пуст — заполняет менеджер под конкретный расчёт.
+let wallRows = [];
 let wallRows2 = [];
 let floorbeamRows = [];
 let frontonRows = [];
@@ -1653,19 +1645,19 @@ function renderWalls(rows, tbodyId) {
 
 function addWall(floor) {
   if (floor === 2) {
-    wallRows2.push({ len: 4, qty: 1 });
+    wallRows2.push({ len: 0, qty: 1 });
     renderWalls(wallRows2, 'walls-body-2');
   } else if (floor === 'fb') {
-    floorbeamRows.push({ len: 4, qty: 1 });
+    floorbeamRows.push({ len: 0, qty: 1 });
     renderWalls(floorbeamRows, 'walls-body-fb');
   } else if (floor === 'fr') {
-    frontonRows.push({ len: 6, qty: 1 });
+    frontonRows.push({ len: 0, qty: 1 });
     renderWalls(frontonRows, 'walls-body-fr');
   } else if (floor === 'base') {
-    baseRows.push({ len: 4, qty: 1 });
+    baseRows.push({ len: 0, qty: 1 });
     renderWalls(baseRows, 'walls-body-base');
   } else {
-    wallRows.push({ len: 4, qty: 1 });
+    wallRows.push({ len: 0, qty: 1 });
     renderWalls(wallRows, 'walls-body');
   }
   recalcLive();
@@ -1779,10 +1771,7 @@ function toggleRoof()     { toggleBlock('has_roof', 'roof-block'); }
 function toggleBase()     { toggleBlock('has_base', 'base-block'); }
 
 // ── Оконные и дверные проёмы (лист «= Расчет куб.м этап 1.», стр. 84–101)
-let openingRows = [
-  { len: 2.0, h: 1.5, qty: 1 },
-  { len: 3.0, h: 1.5, qty: 1 },
-];
+let openingRows = [];
 function renderOpenings() {
   const tb = document.getElementById('openings-body');
   if (!tb) return;
@@ -1801,13 +1790,10 @@ function renderOpenings() {
     tb.appendChild(tr);
   });
 }
-function addOpening() { openingRows.push({ len: 1.5, h: 1.5, qty: 1 }); renderOpenings(); recalcLive(); }
+function addOpening() { openingRows.push({ len: 0, h: 0, qty: 1 }); renderOpenings(); recalcLive(); }
 
 // ── Терраса: вылеты и коньковая балка (лист «= Тер. Расчет этап 1.»)
-let terraceRows = [
-  { len: 3, qty: 2 },
-  { len: 6, qty: 1 },
-];
+let terraceRows = [];
 function renderTerrace() {
   const tb = document.getElementById('terrace-body');
   if (!tb) return;
@@ -1824,7 +1810,7 @@ function renderTerrace() {
     tb.appendChild(tr);
   });
 }
-function addTerrace() { terraceRows.push({ len: 3, qty: 1 }); renderTerrace(); recalcLive(); }
+function addTerrace() { terraceRows.push({ len: 0, qty: 1 }); renderTerrace(); recalcLive(); }
 
 // Ориентировочное кол-во стропил/обрешётки (типовые данные листа «Площадь Кровли ч.1.»)
 function suggestRoof() {
