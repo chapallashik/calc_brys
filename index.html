@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор срубов — Точный расчёт стоимости</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest: #1C3828;
+  --forest-mid: #2D5240;
+  --forest-light: #3D6B53;
+  --cream: #F5F0E8;
+  --cream-dark: #EAE3D5;
+  --oak: #C8872A;
+  --oak-light: #E8A84A;
+  --text: #1A1A1A;
+  --text-muted: #666;
+  --white: #FFFFFF;
+  --border: #D8D0C0;
+  --shadow: 0 4px 24px rgba(28,56,40,0.12);
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ─── HEADER ─────────────────────────────────── */
+header {
+  background: var(--forest);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-wood {
+  background:
+    repeating-linear-gradient(
+      92deg,
+      transparent, transparent 180px,
+      rgba(255,255,255,0.03) 180px, rgba(255,255,255,0.03) 182px
+    ),
+    repeating-linear-gradient(
+      88deg,
+      transparent, transparent 90px,
+      rgba(0,0,0,0.04) 90px, rgba(0,0,0,0.04) 91px
+    );
+  padding: 36px 40px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.header-left p {
+  color: rgba(245,240,232,0.65);
+  font-size: 14px;
+  margin-top: 6px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+.header-accent {
+  background: var(--oak);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.header-nav {
+  background: var(--forest-mid);
+  padding: 0 40px;
+  display: flex;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.header-nav a {
+  color: rgba(245,240,232,0.6);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 12px 18px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.header-nav a:hover, .header-nav a.active {
+  color: var(--oak-light);
+  border-bottom-color: var(--oak);
+}
+
+/* ─── LAYOUT ─────────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .header-wood { padding: 28px 20px; }
+  .header-nav { padding: 0 20px; }
+}
+
+/* ─── CARDS ──────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.card-header {
+  background: var(--forest);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-header .step-num {
+  background: var(--oak);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.card-header h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.card-body { padding: 24px; }
+
+/* ─── FORM ELEMENTS ──────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-row.one { grid-template-columns: 1fr; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+input[type="number"], select {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--cream);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  appearance: none;
+}
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--forest-light);
+  box-shadow: 0 0 0 3px rgba(61,107,83,0.12);
+  background: var(--white);
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* ─── WALL TABLE ─────────────────────────────── */
+.walls-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.walls-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--cream-dark);
+}
+.walls-table td {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.walls-table tr:hover td { background: var(--cream); }
+
+.wall-type-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-outer { background: #E8F0EC; color: var(--forest); }
+.badge-inner { background: #FDF0E0; color: #8A5C10; }
+
+.wall-input {
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 14px;
+  width: 90px;
+  background: var(--cream);
+  font-family: 'Inter', sans-serif;
+}
+.wall-input:focus {
+  outline: none;
+  border-color: var(--forest-light);
+  background: var(--white);
+}
+
+.wall-del {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.wall-del:hover { color: #e55; }
+
+.btn-add-wall {
+  margin-top: 12px;
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--forest-light);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-add-wall:hover {
+  border-color: var(--forest-light);
+  background: var(--cream);
+}
+
+/* ─── SECTION TOGGLE ─────────────────────────── */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 10px;
+  border-top: 1px solid var(--cream-dark);
+  margin-top: 8px;
+}
+.toggle-switch {
+  position: relative;
+  width: 42px; height: 24px;
+  flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #ccc;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--forest-light); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.collapsible { overflow: hidden; transition: max-height 0.3s ease; }
+.collapsible.collapsed { max-height: 0 !important; }
+
+/* ─── OPTIONS GRID ───────────────────────────── */
+.option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.chip {
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--cream);
+  color: var(--text);
+  user-select: none;
+}
+.chip:hover { border-color: var(--forest-light); }
+.chip.selected {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+/* ─── RIGHT PANEL ────────────────────────────── */
+/* ─── STICKY PRICE BAR ───────────────────────── */
+.sticky-price-bar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--forest);
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px -6px rgba(0,0,0,0.35);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.spb-chip {
+  padding: 8px 10px;
+  text-align: center;
+  cursor: pointer;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.15s;
+}
+.spb-chip:last-child { border-right: none; }
+.spb-chip:hover { background: rgba(255,255,255,0.06); }
+.spb-chip.selected { background: var(--oak); }
+.spb-chip .spb-name {
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: rgba(245,240,232,0.55);
+  margin-bottom: 2px;
+}
+.spb-chip.selected .spb-name { color: rgba(28,20,10,0.65); }
+.spb-chip .spb-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.spb-chip.selected .spb-price { color: var(--forest); }
+@media (max-width: 560px) {
+  .spb-chip .spb-name { font-size: 9px; }
+  .spb-chip .spb-price { font-size: 12px; }
+  .spb-chip { padding: 7px 4px; }
+}
+
+.results-panel {
+  position: sticky;
+  top: 20px;
+}
+
+.result-section {
+  border-bottom: 1px solid var(--cream-dark);
+  padding: 16px 0;
+}
+.result-section:first-child { padding-top: 0; }
+.result-section:last-child { border-bottom: none; padding-bottom: 0; }
+
+.result-section h3,
+.res-h {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 22px 0 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cream-dark);
+}
+.res-h:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.res-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 5px 0;
+}
+.res-row .res-label {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+}
+.res-row .res-formula {
+  display: block;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.res-row .res-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.res-row.accent { padding: 8px 0 4px; }
+.res-row.accent .res-label { color: var(--text); font-weight: 600; }
+.res-row.accent .res-value { font-size: 14px; font-weight: 600; color: var(--forest); }
+
+.result-line {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 6px; gap: 8px;
+}
+.result-line .rl-label { font-size: 13px; color: var(--text-muted); flex: 1; min-width: 0; }
+.result-line .rl-value { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.result-line .rl-value.dim { color: var(--text-muted); font-weight: 400; }
+
+.restore-hint {
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.restore-hint a { color: var(--forest); font-weight: 600; }
+.btn-clear {
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-clear:hover { border-color: var(--forest-light); color: var(--text); }
+
+.price-banner {
+  padding: 10px 24px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--cream-dark);
+  border-bottom: 1px solid var(--border);
+}
+.price-banner b { font-weight: 600; color: var(--text); }
+.price-banner.draft { background: #FDF3E0; color: #7A5410; }
+.price-banner.draft b { color: #7A5410; }
+.price-banner.warn { background: #FBEAEA; color: #8A2F2F; }
+.price-banner.offline { background: #EAF0EC; color: #2C4A38; }
+.price-banner.offline b { color: #2C4A38; }
+.price-banner.warn b { color: #8A2F2F; }
+
+.total-block {
+  background: var(--forest);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 24px;
+  color: var(--white);
+}
+.total-block .total-row + .total-row,
+.total-block .total-sub + .total-row {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(245,240,232,0.16);
+}
+.total-block .total-label {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.total-block .total-price {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.05;
+  color: var(--oak-light);
+  font-variant-numeric: tabular-nums;
+}
+.total-block .total-price.sm { font-size: 22px; color: var(--cream); }
+.total-block .total-sub {
+  font-size: 11px;
+  opacity: 0.5;
+  line-height: 1.5;
+  margin-top: 14px;
+}
+
+.section-prices {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.section-price-card {
+  background: var(--cream-dark);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.section-price-card:hover { border-color: var(--forest-light); }
+.section-price-card.selected {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.section-price-card .sp-name {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.section-price-card.selected .sp-name { color: rgba(255,255,255,0.6); }
+.section-price-card .sp-price {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.section-price-card.selected .sp-price { color: var(--oak-light); }
+
+/* ─── BUTTONS ────────────────────────────────── */
+.btn-calc {
+  width: 100%;
+  background: var(--oak);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 16px;
+  letter-spacing: 0.02em;
+}
+.btn-calc:hover { background: #b0781f; }
+.btn-calc:active { transform: scale(0.98); }
+
+.btn-print {
+  width: 100%;
+  background: none;
+  color: var(--forest);
+  border: 1.5px solid var(--forest);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-print:hover { background: var(--forest); color: var(--white); }
+
+/* ─── NOTICE ─────────────────────────────────── */
+.notice {
+  background: #FEF9F0;
+  border: 1px solid #F0D080;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #7A5E10;
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+/* ─── SUMMARY METRICS ────────────────────────── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+.metric {
+  background: var(--cream-dark);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.metric .m-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--forest);
+  font-family: 'Playfair Display', serif;
+}
+.metric .m-unit {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+/* ─── SECTION DIVIDER ────────────────────────── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 0;
+}
+.section-divider span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.section-divider::before, .section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── FOOTER ─────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+/* ─── SPINNER ANIMATION ──────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.calculating { animation: pulse 1s infinite; }
+</style>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1B3A2A">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
+</head>
+<body>
+
+<header>
+  <div class="header-wood">
+    <div class="header-left">
+      <h1>Калькулятор срубов</h1>
+      <p>Профилированный брус · Рубка в чашу · Под ключ</p>
+    </div>
+
+  </div>
+  <nav class="header-nav">
+    <a href="index.html" class="active">Калькулятор</a>
+    <a href="admin.html">Панель цен</a>
+  </nav>
+</header>
+
+<div class="sticky-price-bar" id="sticky-price-bar" style="display:none;"></div>
+
+<div class="container">
+
+  <div class="calc-grid">
+
+    <!-- ─── LEFT: FORM ──────────────────────── -->
+    <div class="calc-left">
+
+      <div id="restore-hint" class="restore-hint" style="display:none"></div>
+
+
+      <!-- STEP 1: Стены -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="step-num">1</span>
+          <h2>Геометрия сруба</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-row one">
+            <div class="field">
+              <label>Типовой размер из каталога</label>
+              <select id="preset" onchange="applyPreset()">
+                <option value="">— свой размер —</option>
+              </select>
+              <span class="field-hint">Подставит стены и высоту как в каталоге. Дальше можно править вручную.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Высота стен (1 этаж), м</label>
+              <input type="number" id="height1" value="2.5" step="0.1" min="2" max="5" oninput="onDimChange()">
+            </div>
+            <div class="field">
+              <label>Рабочая высота бруса, мм</label>
+              <input type="number" id="beam_work_h" value="125" step="5" min="100" max="150" oninput="onDimChange()">
+              <span class="field-hint">Для бруса h150 = 125 мм. Одна на все 4 сечения — у них меняется только ширина (100/150/180/200), толщина везде 150 мм</span>
+            </div>
+          </div>
+
+          <div class="section-toggle" style="border-top:none;padding-top:0;margin-top:0;margin-bottom:12px;">
+            <span style="font-size:14px;font-weight:600;color:var(--text);">Стены и перегородки (1 этаж)</span>
+          </div>
+          <p style="font-size:12.5px;color:var(--text-muted);margin:-4px 0 12px;">Добавьте каждую стену и перегородку отдельной строкой — как в исходном расчёте. Одинаковые по длине стены можно указать один раз, увеличив «Кол-во».</p>
+
+          <table class="walls-table" id="walls-table">
+            <thead>
+              <tr>
+                <th>Стена</th>
+                <th>Длина, м</th>
+                <th>Кол-во</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="walls-body">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+          <button class="btn-add-wall" onclick="addWall()" style="margin-top:6px;">+ Добавить стену</button>
+
+          <!-- Сумма — автоматически -->
+          <div style="background:var(--cream-dark);border-radius:8px;padding:12px 14px;margin:14px 0 4px;font-size:13px;color:var(--text-muted);">
+            Сумма длин: <strong id="perimeter-display" style="color:var(--text)">28 м</strong>
+            &nbsp;·&nbsp; Венцов: <strong id="crowns-display" style="color:var(--text)">20 шт</strong>
+            &nbsp;·&nbsp; М.п. стен: <strong id="mp-display" style="color:var(--text)">560 м.п.</strong>
+            <div id="wall-summary-formula" style="margin-top:6px;font-size:11px;line-height:1.5;opacity:0.75;font-variant-numeric:tabular-nums;"></div>
+          </div>
+
+          <!-- 2 этаж -->
+          <div class="section-divider"><span>2 этаж (опционально)</span></div>
+          <div class="section-toggle" style="margin-top:12px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_floor2" onchange="toggleFloor2()">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_floor2').click()">Добавить второй этаж</span>
+          </div>
+          <div class="collapsible collapsed" id="floor2-block" style="max-height:400px;">
+            <div style="padding-top:12px;">
+              <div class="form-row">
+                <div class="field">
+                  <label>Высота стен (2 этаж), м</label>
+                  <input type="number" id="height2" value="2.5" step="0.1" min="1.5" max="4" oninput="recalcLive()">
+                </div>
+              </div>
+              <p style="font-size:12.5px;color:var(--text-muted);margin:0 0 10px;">Список независимый от 1-го этажа — добавьте все стены и перегородки 2-го этажа/мансарды.</p>
+              <table class="walls-table">
+                <thead>
+                  <tr><th>Стена</th><th>Длина, м</th><th>Кол-во</th><th></th></tr>
+                </thead>
+                <tbody id="walls-body-2"></tbody>
+              </table>
+              <button class="btn-add-wall" onclick="addWall(2)">+ Добавить стену (2 этаж)</button>
+              <button class="btn-add-wall" onclick="copyWallsToFloor2()" style="margin-top:6px;">↧ Скопировать стены с 1-го этажа</button>
+              <div class="notice" style="margin-top:12px;">
+                ℹ️ Этот список считается независимо, никаких венцов сверх введённой высоты сюда не добавляется. Венец перекрытия между этажами включается автоматически вместе со 2-м этажом (см. блок ниже) — без него 2-му этажу физически не на чем стоять. При необходимости его можно поправить или выключить отдельно.
+              </div>
+            </div>
+          </div>
+
+          <!-- Венец перекрытия -->
+          <div class="section-divider"><span>Венец перекрытия — сверх расчёта Excel</span></div>
+          <div class="section-toggle" style="margin-top:12px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_floorbeam" onchange="toggleBlock('has_floorbeam','floorbeam-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_floorbeam').click()">Межэтажный венец перекрытия</span>
+          </div>
+          <div class="collapsible collapsed" id="floorbeam-block" style="max-height:900px;">
+            <div style="padding-top:12px;">
+              <div class="form-row">
+                <div class="field">
+                  <label>Высота, м</label>
+                  <input type="number" id="floorbeam_h" value="0.125" step="0.005" oninput="recalcLive();updateFloorbeamSummary()">
+                  <span class="field-hint">0,125 = 1 венец</span>
+                </div>
+              </div>
+
+              <label class="hint" style="display:block;margin:10px 0;">Длины — как в списке стен 1-го этажа. Пусто = автоматически сумма длин стен 1-го этажа</label>
+              <table class="walls-table">
+                <thead>
+                  <tr><th>Стена</th><th>Длина, м</th><th>Кол-во</th><th></th></tr>
+                </thead>
+                <tbody id="walls-body-fb"></tbody>
+              </table>
+              <button class="btn-add-wall" onclick="addWall('fb')">+ Добавить стену</button>
+
+              <div style="background:var(--cream-dark);border-radius:8px;padding:12px 14px;margin:14px 0 4px;font-size:13px;color:var(--text-muted);">
+                Сумма длин: <strong id="fb-perimeter-display" style="color:var(--text)">авто</strong>
+                &nbsp;·&nbsp; Венцов: <strong id="fb-crowns-display" style="color:var(--text)">—</strong>
+                &nbsp;·&nbsp; М.п.: <strong id="fb-mp-display" style="color:var(--text)">—</strong>
+                <div id="fb-summary-formula" style="margin-top:6px;font-size:11px;line-height:1.5;opacity:0.75;font-variant-numeric:tabular-nums;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Оконные и дверные проёмы -->
+          <div class="section-divider"><span>Вычет проёмов — сверх расчёта Excel</span></div>
+          <div class="section-toggle" style="margin-top:12px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_openings" onchange="toggleBlock('has_openings','openings-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_openings').click()">Вычесть оконные и дверные проёмы</span>
+          </div>
+          <div class="collapsible collapsed" id="openings-block" style="max-height:500px;">
+            <div style="padding-top:12px;">
+              <table class="walls-table">
+                <thead><tr><th>Проём</th><th>Ширина, м</th><th>Высота, м</th><th>Кол-во</th><th></th></tr></thead>
+                <tbody id="openings-body"></tbody>
+              </table>
+              <button class="btn-add-wall" onclick="addOpening()" style="margin-top:6px;">+ Добавить проём</button>
+            </div>
+          </div>
+
+          <!-- Фронтоны -->
+          <div class="section-divider"><span>Фронтоны (опционально)</span></div>
+          <div class="section-toggle" style="margin-top:12px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_frontons" onchange="toggleFrontons()">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_frontons').click()">Добавить фронтоны</span>
+          </div>
+          <div class="collapsible collapsed" id="frontons-block" style="max-height:900px;">
+            <div style="padding-top:12px;">
+              <div class="form-row">
+                <div class="field">
+                  <label>Высота фронтона, м</label>
+                  <input type="number" id="fronton_h" value="1.5" step="0.1" oninput="recalcLive();updateFrontonSummary()">
+                </div>
+              </div>
+
+              <label class="hint" style="display:block;margin:10px 0;">Длины скатов — так же, как в списке стен. Объём считается как у стены и делится на 2 (фронтон треугольный)</label>
+              <table class="walls-table">
+                <thead>
+                  <tr><th>Стена</th><th>Длина, м</th><th>Кол-во</th><th></th></tr>
+                </thead>
+                <tbody id="walls-body-fr"></tbody>
+              </table>
+              <button class="btn-add-wall" onclick="addWall('fr')">+ Добавить длину</button>
+
+              <div style="background:var(--cream-dark);border-radius:8px;padding:12px 14px;margin:14px 0 4px;font-size:13px;color:var(--text-muted);">
+                Сумма длин: <strong id="fr-perimeter-display" style="color:var(--text)">0 м</strong>
+                &nbsp;·&nbsp; Венцов: <strong id="fr-crowns-display" style="color:var(--text)">—</strong>
+                &nbsp;·&nbsp; М.п.: <strong id="fr-mp-display" style="color:var(--text)">—</strong>
+                <div id="fr-summary-formula" style="margin-top:6px;font-size:11px;line-height:1.5;opacity:0.75;font-variant-numeric:tabular-nums;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Сечение бруса -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="step-num">2</span>
+          <h2>Сечение бруса</h2>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Выберите сечение — расчёт будет показан сразу для всех вариантов. Цена материала, работ и монтажа для каждого сечения уже своя (задаётся в панели цен) и подставляется сама.</p>
+          <div class="option-chips" id="section-chips">
+            <div class="chip selected" data-val="100x150">100 × 150 мм</div>
+            <div class="chip" data-val="150x150">150 × 150 мм</div>
+            <div class="chip" data-val="180x150">180 × 150 мм</div>
+            <div class="chip" data-val="200x150">200 × 150 мм</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Кровля -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="step-num">3</span>
+          <h2>Кровля</h2>
+        </div>
+        <div class="card-body">
+          <div class="section-toggle" style="border-top:none;padding-top:0;margin-top:0;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_roof" checked onchange="toggleBlock('has_roof','roof-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_roof').click()">Включить кровлю в расчёт</span>
+          </div>
+          <div class="collapsible" id="roof-block" style="max-height:900px;">
+            <div style="padding-top:16px;">
+              <div class="form-row">
+                <div class="field">
+                  <label>Площадь кровли, м²</label>
+                  <input type="number" id="roof_area" value="69.4" step="0.1" min="1" oninput="suggestRoof();recalcLive()">
+                  <span class="field-hint">Считается на stroy-calc.ru, свесы добавлять вручную</span>
+                </div>
+                <div class="field">
+                  <label>Стропил, шт (50×150×6)</label>
+                  <input type="number" id="rafter_count" value="32" step="1" min="0" oninput="recalcLive()">
+                  <span class="field-hint" id="rafter-hint">—</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="field">
+                  <label>Обрешётки, шт (25×150×6)</label>
+                  <input type="number" id="obr_count" value="27" step="1" min="0" oninput="recalcLive()">
+                  <span class="field-hint" id="obr-hint">—</span>
+                </div>
+                <div class="field"></div>
+              </div>
+
+              <div class="section-toggle" style="margin-top:4px;">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="roof_warm" onchange="toggleBlock('roof_warm','warm-block')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label" onclick="document.getElementById('roof_warm').click()">Тёплая кровля (+1000 ₽ материал, +600 ₽ работа / м²)</span>
+              </div>
+              <div class="collapsible collapsed" id="warm-block" style="max-height:200px;">
+                <div style="padding-top:12px;">
+                  <div class="form-row one">
+                    <div class="field">
+                      <label>Площадь тёплой кровли, м²</label>
+                      <input type="number" id="roof_warm_area" value="0" step="0.1" oninput="recalcLive()">
+                      <span class="field-hint">0 = вся площадь кровли</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-toggle" style="margin-top:4px;">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="roof_has_frontons" checked onchange="toggleBlock('roof_has_frontons','roof-fr-block')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label" onclick="document.getElementById('roof_has_frontons').click()">Каркасные фронтоны (2 шт, 3000 ₽/м²)</span>
+              </div>
+              <div class="collapsible" id="roof-fr-block" style="max-height:200px;">
+                <div style="padding-top:12px;">
+                  <div class="form-row">
+                    <div class="field">
+                      <label>Ширина фронтона, м</label>
+                      <input type="number" id="roof_fronton_w" value="6" step="0.1" oninput="recalcLive()">
+                    </div>
+                    <div class="field">
+                      <label>Высота фронтона, м</label>
+                      <input type="number" id="roof_fronton_h" value="1.5" step="0.1" oninput="recalcLive()">
+                    </div>
+                  </div>
+                  <div class="notice" style="margin-top:8px;">
+                    Площадь = ширина × высота — это уже суммарная площадь <b>двух</b> треугольных фронтонов.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Обвязка -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="step-num">4</span>
+          <h2>Нижняя обвязка</h2>
+        </div>
+        <div class="card-body">
+          <div class="section-toggle" style="border-top:none;padding-top:0;margin-top:0;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_base" checked onchange="toggleBlock('has_base','base-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_base').click()">Включить обвязку (лиственница)</span>
+          </div>
+          <div class="collapsible" id="base-block" style="max-height:900px;">
+            <div style="padding-top:16px;">
+              <label class="hint" style="display:block;margin-bottom:8px;">Сечение обвязки — выбирается отдельно от сечения сруба (например, сруб 100 мм + обвязка 150 мм)</label>
+              <div class="section-toggle" style="margin-bottom:10px;">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="base_auto_section" checked onchange="toggleBaseAutoMode()">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label" onclick="document.getElementById('base_auto_section').click()">Авто — своё сечение обвязки под каждый вариант сруба</span>
+              </div>
+              <div id="base-section-chips-wrap" style="display:none;">
+                <div class="option-chips" id="base-section-chips" style="margin-bottom:16px;">
+                  <div class="chip" data-val="100">100 мм</div>
+                  <div class="chip selected" data-val="150">150 мм</div>
+                  <div class="chip" data-val="180">180 мм</div>
+                  <div class="chip" data-val="200">200 мм</div>
+                </div>
+              </div>
+
+              <label class="hint" style="display:block;margin-bottom:10px;">Длины брусьев обвязки — по штучно, как в списке стен. Пусто = автоматически сумма длин стен 1-го этажа</label>
+              <table class="walls-table">
+                <thead>
+                  <tr><th>Брус</th><th>Длина, м</th><th>Кол-во</th><th></th></tr>
+                </thead>
+                <tbody id="walls-body-base"></tbody>
+              </table>
+              <button class="btn-add-wall" onclick="addWall('base')">+ Добавить брус</button>
+
+              <div style="background:var(--cream-dark);border-radius:8px;padding:12px 14px;margin:14px 0 4px;font-size:13px;color:var(--text-muted);">
+                Сумма длин: <strong id="base-perimeter-display" style="color:var(--text)">авто</strong>
+                <div id="base-summary-formula" style="margin-top:6px;font-size:11px;line-height:1.5;opacity:0.75;font-variant-numeric:tabular-nums;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4b: Терраса и столбы -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="step-num">5</span>
+          <h2>Терраса и опорные столбы</h2>
+        </div>
+        <div class="card-body">
+          <div class="section-toggle" style="border-top:none;padding-top:0;margin-top:0;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_terrace" onchange="toggleBlock('has_terrace','terrace-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_terrace').click()">Вылет для террасы и коньковая балка</span>
+          </div>
+          <div class="collapsible collapsed" id="terrace-block" style="max-height:600px;">
+            <div style="padding-top:16px;">
+              <div class="form-row one">
+                <div class="field">
+                  <label>Высота верхней обвязки, м</label>
+                  <input type="number" id="terrace_h" value="0.25" step="0.005" oninput="recalcLive()">
+                  <span class="field-hint">0,25 = 2 венца при рабочей высоте 125 мм</span>
+                </div>
+              </div>
+              <table class="walls-table">
+                <thead><tr><th>Элемент</th><th>Длина, м</th><th>Кол-во</th><th></th></tr></thead>
+                <tbody id="terrace-body"></tbody>
+              </table>
+              <button class="btn-add-wall" onclick="addTerrace()" style="margin-top:6px;">+ Добавить вылет / балку</button>
+            </div>
+          </div>
+
+          <div class="section-toggle" style="margin-top:10px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_posts" onchange="toggleBlock('has_posts','posts-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_posts').click()">Опорные столбы</span>
+          </div>
+          <div class="collapsible collapsed" id="posts-block" style="max-height:500px;">
+            <div style="padding-top:12px;">
+              <label class="hint" style="display:block;margin-bottom:8px;">Сечение столбов — выбирается отдельно от сечения сруба</label>
+              <div class="option-chips" id="post-section-chips" style="margin-bottom:16px;">
+                <div class="chip" data-val="100">100×100 мм</div>
+                <div class="chip selected" data-val="150">150×150 мм</div>
+                <div class="chip" data-val="180">180×180 мм</div>
+                <div class="chip" data-val="200">200×200 мм</div>
+              </div>
+              <div class="form-row">
+                <div class="field">
+                  <label>Количество, шт</label>
+                  <input type="number" id="post_qty" value="4" step="1" min="0" oninput="recalcLive()">
+                </div>
+                <div class="field">
+                  <label>Длина столба, м</label>
+                  <input type="number" id="post_len" value="3" step="0.5" oninput="recalcLive()">
+                  <span class="field-hint">Кратно 3 м</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4c: Доп. материалы -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="step-num">6</span>
+          <h2>Доп. материалы</h2>
+        </div>
+        <div class="card-body">
+          <div class="section-toggle" style="border-top:none;padding-top:0;margin-top:0;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_extras" onchange="toggleBlock('has_extras','extras-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_extras').click()">Для заказа без сборки (лаги, обвязка, балки)</span>
+          </div>
+          <div class="collapsible collapsed" id="extras-block" style="max-height:520px;">
+            <div style="padding-top:12px;">
+              <label class="hint" style="display:block;margin-bottom:8px;">Сечение обвязки — своё для этой позиции, не связано с блоком «Нижняя обвязка»</label>
+              <div class="option-chips" id="extras-base-chips" style="margin-bottom:16px;">
+                <div class="chip" data-val="100">100×150 мм</div>
+                <div class="chip selected" data-val="150">150×150 мм</div>
+                <div class="chip" data-val="180">180×150 мм</div>
+                <div class="chip" data-val="200">200×150 мм</div>
+              </div>
+              <div class="form-row three">
+                <div class="field">
+                  <label>Лаги 50×150×6, шт</label>
+                  <input type="number" id="extra_lag_qty" value="14" step="1" min="0" oninput="recalcLive()">
+                </div>
+                <div class="field">
+                  <label>Обвязка, шт</label>
+                  <input type="number" id="extra_obv_qty" value="10" step="1" min="0" oninput="recalcLive()">
+                </div>
+                <div class="field">
+                  <label>Потолочные балки, шт</label>
+                  <input type="number" id="extra_beam_qty" value="16" step="1" min="0" oninput="recalcLive()">
+                </div>
+              </div>
+              <div class="notice" style="margin-top:8px;">
+                Стропила и обрешётка берутся из блока «Кровля». Считается отдельной строкой и не входит в итог со сборкой.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5: Опции -->
+      <div class="card">
+        <div class="card-header">
+          <span class="step-num">7</span>
+          <h2>Дополнительно</h2>
+        </div>
+        <div class="card-body">
+          <div class="section-toggle" style="border-top:none;padding-top:0;margin-top:0;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_drying">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_drying').click()">Камерная сушка (+5 000 ₽/м³)</span>
+          </div>
+          <div class="section-toggle" style="margin-top:4px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="is_cedar">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('is_cedar').click()">Материал — Кедр (надбавка ~13%)</span>
+          </div>
+          <div class="section-toggle" style="margin-top:4px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="has_discount" onchange="toggleBlock('has_discount','discount-block')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" onclick="document.getElementById('has_discount').click()">Акционная скидка</span>
+          </div>
+          <div class="collapsible collapsed" id="discount-block" style="max-height:200px;">
+            <div style="padding-top:12px;">
+              <div class="form-row one">
+                <div class="field">
+                  <label>Размер скидки, %</label>
+                  <input type="number" id="discount_pct" value="5" step="1" min="0" max="100" oninput="recalcLive()">
+                  <span class="field-hint">Действует только на стоимость сруба без сборки (материал и работа по профилированию, без монтажа, кровли, обвязки и террасы)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── RIGHT: RESULTS ──────────────────────── -->
+    <div class="results-panel">
+      <div class="card">
+        <div class="card-header">
+          <span class="step-num" style="background:var(--oak-light)">₽</span>
+          <h2>Итог расчёта</h2>
+        </div>
+        <div id="price-banner" class="price-banner" style="display:none"></div>
+        <div class="card-body" id="results-body">
+          <div style="text-align:center;padding:40px 0;color:var(--text-muted)">
+            <div style="font-size:40px;margin-bottom:12px;opacity:0.3">—</div>
+            <div style="font-size:14px">Заполните параметры и нажмите<br>«Рассчитать»</div>
+          </div>
+        </div>
+        <div style="padding:0 24px 24px;">
+          <button class="btn-calc" onclick="calculate()">Рассчитать стоимость</button>
+          <button class="btn-clear" onclick="clearForm()">Новый расчёт</button>
+          <button class="btn-print" id="btn-print" onclick="printReceipt()" style="display:none">Распечатать смету
+          </button>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn-print" style="margin-top:0;flex:1;white-space:nowrap;" onclick="saveToFile()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+              Сохранить
+            </button>
+            <button class="btn-print" style="margin-top:0;flex:1;white-space:nowrap;" onclick="document.getElementById('load-file-input').click()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+              Загрузить
+            </button>
+          </div>
+          <input type="file" id="load-file-input" accept="application/json,.json" style="display:none" onchange="loadFromFile(event)">
+          <div class="field-hint" style="text-align:center;margin-top:8px;">Сохраните расчёт клиента в файл — если он вернётся, загрузите файл и все поля заполнятся сами</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Цены актуальны на дату последнего обновления в <a href="admin.html" style="color:var(--forest)">панели администратора</a>
+</footer>
+
+
+<script>
+// ═══════════════════════════════════════════════
+// PRICES — loaded from localStorage or defaults
+// ═══════════════════════════════════════════════
+const DEFAULT_PRICES = {
+  // ── Стеновой комплект (лист «= Расчет куб деньги этап 2. скр»)
+  pine_100: 21000, pine_150: 21000, pine_180: 21000, pine_200: 21000,   // материал сосна, ₽/м³ (G1)
+  work_100: 10000, work_150: 7000,  work_180: 7000,  work_200: 7000,    // профилирование+рубка чаш, ₽/м³ (H2:H5)
+  assembly_100: 8500, assembly_150: 7000, assembly_180: 7000, assembly_200: 7000, // монтаж, ₽/м³ (H8:H11)
+  beam_reserve: 7,        // запас по брусу, % (E1)
+  margin_main: 25,        // маржа на комплект, % (J1)
+  margin_assembly: 10,    // маржа на монтаж/джут, % (J7)
+  jute_100: 6, jute_150: 6, jute_180: 14.8, jute_200: 14.8,             // джут ₽/м.п. (G14/G19/G24/G28)
+  dowel: 10,              // шкант, ₽/шт
+  jute_reserve: 20,       // запас джут/шканты по срубу, % (C14)
+  ter_jute_reserve: 30,   // запас джут/шканты по террасе, % (лист террасы, C14)
+
+  // ── Терраса: вылет + коньковая балка (лист «=Тер. Расчет в деньги этап2 СКР»)
+  ter_work_100: 10000, ter_work_150: 7000, ter_work_180: 7000, ter_work_200: 7000,
+  // по террасе джут берётся из прайс-таблицы рулонов (E50:E52), а не по 6 ₽ как по срубу
+  ter_jute_100: 6, ter_jute_150: 6, ter_jute_180: 14.8, ter_jute_200: 14.8,
+
+  // ── Опорные столбы (лист «Расчет по столбам опор СКР»)
+  post_price: 21000,      // ₽/м³ (D12)
+  post_work_100: 2000, post_work_150: 2000, post_work_180: 2500, post_work_200: 2500, // ₽/шт (C14:F14)
+  // Сечение столба, мм — своё для каждого сечения сруба (по умолчанию как было зашито в коде)
+  post_w_100: 100, post_h_100: 100, post_w_150: 150, post_h_150: 150,
+  post_w_180: 180, post_h_180: 180, post_w_200: 200, post_h_200: 200,
+  post_margin: 25,        // % (C19)
+
+  // ── Кровля (лист «Цена кровли ч. 2. СКР»)
+  roof_work_sqm: 1600,          // работа, ₽/м² (B4)
+  roof_board_price: 21000,      // доска, ₽/м³ (B3)
+  roof_obreshetka_price: 21000,
+  rafter_w: 0.05,  rafter_h: 0.15, rafter_l: 6,   // стропило 50×150×6
+  obr_w: 0.025,    obr_h: 0.15,    obr_l: 6,      // обрешётка 25×150×6
+  roof_membrane_roll: 10000, roof_membrane_roll_area: 70,   // мембрана (B9/C9)
+  roof_tiles_sqm: 1000,         // металлочерепица, ₽/м² (B15)
+  roof_hardware_sqm: 100,       // метизы, ₽/м² (B16)
+  roof_warm_mat: 1000,          // тёплая кровля: утепление+плёнки, ₽/м² (B17)
+  roof_warm_work: 600,          // тёплая кровля: работа, ₽/м² (B18)
+  roof_addon_pct: 10,           // доборы, % от материалов (F19)
+  roof_fronton_sqm: 3000,       // каркасный фронтон, ₽/м² (B20)
+  roof_margin: 10,              // маржа на кровлю, % (E27)
+
+  // ── Нижняя обвязка, лиственница (лист «=Обвязка этап 2. СКР»)
+  base_larch: 23000, base_work: 11000, base_margin: 25,
+  // Сечение бруса обвязки, мм — своё для каждого сечения сруба (по умолчанию как было зашито в коде)
+  base_w_100: 100, base_h_100: 150, base_w_150: 150, base_h_150: 150,
+  base_w_180: 200, base_h_180: 200, base_w_200: 200, base_h_200: 200,
+
+  // ── Надбавки
+  drying: 5000,           // камерная сушка, ₽/м³ (лист «Разное » C6)
+  cedar_price: 4000,      // кедр, ₽/м³ (лист 2, столбец R)
+  cedar_margin: 25,       // % к доплате за кедр
+  discount: 5,            // акционная скидка по умолчанию, % — менеджер может менять её в самом калькуляторе для конкретного расчёта; действует только на сруб без сборки
+
+  // ── Доп. материалы для варианта без сборки (лист «Для заказчика »)
+  extra_lag_price: 23000, // лаги и обвязка, ₽/м³
+};
+
+// ═══════════════════════════════════════════════
+// ЗАГРУЗКА ЦЕН
+// Единый источник правды — prices.json в репозитории.
+// localStorage используется ТОЛЬКО как локальный черновик и живёт,
+// пока опубликованный прайс не изменился. Как только в репозитории
+// появляется новая версия — черновик автоматически отбрасывается,
+// чтобы на разных устройствах не расходились цифры.
+// ═══════════════════════════════════════════════
+let PRICES = { ...DEFAULT_PRICES };
+let PRICES_META = { updated: null, source: 'defaults', draft: false };
+
+function getPrices() { return PRICES; }
+
+async function loadPrices() {
+  let published = null;
+  try {
+    const res = await fetch('prices.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc && doc.prices) published = doc;
+    }
+  } catch (e) { /* открыт локально или файла нет — работаем на встроенных ценах */ }
+
+  if (published) {
+    PRICES = { ...DEFAULT_PRICES, ...published.prices };
+    PRICES_META = { updated: published.updated || null, source: 'published', draft: false };
+  }
+
+  // Черновик применяем только если он сделан поверх текущей опубликованной версии
+  try {
+    const raw = localStorage.getItem('sruby_draft');
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.prices && d.basedOn === (PRICES_META.updated || 'defaults')) {
+        PRICES = { ...PRICES, ...d.prices };
+        PRICES_META.draft = true;
+        PRICES_META.draftAt = d.savedAt || null;
+      } else {
+        localStorage.removeItem('sruby_draft');   // устарел — выбрасываем
+      }
+    }
+  } catch (e) {}
+
+  renderPriceBanner();
+  return PRICES;
+}
+
+// ═══════════════════════════════════════════════
+// ОФЛАЙН
+// Service worker держит копию страниц и последних цен.
+// Без интернета калькулятор считает как обычно — расчёт целиком
+// выполняется в браузере, сервер для него не нужен.
+// ═══════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+window.addEventListener('online',  () => { loadPrices().then(() => { if (lastResult) calculate(); }); });
+window.addEventListener('offline', renderPriceBanner);
+
+// Цены могли обновить, пока вкладка была свёрнута — перечитываем при возврате
+let priceCheckAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  if (Date.now() - priceCheckAt < 30000) return;   // не чаще раза в 30 секунд
+  priceCheckAt = Date.now();
+  const before = JSON.stringify(PRICES);
+  loadPrices().then(() => {
+    if (lastResult && JSON.stringify(PRICES) !== before) calculate();
+  });
+});
+
+function renderPriceBanner() {
+  const el = document.getElementById('price-banner');
+  if (!el) return;
+  if (!navigator.onLine) {
+    el.className = 'price-banner offline';
+    el.innerHTML = 'Нет интернета — работаем офлайн. Расчёт полный, цены от '
+      + (PRICES_META.updated || '—') + '. Новые цены подтянутся, когда связь появится.';
+    el.style.display = '';
+    return;
+  }
+  if (PRICES_META.draft) {
+    const when = PRICES_META.draftAt ? new Date(PRICES_META.draftAt).toLocaleString('ru-RU') : '';
+    el.className = 'price-banner draft';
+    el.innerHTML = 'Действуют <b>черновые цены</b>, сохранённые только на этом устройстве'
+      + (when ? ' — ' + when : '') + '. У остальных цены другие, пока черновик не опубликован.';
+    el.style.display = '';
+  } else if (PRICES_META.source === 'published') {
+    el.className = 'price-banner';
+    el.innerHTML = 'Цены от ' + (PRICES_META.updated || '—') + ' · единые для всех устройств';
+    el.style.display = '';
+  } else {
+    el.className = 'price-banner warn';
+    el.innerHTML = 'Файл <b>prices.json</b> не загрузился — используются цены, зашитые в код.';
+    el.style.display = '';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// WALL ROWS
+// ═══════════════════════════════════════════════
+// wallRows — все стены и перегородки 1-го этажа одним списком (как в исходном
+// экселе, лист «= Расчет куб.м этап 1.»: просто список длин, без деления на
+// «наружные» и «внутренние» — это деление ни на что не влияло в расчёте).
+// По умолчанию — пример из книги: 8,00×6,00 м, Т-образная перегородка, h 2,5 м.
+// Длины 8+8+6+6 (наружные стены) + 6+0,5+0,5+4,222 (перегородка и выступы) = 39,222 м
+let wallRows = [
+  { len: 8,     qty: 2 },
+  { len: 6,     qty: 2 },
+  { len: 6,     qty: 1 },
+  { len: 0.5,   qty: 1 },
+  { len: 0.5,   qty: 1 },
+  { len: 4.222, qty: 1 },
+];
+let wallRows2 = [];
+let floorbeamRows = [];
+let frontonRows = [];
+let baseRows = [];
+
+function floor1WallLen() {
+  return wallRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
+}
+
+function floorbeamWallLen() {
+  const own = floorbeamRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
+  return own > 0 ? own : floor1WallLen();
+}
+
+// Типовые размеры из каталога. w/d — габариты для периметра,
+// parts — длины перегородок и выступов, h — высота стен.
+const PRESETS = [
+  { t: '4,00×2,50 · 1 перегородка',            w: 4.2, d: 2.5, h: 2.25, parts: [2.5] },
+  { t: '5,00×2,50 · 1 перегородка',            w: 5.2, d: 2.5, h: 2.25, parts: [2.5] },
+  { t: '6,00×2,50 · 1 перегородка',            w: 6,   d: 2.5, h: 2.25, parts: [2.5] },
+  { t: '6,00×2,50 · 2 перегородки',            w: 6,   d: 2.5, h: 2.25, parts: [2.5, 2.5] },
+  { t: '7,00×2,50 · 1 перегородка',            w: 7,   d: 2.5, h: 2.25, parts: [2.5] },
+  { t: '7,00×2,50 · 2 перегородки',            w: 7,   d: 2.5, h: 2.25, parts: [2.5, 2.5] },
+  { t: '3,20×3,20 · без перегородок · только брус 100', w: 3.5, d: 3.5, h: 2.25, parts: [] },
+  { t: '4,00×3,00 · без перегородок',          w: 4.5, d: 3,   h: 2.25, parts: [] },
+  { t: '4,00×3,00 · 1 перегородка',            w: 4.5, d: 3,   h: 2.25, parts: [3] },
+  { t: '4,00×4,00 (4,2×4,2) · Т-образная',     w: 5,   d: 5,   h: 2.25, parts: [5, 2.5] },
+  { t: '5,00×4,00 · Т-образная',               w: 6,   d: 4,   h: 2.25, parts: [4, 2.5] },
+  { t: '6,00×3,00 · без перегородок',          w: 6,   d: 3,   h: 2.25, parts: [] },
+  { t: '6,00×3,00 · 1 перегородка',            w: 6,   d: 3,   h: 2.25, parts: [3] },
+  { t: '6,00×3,00 · 2 перегородки',            w: 6,   d: 3,   h: 2.25, parts: [3, 3] },
+  { t: '6,00×4,00 · Т-образная',               w: 6,   d: 4,   h: 2.25, parts: [4, 2.6] },
+  { t: '6,00×4,00 · без перегородок · только брус 100', w: 6, d: 4, h: 2.25, parts: [] },
+  { t: '6,00×4,50 · без перегородок · только брус 100', w: 6, d: 4.5, h: 2.25, parts: [] },
+  { t: '6,00×6,00 · без перегородок',          w: 6,   d: 6,   h: 2.25, parts: [] },
+  { t: '6,00×6,00 · 1 перегородка',            w: 6,   d: 6,   h: 2.25, parts: [6] },
+  { t: '6,00×6,00 · Т-образная',               w: 6,   d: 6,   h: 2.25, parts: [6, 2.6] },
+  { t: '8,00×6,00 · без перегородок',          w: 8,   d: 6,   h: 2.5,  parts: [0.5, 0.5, 0.5, 0.5] },
+  { t: '8,00×6,00 · Т-образная',               w: 8,   d: 6,   h: 2.5,  parts: [6, 0.5, 0.5, 4.222] },
+  { t: '8,00×6,00 · 2 перегородки',            w: 8,   d: 6,   h: 2.5,  parts: [6, 6] },
+  { t: '9,00×6,00 · без перегородок',          w: 9,   d: 6,   h: 2.5,  parts: [0.5, 0.5, 0.5, 0.5] },
+  { t: '9,00×6,00 · 2 перегородки',            w: 9,   d: 6,   h: 2.5,  parts: [6, 6] },
+];
+
+function fillPresets() {
+  const sel = document.getElementById('preset');
+  if (!sel) return;
+  PRESETS.forEach((p, i) => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = p.t;
+    sel.appendChild(o);
+  });
+}
+
+function applyPreset() {
+  const sel = document.getElementById('preset');
+  const i = sel.value;
+  if (i === '') return;
+  const p = PRESETS[i];
+  document.getElementById('height1').value = p.h;
+  wallRows = [
+    { len: p.w, qty: 2 },
+    { len: p.d, qty: 2 },
+    ...p.parts.map(len => ({ len, qty: 1 })),
+  ];
+  renderWalls(wallRows, 'walls-body');
+  updatePerimeterDisplay();
+  saveFormSoon();
+  if (lastResult) calculate();
+}
+
+function updatePerimeterDisplay() {
+  const h1  = parseFloat(document.getElementById('height1')?.value) || 2.5;
+  const bh  = (parseFloat(document.getElementById('beam_work_h')?.value) || 125) / 1000;
+  const len = floor1WallLen();
+  const crowns = Math.max(1, Math.round(h1 / bh));
+  const mp     = len * crowns;
+  const el = id => document.getElementById(id);
+  if (el('perimeter-display')) el('perimeter-display').textContent = len.toFixed(1) + ' м';
+  if (el('crowns-display'))    el('crowns-display').textContent    = crowns + ' шт';
+  if (el('mp-display'))        el('mp-display').textContent        = mp.toFixed(0) + ' м.п.';
+
+  // Формулы — прямо теми же числами, что стоят в таблице выше
+  const fEl = el('wall-summary-formula');
+  if (fEl) {
+    const nfmt = v => Number(v).toLocaleString('ru-RU', { maximumFractionDigits: 3 });
+    const lenParts = wallRows
+      .filter(r => (r.len || 0) > 0)
+      .map(r => (r.qty && r.qty > 1) ? `${nfmt(r.len)}×${r.qty}` : nfmt(r.len));
+    const lenFormula = lenParts.length ? lenParts.join(' + ') + ` = ${nfmt(len)} м` : '0 м';
+    fEl.innerHTML =
+      `Сумма длин = ${lenFormula}<br>` +
+      `Венцов = округл(${nfmt(h1)} м ÷ ${nfmt(bh * 1000)} мм) = ${crowns} шт<br>` +
+      `М.п. стен = ${nfmt(len)} м × ${crowns} венц. = ${mp.toFixed(0)} м.п.`;
+  }
+}
+
+function onDimChange() {
+  updatePerimeterDisplay();
+  updateFloorbeamSummary();
+  if (lastResult) calculate();
+}
+
+function baseWallLen() {
+  const own = baseRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
+  return own > 0 ? own : floor1WallLen();
+}
+
+function updateBaseSummary() {
+  const ownLen = baseRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
+  const len = baseWallLen();
+  const el = id => document.getElementById(id);
+  const nfmt = v => Number(v).toLocaleString('ru-RU', { maximumFractionDigits: 3 });
+
+  if (el('base-perimeter-display')) el('base-perimeter-display').textContent = (ownLen > 0 ? nfmt(len) + ' м' : 'авто (' + nfmt(len) + ' м)');
+
+  const fEl = el('base-summary-formula');
+  if (fEl) {
+    if (ownLen > 0) {
+      const lenParts = baseRows
+        .filter(r => (r.len || 0) > 0)
+        .map(r => (r.qty && r.qty > 1) ? `${nfmt(r.len)}×${r.qty}` : nfmt(r.len));
+      fEl.innerHTML = `Сумма длин = ${lenParts.join(' + ')} = ${nfmt(len)} м`;
+    } else {
+      fEl.innerHTML = `Сумма длин = авто = сумма длин стен 1-го этажа = ${nfmt(len)} м`;
+    }
+  }
+}
+
+function updateFrontonSummary() {
+  const h  = parseFloat(document.getElementById('fronton_h')?.value) || 1.5;
+  const bh = (parseFloat(document.getElementById('beam_work_h')?.value) || 125) / 1000;
+  const len = frontonRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
+  const crowns = Math.max(1, Math.round(h / bh));
+  const mp = len * crowns;
+  const el = id => document.getElementById(id);
+  const nfmt = v => Number(v).toLocaleString('ru-RU', { maximumFractionDigits: 3 });
+
+  if (el('fr-perimeter-display')) el('fr-perimeter-display').textContent = nfmt(len) + ' м';
+  if (el('fr-crowns-display'))    el('fr-crowns-display').textContent    = crowns + ' шт';
+  if (el('fr-mp-display'))        el('fr-mp-display').textContent        = mp.toFixed(0) + ' м.п.';
+
+  const fEl = el('fr-summary-formula');
+  if (fEl) {
+    const lenParts = frontonRows
+      .filter(r => (r.len || 0) > 0)
+      .map(r => (r.qty && r.qty > 1) ? `${nfmt(r.len)}×${r.qty}` : nfmt(r.len));
+    const lenFormula = lenParts.length ? lenParts.join(' + ') + ` = ${nfmt(len)} м` : '0 м';
+    fEl.innerHTML =
+      `Сумма длин = ${lenFormula}<br>` +
+      `Венцов = округл(${nfmt(h)} м ÷ ${nfmt(bh * 1000)} мм) = ${crowns} шт<br>` +
+      `М.п. = ${nfmt(len)} м × ${crowns} венц., объём делится на 2 (фронтон треугольный)`;
+  }
+}
+function updateFloorbeamSummary() {
+  const h  = parseFloat(document.getElementById('floorbeam_h')?.value) || 0.125;
+  const bh = (parseFloat(document.getElementById('beam_work_h')?.value) || 125) / 1000;
+  const ownLen = floorbeamRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
+  const len = floorbeamWallLen();
+  const crowns = Math.max(1, Math.round(h / bh));
+  const mp = len * crowns;
+  const el = id => document.getElementById(id);
+  const nfmt = v => Number(v).toLocaleString('ru-RU', { maximumFractionDigits: 3 });
+
+  if (el('fb-perimeter-display')) el('fb-perimeter-display').textContent = (ownLen > 0 ? nfmt(len) + ' м' : 'авто (' + nfmt(len) + ' м)');
+  if (el('fb-crowns-display'))    el('fb-crowns-display').textContent    = crowns + ' шт';
+  if (el('fb-mp-display'))        el('fb-mp-display').textContent        = mp.toFixed(0) + ' м.п.';
+
+  const fEl = el('fb-summary-formula');
+  if (fEl) {
+    let lenFormula;
+    if (ownLen > 0) {
+      const lenParts = floorbeamRows
+        .filter(r => (r.len || 0) > 0)
+        .map(r => (r.qty && r.qty > 1) ? `${nfmt(r.len)}×${r.qty}` : nfmt(r.len));
+      lenFormula = `Сумма длин = ${lenParts.join(' + ')} = ${nfmt(len)} м<br>`;
+    } else {
+      lenFormula = `Сумма длин = авто = сумма длин стен 1-го этажа = ${nfmt(len)} м<br>`;
+    }
+    fEl.innerHTML = lenFormula +
+      `Венцов = округл(${nfmt(h)} м ÷ ${nfmt(bh * 1000)} мм) = ${crowns} шт<br>` +
+      `М.п. = ${nfmt(len)} м × ${crowns} венц. = ${mp.toFixed(0)} м.п.`;
+  }
+}
+
+function renderWalls(rows, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const arr = tbodyId === 'walls-body' ? 'wallRows' : tbodyId === 'walls-body-2' ? 'wallRows2' : tbodyId === 'walls-body-fb' ? 'floorbeamRows' : tbodyId === 'walls-body-fr' ? 'frontonRows' : 'baseRows';
+  const onEdit = tbodyId === 'walls-body-fb' ? 'updateFloorbeamSummary()' : tbodyId === 'walls-body-fr' ? 'updateFrontonSummary()' : tbodyId === 'walls-body-base' ? 'updateBaseSummary()' : 'updatePerimeterDisplay()';
+  const rowLabel = tbodyId === 'walls-body-base' ? 'Брус' : 'Стена';
+  rows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="font-size:12px;color:var(--text-muted);padding:4px 8px;background:var(--cream-dark);border-radius:4px;">${rowLabel} ${i + 1}</span></td>
+      <td><input class="wall-input" type="number" value="${row.len}" step="0.1" min="0.1"
+          oninput="${arr}[${i}].len=parseFloat(this.value)||0;recalcLive();${onEdit}"></td>
+      <td><input class="wall-input" type="number" value="${row.qty}" step="1" min="1" max="10" style="width:60px"
+          oninput="${arr}[${i}].qty=parseInt(this.value)||1;recalcLive();${onEdit}"></td>
+      <td><button class="wall-del" onclick="${arr}.splice(${i},1);renderWalls(${arr},'${tbodyId}');recalcLive();${onEdit}">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function addWall(floor) {
+  if (floor === 2) {
+    wallRows2.push({ len: 4, qty: 1 });
+    renderWalls(wallRows2, 'walls-body-2');
+  } else if (floor === 'fb') {
+    floorbeamRows.push({ len: 4, qty: 1 });
+    renderWalls(floorbeamRows, 'walls-body-fb');
+  } else if (floor === 'fr') {
+    frontonRows.push({ len: 6, qty: 1 });
+    renderWalls(frontonRows, 'walls-body-fr');
+  } else if (floor === 'base') {
+    baseRows.push({ len: 4, qty: 1 });
+    renderWalls(baseRows, 'walls-body-base');
+  } else {
+    wallRows.push({ len: 4, qty: 1 });
+    renderWalls(wallRows, 'walls-body');
+  }
+  recalcLive();
+  updatePerimeterDisplay();
+  updateFloorbeamSummary();
+  updateFrontonSummary();
+  updateBaseSummary();
+}
+
+function copyWallsToFloor2() {
+  wallRows2 = wallRows.map(r => ({ len: r.len, qty: r.qty }));
+  renderWalls(wallRows2, 'walls-body-2');
+  recalcLive();
+  saveFormSoon();
+}
+
+// ═══════════════════════════════════════════════
+// SECTION CHIPS
+// ═══════════════════════════════════════════════
+let selectedSection = '100x150';
+document.querySelectorAll('#section-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#section-chips .chip').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    selectedSection = c.dataset.val;
+    recalcLive();
+  });
+});
+
+// Сечение обвязки в «Доп. материалах» — независимо ни от сруба, ни от блока «Нижняя обвязка»
+let extrasBaseSection = '150';
+document.querySelectorAll('#extras-base-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#extras-base-chips .chip').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    extrasBaseSection = c.dataset.val;
+    recalcLive();
+    saveFormSoon();
+  });
+});
+function updateExtrasBaseChipLabels() {
+  const P = (typeof PRICES !== 'undefined') ? PRICES : DEFAULT_PRICES;
+  document.querySelectorAll('#extras-base-chips .chip').forEach(c => {
+    const k = c.dataset.val;
+    const w = P['base_w_' + k], h = P['base_h_' + k];
+    c.textContent = (w && h) ? `${w}×${h} мм` : (k + ' мм');
+  });
+}
+
+// Сечение столбов — независимо от сечения сруба
+let postSection = '150';
+document.querySelectorAll('#post-section-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#post-section-chips .chip').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    postSection = c.dataset.val;
+    recalcLive();
+    saveFormSoon();
+  });
+});
+function updatePostSectionChipLabels() {
+  const P = (typeof PRICES !== 'undefined') ? PRICES : DEFAULT_PRICES;
+  document.querySelectorAll('#post-section-chips .chip').forEach(c => {
+    const k = c.dataset.val;
+    const w = P['post_w_' + k], h = P['post_h_' + k];
+    c.textContent = (w && h) ? `${w}×${h} мм` : (k + ' мм');
+  });
+}
+let baseSection = '150';
+document.querySelectorAll('#base-section-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#base-section-chips .chip').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    baseSection = c.dataset.val;
+    recalcLive();
+    saveFormSoon();
+  });
+});
+function updateBaseSectionChipLabels() {
+  const P = (typeof PRICES !== 'undefined') ? PRICES : DEFAULT_PRICES;
+  document.querySelectorAll('#base-section-chips .chip').forEach(c => {
+    const k = c.dataset.val;
+    const w = P['base_w_' + k], h = P['base_h_' + k];
+    c.textContent = (w && h) ? `${w}×${h} мм` : (k + ' мм');
+  });
+}
+
+// ═══════════════════════════════════════════════
+// TOGGLES
+// ═══════════════════════════════════════════════
+function toggleBlock(chkId, blockId) {
+  const c = document.getElementById(chkId), b = document.getElementById(blockId);
+  if (!c || !b) return;
+  b.classList.toggle('collapsed', !c.checked);
+  recalcLive();
+}
+function toggleFloor2() {
+  toggleBlock('has_floor2', 'floor2-block');
+  // Без венца перекрытия между этажами 2-й этаж физически не на чем ставить —
+  // включаем его автоматически вместе со 2-м этажом (но не выключаем обратно,
+  // если человек сам решит убрать 2-й этаж — венец мог остаться нужен отдельно).
+  const f2 = document.getElementById('has_floor2');
+  const fb = document.getElementById('has_floorbeam');
+  if (f2 && f2.checked && fb && !fb.checked) {
+    fb.checked = true;
+    toggleBlock('has_floorbeam', 'floorbeam-block');
+  }
+}
+function toggleFrontons() { toggleBlock('has_frontons', 'frontons-block'); }
+function toggleRoof()     { toggleBlock('has_roof', 'roof-block'); }
+function toggleBase()     { toggleBlock('has_base', 'base-block'); }
+
+// ── Оконные и дверные проёмы (лист «= Расчет куб.м этап 1.», стр. 84–101)
+let openingRows = [
+  { len: 2.0, h: 1.5, qty: 1 },
+  { len: 3.0, h: 1.5, qty: 1 },
+];
+function renderOpenings() {
+  const tb = document.getElementById('openings-body');
+  if (!tb) return;
+  tb.innerHTML = '';
+  openingRows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="font-size:12px;color:var(--text-muted);padding:4px 8px;background:var(--cream-dark);border-radius:4px;">Проём</span></td>
+      <td><input class="wall-input" type="number" value="${r.len}" step="0.1" min="0"
+          oninput="openingRows[${i}].len=parseFloat(this.value)||0;recalcLive()"></td>
+      <td><input class="wall-input" type="number" value="${r.h}" step="0.1" min="0"
+          oninput="openingRows[${i}].h=parseFloat(this.value)||0;recalcLive()"></td>
+      <td><input class="wall-input" type="number" value="${r.qty}" step="1" min="1" style="width:60px"
+          oninput="openingRows[${i}].qty=parseInt(this.value)||1;recalcLive()"></td>
+      <td><button class="wall-del" onclick="openingRows.splice(${i},1);renderOpenings();recalcLive()">✕</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+function addOpening() { openingRows.push({ len: 1.5, h: 1.5, qty: 1 }); renderOpenings(); recalcLive(); }
+
+// ── Терраса: вылеты и коньковая балка (лист «= Тер. Расчет этап 1.»)
+let terraceRows = [
+  { len: 3, qty: 2 },
+  { len: 6, qty: 1 },
+];
+function renderTerrace() {
+  const tb = document.getElementById('terrace-body');
+  if (!tb) return;
+  tb.innerHTML = '';
+  terraceRows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="font-size:12px;color:var(--text-muted);padding:4px 8px;background:var(--cream-dark);border-radius:4px;">Вылет</span></td>
+      <td><input class="wall-input" type="number" value="${r.len}" step="0.1" min="0"
+          oninput="terraceRows[${i}].len=parseFloat(this.value)||0;recalcLive()"></td>
+      <td><input class="wall-input" type="number" value="${r.qty}" step="1" min="1" style="width:60px"
+          oninput="terraceRows[${i}].qty=parseInt(this.value)||1;recalcLive()"></td>
+      <td><button class="wall-del" onclick="terraceRows.splice(${i},1);renderTerrace();recalcLive()">✕</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+function addTerrace() { terraceRows.push({ len: 3, qty: 1 }); renderTerrace(); recalcLive(); }
+
+// Ориентировочное кол-во стропил/обрешётки (типовые данные листа «Площадь Кровли ч.1.»)
+function suggestRoof() {
+  const a = parseFloat(document.getElementById('roof_area')?.value) || 0;
+  const rh = document.getElementById('rafter-hint'), oh = document.getElementById('obr-hint');
+  if (rh) rh.textContent = 'ориентировочно ' + Math.max(1, Math.round(a * 0.46)) + ' шт';
+  if (oh) oh.textContent = 'ориентировочно ' + Math.max(1, Math.round(a * 0.39)) + ' шт';
+}
+
+// ═══════════════════════════════════════════════
+// CORE CALCULATION
+// ═══════════════════════════════════════════════
+
+let lastResult = null;
+function fmt(n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; }
+function fmtN(n, dec = 2) { return parseFloat(Number(n).toFixed(dec)).toLocaleString('ru-RU'); }
+function getV(id) { const e=document.getElementById(id); return e?parseFloat(e.value)||0:0; }
+function getB(id) { const e=document.getElementById(id); return e?e.checked:false; }
+
+// ═══════════════════════════════════════════════════════════════════
+// РАСЧЁТ. Полностью повторяет книгу «4.0 Калькулятор ТЗ-2».
+// Ссылки на листы указаны в комментариях к каждому блоку.
+// ═══════════════════════════════════════════════════════════════════
+
+// Сечение бруса -> сечение нижней обвязки (лист «=Обвязка этап 1.» J5:M5)
+// Сечение бруса -> сечение опорного столба (лист «Расчет по столбам опор СКР» C8:F8)
+
+function rowsMP(rows, height, workH) {
+  // Лист «= Расчет куб.м этап 1.»:  H = C * F,  где C = SUM(длины), F = D/E (венцы)
+  const len = rows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
+  const crowns = Math.max(0, Math.round(height / workH));
+  return { len, crowns, mp: len * crowns };
+}
+
+// ── БЛОК 1. Объёмы стенового комплекта ─────────────────────────────
+function calcVolumes(sectionKey, P) {
+  const [wMm, hMm] = sectionKey.split('x').map(Number);
+  const wM = wMm / 1000, hM = hMm / 1000;
+  const workH = getV('beam_work_h') / 1000 || 0.125;
+
+  // Этаж 1: сумма длин всех стен и перегородок из списка (лист «= Расчет куб.м этап 1.»)
+  const f1 = rowsMP(wallRows, getV('height1'), workH);
+
+  // Этаж 2 — независимый список стен (не привязан к 1-му этажу)
+  const hasF2 = getB('has_floor2');
+  const f2 = hasF2 ? rowsMP(wallRows2, getV('height2'), workH)
+                   : { len: 0, crowns: 0, mp: 0 };
+
+  // Венец перекрытия межэтажный (лист «= Расчет куб.м этап 1.» стр. 41–58)
+  const hasFB = getB('has_floorbeam');
+  const fb = hasFB ? rowsMP([{ len: floorbeamWallLen(), qty: 1 }], getV('floorbeam_h'), workH)
+                   : { len: 0, crowns: 0, mp: 0 };
+
+  // Фронтоны (стр. 62–79). ВАЖНО: объём делится на 2 — фронтон треугольный.
+  const hasFr = getB('has_frontons');
+  const fr = hasFr ? rowsMP(frontonRows, getV('fronton_h'), workH)
+                   : { len: 0, crowns: 0, mp: 0 };
+
+  // Вычет по оконным проёмам (стр. 84–101) — отрицательный объём
+  let openMP = 0;
+  if (getB('has_openings')) {
+    openMP = openingRows.reduce((s, r) =>
+      s + (r.len || 0) * (r.qty || 1) * Math.max(0, Math.round((r.h || 0) / workH)), 0);
+  }
+
+  const mpTotal = f1.mp + f2.mp + fb.mp + fr.mp;                 // м.п. без вычета
+  const vol = (f1.mp + f2.mp + fb.mp) * wM * hM                  // прямоугольные венцы
+            + fr.mp * wM * hM / 2                                // фронтон = треугольник
+            - openMP * wM * hM;                                  // минус проёмы
+  const volR = vol * (1 + P.beam_reserve / 100);                 // F = D*7% + D
+
+  // М.п. для джута/шкантов: этаж1 + этаж2 + фронтоны (лист 2, B14)
+  const mpJute = f1.mp + f2.mp + fr.mp;
+
+  return { wMm, hMm, wM, hM, workH, f1, f2, fb, fr, openMP, mpTotal, mpJute, vol, volR };
+}
+
+// ── БЛОК 2. Стеновой комплект в деньгах ────────────────────────────
+// Лист «= Расчет куб деньги этап 2. скр»
+function calcWalls(g, P, sectionKey) {
+  const k = sectionKey.split('x')[0];
+
+  // I = F * (материал + работа);  L = I * (1 + маржа 25%)
+  const costKit  = g.volR * (P['pine_' + k] + P['work_' + k]);
+  const priceKit = costKit * (1 + P.margin_main / 100);
+
+  // Монтаж: I8 = F * H8;  L8 = I8 * (1 + 10%)
+  const costAsm  = g.volR * P['assembly_' + k];
+  const priceAsm = costAsm * (1 + P.margin_assembly / 100);
+
+  // Джут и шканты: запас 20%, цена джута по ширине, шкант 10 ₽/шт
+  const juteMP    = g.mpJute * (1 + P.jute_reserve / 100);
+  const costJute  = juteMP * P['jute_' + k];
+  const costDowel = juteMP * P.dowel;
+  const priceJuteOnly  = costJute  * (1 + P.margin_assembly / 100);   // строка 14 листа 2
+  const priceDowelOnly = costDowel * (1 + P.margin_assembly / 100);   // строка 15 листа 2
+  const priceJute = priceJuteOnly + priceDowelOnly;
+
+  return {
+    costKit, priceKit, costAsm, priceAsm, juteMP, costJute, costDowel,
+    priceJute, priceJuteOnly, priceDowelOnly,
+    noAssembly: priceKit,                       // «Без сборки»
+    withAssembly: priceKit + priceAsm + priceJute, // «Со сборкой»
+  };
+}
+
+// ── БЛОК 3. Терраса: верхняя обвязка + коньковая балка ─────────────
+// Листы «= Тер. Расчет этап 1.» и «=Тер. Расчет в деньги этап2 СКР»
+function calcTerrace(P, sectionKey) {
+  if (!getB('has_terrace')) return null;
+  const k = sectionKey.split('x')[0];
+  const [wMm, hMm] = sectionKey.split('x').map(Number);
+  const workH = getV('beam_work_h') / 1000 || 0.125;
+
+  const t = rowsMP(terraceRows, getV('terrace_h'), workH);
+  const vol  = t.mp * (wMm / 1000) * (hMm / 1000);
+  const volR = vol * (1 + P.beam_reserve / 100);
+
+  const costKit  = volR * (P['pine_' + k] + P['ter_work_' + k]);
+  const priceKit = costKit * (1 + P.margin_main / 100);
+  const costAsm  = volR * P['assembly_' + k];
+  const priceAsm = costAsm * (1 + P.margin_assembly / 100);
+
+  // По террасе запас на джут/шканты 30% (лист «=Тер. Расчет в деньги этап2 СКР» C14)
+  const juteMP    = t.mp * (1 + P.ter_jute_reserve / 100);
+  const priceJute = (juteMP * P['ter_jute_' + k] + juteMP * P.dowel) * (1 + P.margin_assembly / 100);
+
+  return {
+    mp: t.mp, crowns: t.crowns, len: t.len, vol, volR,
+    priceKit, priceAsm, priceJute,
+    noAssembly: priceKit,
+    withAssembly: priceKit + priceAsm + priceJute,
+  };
+}
+
+// ── БЛОК 4. Опорные столбы ─────────────────────────────────────────
+// Лист «Расчет по столбам опор СКР»
+function calcPosts(P) {
+  if (!getB('has_posts')) return null;
+  const k = postSection;
+  const qty = getV('post_qty'), len = getV('post_len');
+  const a = (P['post_w_' + k] || 150) / 1000;
+  const b = (P['post_h_' + k] || 150) / 1000;
+  const mp = qty * len;
+  const vol = mp * a * b;
+  const costMat  = vol * P.post_price;
+  const costWork = qty * P['post_work_' + k];
+  const cost = costMat + costWork;
+  return { qty, len, mp, vol, costMat, costWork, cost, price: cost * (1 + P.post_margin / 100) };
+}
+
+// ── БЛОК 5. Кровля ─────────────────────────────────────────────────
+// Листы «Площадь Кровли ч.1.» и «Цена кровли ч. 2. СКР»
+function calcRoof(P) {
+  if (!getB('has_roof')) return null;
+  const area = getV('roof_area');
+  const warmArea = getB('roof_warm') ? (getV('roof_warm_area') || area) : 0;
+
+  // Работа по кровле: F4 = 1600 ₽/м² * площадь
+  const workCost = area * P.roof_work_sqm;
+
+  // Стропила 50×150×6 и обрешётка 25×150×6 — количество вводится вручную
+  const rafterCount = getV('rafter_count');
+  const rafterVol   = rafterCount * P.rafter_w * P.rafter_h * P.rafter_l;
+  const rafterCost  = rafterVol * P.roof_board_price;
+
+  const obrCount = getV('obr_count');
+  const obrVol   = obrCount * P.obr_w * P.obr_h * P.obr_l;
+  const obrCost  = obrVol * P.roof_obreshetka_price;
+
+  // Мембрана: цена рулона / площадь рулона * площадь кровли
+  const membraneCost = (P.roof_membrane_roll / P.roof_membrane_roll_area) * area;
+  // Металлочерепица и метизы — за 1 м²
+  const tilesCost = area * P.roof_tiles_sqm;
+  const hwCost    = area * P.roof_hardware_sqm;
+
+  // Тёплая кровля: утепление+плёнки 1000 ₽/м² и работа 600 ₽/м²
+  const warmMat  = warmArea * P.roof_warm_mat;
+  const warmWork = warmArea * P.roof_warm_work;
+
+  // Доборы 10% — ТОЛЬКО от материалов (F5+F7+F9+F15+F16), без работы и тёплой кровли
+  const materials = rafterCost + obrCost + membraneCost + tilesCost + hwCost;
+  const addonCost = materials * P.roof_addon_pct / 100;
+
+  // Каркасный фронтон: ширина × высота × 3000 ₽/м² (E13 = C13*D13 — это уже 2 фронтона)
+  const frW = getV('roof_fronton_w'), frH = getV('roof_fronton_h');
+  const frontonArea = getB('roof_has_frontons') ? frW * frH : 0;
+  const frontonCost = frontonArea * P.roof_fronton_sqm;
+
+  const totalCost = workCost + rafterCost + obrCost + membraneCost + tilesCost + hwCost
+                  + warmMat + warmWork + addonCost + frontonCost;
+  const clientPrice = totalCost * (1 + P.roof_margin / 100);
+
+  return {
+    area, warmArea, workCost, rafterCount, rafterVol, rafterCost,
+    obrCount, obrVol, obrCost, membraneCost, tilesCost, hwCost,
+    warmMat, warmWork, materials, addonCost, frontonArea, frontonCost,
+    totalCost, clientPrice, perSqm: area ? totalCost / area : 0,
+  };
+}
+
+// ── БЛОК 6. Нижняя обвязка (лиственница) ───────────────────────────
+// Листы «=Обвязка этап 1.» / «=Обвязка этап 2. СКР»
+function calcBase(P, sectionKey) {
+  if (!getB('has_base')) return null;
+  const auto = getB('base_auto_section');
+  const k = auto ? sectionKey.split('x')[0] : baseSection;
+  const a = (P['base_w_' + k] || 150) / 1000;
+  const b = (P['base_h_' + k] || 150) / 1000;
+  const len = baseWallLen();
+  const vol = len * a * b;
+  const cost = vol * (P.base_larch + P.base_work);
+  return { len, secA: a, secB: b, vol, cost, price: cost * (1 + P.base_margin / 100) };
+}
+
+function toggleBaseAutoMode() {
+  const auto = getB('base_auto_section');
+  document.getElementById('base-section-chips-wrap').style.display = auto ? 'none' : '';
+  recalcLive();
+  saveFormSoon();
+}
+
+// ── БЛОК 7. Доп. материалы для варианта «без сборки» ───────────────
+// Лист «Для заказчика », строки 23–30
+function calcExtras(P) {
+  if (!getB('has_extras')) return null;
+  const k = extrasBaseSection;
+  const obvW = (P['base_w_' + k] || 100) / 1000;
+  const obvH = (P['base_h_' + k] || 150) / 1000;
+  const items = [
+    ['Стропила 50×150×6',       0.05, 0.15, 6, P.roof_board_price, getV('rafter_count')],
+    ['Обрешётка 25×150×6',      0.025, 0.15, 6, P.roof_board_price, getV('obr_count')],
+    ['Лаги 50×150×6',           0.05, 0.15, 6, P.extra_lag_price,  getV('extra_lag_qty')],
+    [`Обвязка ${Math.round(obvW*1000)}×${Math.round(obvH*1000)}×6`, obvW, obvH, 6, P.extra_lag_price,  getV('extra_obv_qty')],
+    ['Потолочные балки 50×150×6',0.05, 0.15, 6, P.roof_board_price, getV('extra_beam_qty')],
+  ].map(([name, t, w, l, price, qty]) => {
+    const volOne = t * w * l;
+    return { name, volOne, qty, vol: volOne * qty, price, sum: volOne * qty * price };
+  }).filter(x => x.qty > 0);
+  const total = items.reduce((s, x) => s + x.sum, 0);
+  return { items, total };
+}
+
+// ── СБОРКА ИТОГА ───────────────────────────────────────────────────
+function calculate() {
+  const P = getPrices();
+  const sections = ['100x150', '150x150', '180x150', '200x150'];
+  const results = {};
+
+  sections.forEach(sec => {
+    const g   = calcVolumes(sec, P);
+    const w   = calcWalls(g, P, sec);
+    const ter = calcTerrace(P, sec);
+    const pst = calcPosts(P);
+    const rf  = calcRoof(P);
+    const bs  = calcBase(P, sec);
+    const ex  = calcExtras(P);
+
+    // Общий объём бруса (сруб + терраса) — база для сушки и кедра
+    const volAll = g.volR + (ter ? ter.volR : 0);
+
+    // Камерная сушка: 5000 ₽/м³ (лист «Разное »)
+    const drying = getB('has_drying') ? volAll * P.drying : 0;
+    // Кедр: доплата = объём × 4000 × 1,25 (лист 2, столбец R)
+    const cedar = getB('is_cedar') ? volAll * P.cedar_price * (1 + P.cedar_margin / 100) : 0;
+
+    // «Без сборки» = стеновой комплект + терраса (лист «Финал по Акции» B12)
+    let noAsm = w.noAssembly + (ter ? ter.noAssembly : 0);
+    // «Со сборкой» = стены+джут+монтаж + кровля + обвязка + терраса + столбы (B28)
+    let withAsm = w.withAssembly + (rf ? rf.clientPrice : 0) + (bs ? bs.price : 0)
+                + (ter ? ter.withAssembly : 0) + (pst ? pst.price : 0);
+
+    noAsm  += cedar + drying;
+    withAsm += cedar + drying;
+
+    // Скидка — ТОЛЬКО на сам сруб без сборки (материал+работа профилирования),
+    // не распространяется на террасу, кедр, сушку и на цену «со сборкой».
+    const discPct = getB('has_discount') ? getV('discount_pct') : 0;
+    const discNo  = w.noAssembly * discPct / 100;
+
+    results[sec] = {
+      g, w, ter, pst, rf, bs, ex, volAll, drying, cedar,
+      noAsm, withAsm, discPct, discNo,
+      noAsmFinal: noAsm - discNo, withAsmFinal: withAsm, P,
+    };
+  });
+
+  lastResult = { results, selectedSection, P };
+  renderResults(results, selectedSection);
+  document.getElementById('btn-print').style.display = 'flex';
+}
+
+function recalcLive() { if (lastResult) calculate(); }
+
+// ═══════════════════════════════════════════════
+// ВЫВОД
+// ═══════════════════════════════════════════════
+function renderResults(results, sec) {
+  const r = results[sec];
+  const { g, w, ter, pst, rf, bs, ex, P } = r;
+  const k = sec.split('x')[0];
+
+  // Строка результата: подпись, значение и необязательная формула мелким шрифтом
+  const row = (label, value, opt = {}) => `
+    <div class="res-row${opt.accent ? ' accent' : ''}">
+      <div class="res-label">${label}${opt.formula ? `<span class="res-formula">${opt.formula}</span>` : ''}</div>
+      <div class="res-value">${value}</div>
+    </div>`;
+  const head = t => `<div class="res-h">${t}</div>`;
+  const n = (v, d = 2) => fmtN(v, d);
+
+  const secCards = Object.entries(results).map(([s, d]) => `
+    <div class="section-price-card ${s === sec ? 'selected' : ''}" onclick="switchSection('${s}')">
+      <div class="sp-name">${s.replace('x', ' × ')} мм</div>
+      <div class="sp-price">${fmt(d.withAsmFinal)}</div>
+    </div>`).join('');
+
+  updateStickyPriceBar(results, sec);
+
+  let html = head('Все варианты бруса · со сборкой')
+    + `<div class="section-prices">${secCards}</div>`;
+
+  html += head('Объёмы')
+    + row('Этаж 1', n(g.f1.mp, 0) + ' м.п.', { formula: `${n(g.f1.len, 1)} м × ${g.f1.crowns} венц.` })
+    + (g.f2.mp ? row('Этаж 2', n(g.f2.mp, 0) + ' м.п.', { formula: `${n(g.f2.len, 1)} м × ${g.f2.crowns} венц.` }) : '')
+    + (g.fb.mp ? row('Венец перекрытия', n(g.fb.mp, 0) + ' м.п.', { formula: `${n(g.fb.len, 1)} м × ${g.fb.crowns} венц.` }) : '')
+    + (g.fr.mp ? row('Фронтоны', n(g.fr.mp, 0) + ' м.п.', { formula: `${n(g.fr.len, 1)} м × ${g.fr.crowns} венц., объём ÷ 2` }) : '')
+    + (g.openMP ? row('Вычет проёмов', '−' + n(g.openMP, 0) + ' м.п.') : '')
+    + row('Объём бруса', n(g.vol, 3) + ' м³')
+    + row('Объём с запасом', n(g.volR, 3) + ' м³', { accent: true, formula: `запас ${P.beam_reserve}%` });
+
+  html += head('Стеновой комплект')
+    + row('Материал и работа', fmt(w.costKit), { formula: `${n(g.volR, 3)} м³ × (${n(P['pine_' + k], 0)} + ${n(P['work_' + k], 0)}) ₽/м³` })
+    + row('Маржа', fmt(w.priceKit - w.costKit), { formula: `${P.margin_main}%` })
+    + row('Комплект без сборки', fmt(w.priceKit), { accent: true, formula: 'материал и работа + маржа (см. выше)' })
+    + row('Монтаж сруба', fmt(w.priceAsm), { formula: `${n(g.volR, 3)} м³ × ${n(P['assembly_' + k], 0)} ₽ + ${P.margin_assembly}%` })
+    + row('Джут', fmt(w.priceJuteOnly), { formula: `${n(w.juteMP, 0)} м.п. × ${P['jute_' + k]} ₽ + ${P.margin_assembly}%` })
+    + row('Шканты', fmt(w.priceDowelOnly), { formula: `${n(w.juteMP, 0)} шт × ${P.dowel} ₽ + ${P.margin_assembly}%` })
+    + row('Сруб со сборкой', fmt(w.withAssembly), { accent: true, formula: `Комплект без сборки ${fmt(w.priceKit)} + Монтаж ${fmt(w.priceAsm)} + Джут ${fmt(w.priceJuteOnly)} + Шканты ${fmt(w.priceDowelOnly)}` });
+
+  if (ter) html += head('Терраса · вылет и коньковая балка')
+    + row('Объём с запасом', n(ter.volR, 3) + ' м³', { formula: `${n(ter.len, 1)} м × ${ter.crowns} венц. = ${n(ter.mp, 0)} м.п.` })
+    + row('Без сборки', fmt(ter.noAssembly))
+    + row('Со сборкой', fmt(ter.withAssembly), { accent: true, formula: `Без сборки ${fmt(ter.priceKit)} + Монтаж ${fmt(ter.priceAsm)} + Джут и шканты ${fmt(ter.priceJute)}` });
+
+  if (pst) html += head('Опорные столбы')
+    + row('Материал', fmt(pst.costMat), { formula: `${pst.qty} шт × ${n(pst.len, 1)} м = ${n(pst.vol, 3)} м³` })
+    + row('Отстрожка и монтаж', fmt(pst.costWork), { formula: `${pst.qty} шт × ${n(P['post_work_' + k], 0)} ₽` })
+    + row('Итого столбы', fmt(pst.price), { accent: true, formula: `маржа ${P.post_margin}%` });
+
+  if (rf) html += head('Кровля · ' + n(rf.area, 1) + ' м²')
+    + row('Работа', fmt(rf.workCost), { formula: `${n(rf.area, 1)} м² × ${n(P.roof_work_sqm, 0)} ₽` })
+    + row('Стропила', fmt(rf.rafterCost), { formula: `${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³` })
+    + row('Обрешётка', fmt(rf.obrCost), { formula: `${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³` })
+    + row('Мембрана', fmt(rf.membraneCost))
+    + row('Металлочерепица', fmt(rf.tilesCost))
+    + row('Метизы и крепёж', fmt(rf.hwCost))
+    + (rf.warmArea ? row('Тёплая кровля', fmt(rf.warmMat + rf.warmWork), { formula: `${n(rf.warmArea, 1)} м² · материал и работа` }) : '')
+    + row('Доборы', fmt(rf.addonCost), { formula: `${P.roof_addon_pct}% от материалов` })
+    + (rf.frontonArea ? row('Каркасный фронтон', fmt(rf.frontonCost), { formula: `${n(rf.frontonArea, 1)} м² × ${n(P.roof_fronton_sqm, 0)} ₽` }) : '')
+    + row('Себестоимость', fmt(rf.totalCost), { formula: 'сумма позиций выше' })
+    + row('Кровля для клиента', fmt(rf.clientPrice), { accent: true, formula: `маржа ${P.roof_margin}%` });
+
+  if (bs) html += head('Нижняя обвязка · лиственница')
+    + row('Объём', n(bs.vol, 3) + ' м³', { formula: `${n(bs.len, 1)} м.п. · брус ${bs.secA * 1000}×${bs.secB * 1000} мм` })
+    + row('Материал и работа', fmt(bs.cost), { formula: `${n(P.base_larch, 0)} + ${n(P.base_work, 0)} ₽/м³` })
+    + row('Обвязка для клиента', fmt(bs.price), { accent: true, formula: `маржа ${P.base_margin}%` });
+
+  if (ex) html += head('Доп. материалы · для заказа без сборки')
+    + ex.items.map(i => row(i.name, fmt(i.sum), { formula: `${i.qty} шт · ${n(i.vol, 3)} м³` })).join('')
+    + row('Итого материалы', fmt(ex.total), { accent: true, formula: 'сумма позиций выше, без маржи — это цена только на материал для самостоятельной сборки' });
+
+  if (r.cedar || r.drying) html += head('Надбавки')
+    + (r.cedar ? row('Кедр', fmt(r.cedar), { formula: `${n(r.volAll, 3)} м³ × ${n(P.cedar_price, 0)} ₽ + ${P.cedar_margin}%` }) : '')
+    + (r.drying ? row('Камерная сушка', fmt(r.drying), { formula: `${n(r.volAll, 3)} м³ × ${n(P.drying, 0)} ₽` }) : '');
+
+  if (r.discPct) html += head('Акция')
+    + row('Скидка на сруб без сборки', '−' + fmt(r.discNo), { formula: `${r.discPct}% от ${fmt(w.noAssembly)} · на террасу, кедр, сушку и «со сборкой» не действует` });
+
+  // Разбивка «из чего сложился итог» — для двух главных цифр внизу,
+  // чтобы можно было быстро понять, в каком блоке искать расхождение.
+  const noAsmParts = [`Сруб без сборки ${fmt(w.priceKit)}`];
+  if (ter) noAsmParts.push(`Терраса без сборки ${fmt(ter.noAssembly)}`);
+  if (r.cedar)  noAsmParts.push(`Кедр ${fmt(r.cedar)}`);
+  if (r.drying) noAsmParts.push(`Сушка ${fmt(r.drying)}`);
+  if (r.discNo) noAsmParts.push(`минус скидка ${fmt(r.discNo)}`);
+
+  const withAsmParts = [`Сруб со сборкой ${fmt(w.withAssembly)}`];
+  if (rf)  withAsmParts.push(`Кровля ${fmt(rf.clientPrice)}`);
+  if (bs)  withAsmParts.push(`Обвязка ${fmt(bs.price)}`);
+  if (ter) withAsmParts.push(`Терраса со сборкой ${fmt(ter.withAssembly)}`);
+  if (pst) withAsmParts.push(`Столбы ${fmt(pst.price)}`);
+  if (r.cedar)  withAsmParts.push(`Кедр ${fmt(r.cedar)}`);
+  if (r.drying) withAsmParts.push(`Сушка ${fmt(r.drying)}`);
+
+  html += `
+    <div class="total-block">
+      <div class="total-row">
+        <div class="total-label">Без сборки · ${sec.replace('x', ' × ')} мм</div>
+        <div class="total-price sm">${fmt(r.noAsmFinal)}</div>
+      </div>
+      <div class="total-sub" style="margin-bottom:10px;">${noAsmParts.join(' + ')}</div>
+      <div class="total-row">
+        <div class="total-label">Со сборкой · кровля, обвязка, терраса</div>
+        <div class="total-price">${fmt(r.withAsmFinal)}</div>
+      </div>
+      <div class="total-sub" style="margin-bottom:10px;">${withAsmParts.join(' + ')}</div>
+      <div class="total-sub">Расчёт ориентировочный. Доставка, разъезды рабочих и лаги — вне расчёта.</div>
+    </div>`;
+
+  document.getElementById('results-body').innerHTML = html;
+}
+
+function updateStickyPriceBar(results, sec) {
+  const bar = document.getElementById('sticky-price-bar');
+  if (!bar) return;
+  bar.innerHTML = Object.entries(results).map(([s, d]) => `
+    <div class="spb-chip ${s === sec ? 'selected' : ''}" onclick="switchSection('${s}')">
+      <div class="spb-name">${s.replace('x', ' × ')} мм</div>
+      <div class="spb-price">${fmt(d.withAsmFinal)}</div>
+    </div>`).join('');
+  bar.style.display = '';
+}
+
+function switchSection(sec) {
+  selectedSection = sec;
+  // Update chips
+  document.querySelectorAll('#section-chips .chip').forEach(c => {
+    c.classList.toggle('selected', c.dataset.val === sec);
+  });
+  if (lastResult) renderResults(lastResult.results, sec);
+}
+
+// ═══════════════════════════════════════════════
+// PRINT RECEIPT
+// ═══════════════════════════════════════════════
+function printReceipt() {
+  if (!lastResult) return;
+  localStorage.setItem('sruby_print_data', JSON.stringify({ ...lastResult, selectedSection }));
+  window.open('print.html', '_blank', 'width=900,height=700');
+}
+
+// ═══════════════════════════════════════════════
+// СОХРАНЕНИЕ ВВЕДЁННЫХ ДАННЫХ
+// Всё, что менеджер набрал, пишется в браузер после каждого изменения.
+// Обновил страницу, ушёл в панель цен и вернулся, закрыл вкладку —
+// при следующем открытии форма восстанавливается ровно в том же виде.
+// ═══════════════════════════════════════════════
+const FORM_KEY = 'sruby_form_v1';
+
+// Пары «переключатель → раскрывающийся блок», чтобы вернуть их состояние
+const TOGGLE_PAIRS = [
+  ['has_floor2', 'floor2-block'], ['has_floorbeam', 'floorbeam-block'],
+  ['has_openings', 'openings-block'], ['has_frontons', 'frontons-block'],
+  ['has_roof', 'roof-block'], ['roof_warm', 'warm-block'],
+  ['roof_has_frontons', 'roof-fr-block'], ['has_base', 'base-block'],
+  ['has_terrace', 'terrace-block'], ['has_posts', 'posts-block'],
+  ['has_extras', 'extras-block'], ['has_discount', 'discount-block'],
+];
+
+function collectForm() {
+  const f = { fields: {}, checks: {}, sec: selectedSection, baseSection, postSection, extrasBaseSection,
+              wallRows, wallRows2, floorbeamRows, frontonRows, baseRows, openingRows, terraceRows, savedAt: Date.now() };
+  document.querySelectorAll('.calc-left input, .calc-left select').forEach(el => {
+    if (!el.id) return;
+    if (el.type === 'checkbox') f.checks[el.id] = el.checked;
+    else f.fields[el.id] = el.value;
+  });
+  return f;
+}
+
+let saveTimer = null;
+let skipSave = false;      // выставляется при сбросе, чтобы форма не записалась обратно
+function saveFormNow() {
+  if (skipSave) return;
+  try { localStorage.setItem(FORM_KEY, JSON.stringify(collectForm())); } catch (e) {}
+}
+function saveFormSoon() {
+  if (skipSave) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveFormNow, 250);
+}
+
+function applyFormData(f) {
+  if (!f) return;
+  Object.entries(f.fields || {}).forEach(([id, v]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = v;
+  });
+  Object.entries(f.checks || {}).forEach(([id, v]) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = v;
+  });
+  if (Array.isArray(f.wallRows))    wallRows    = f.wallRows;
+  if (Array.isArray(f.wallRows2))   wallRows2   = f.wallRows2;
+  if (Array.isArray(f.floorbeamRows)) floorbeamRows = f.floorbeamRows;
+  if (Array.isArray(f.frontonRows)) frontonRows = f.frontonRows;
+  if (Array.isArray(f.baseRows)) baseRows = f.baseRows;
+  if (Array.isArray(f.openingRows)) openingRows = f.openingRows;
+  if (Array.isArray(f.terraceRows)) terraceRows = f.terraceRows;
+
+  if (f.sec) {
+    selectedSection = f.sec;
+    document.querySelectorAll('#section-chips .chip').forEach(c =>
+      c.classList.toggle('selected', c.dataset.val === f.sec));
+  }
+  if (f.baseSection) {
+    baseSection = f.baseSection;
+    document.querySelectorAll('#base-section-chips .chip').forEach(c =>
+      c.classList.toggle('selected', c.dataset.val === f.baseSection));
+  }
+  const baseChipsWrap = document.getElementById('base-section-chips-wrap');
+  if (baseChipsWrap) baseChipsWrap.style.display = getB('base_auto_section') ? 'none' : '';
+  if (f.postSection) {
+    postSection = f.postSection;
+    document.querySelectorAll('#post-section-chips .chip').forEach(c =>
+      c.classList.toggle('selected', c.dataset.val === f.postSection));
+  }
+  if (f.extrasBaseSection) {
+    extrasBaseSection = f.extrasBaseSection;
+    document.querySelectorAll('#extras-base-chips .chip').forEach(c =>
+      c.classList.toggle('selected', c.dataset.val === f.extrasBaseSection));
+  }
+
+  // вернуть раскрытые/свёрнутые блоки в тон переключателям
+  TOGGLE_PAIRS.forEach(([chk, block]) => {
+    const c = document.getElementById(chk), b = document.getElementById(block);
+    if (c && b) b.classList.toggle('collapsed', !c.checked);
+  });
+}
+
+function restoreForm() {
+  let f = null;
+  try { f = JSON.parse(localStorage.getItem(FORM_KEY) || 'null'); } catch (e) {}
+  if (!f) return null;
+  applyFormData(f);
+  return f;
+}
+
+// ═══════════════════════════════════════════════
+// СОХРАНЕНИЕ / ЗАГРУЗКА РАСЧЁТА В ФАЙЛ
+// Чтобы можно было отдать клиенту «на подумать» и потом вернуться
+// ровно к тому же варианту — в том числе на другом компьютере.
+// ═══════════════════════════════════════════════
+function saveToFile() {
+  const name = (prompt('Название расчёта (например, имя клиента) — попадёт в имя файла:', '') || '').trim();
+  const data = collectForm();
+  data.name = name;
+  data.exportedAt = Date.now();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const safeName = name
+    ? name.replace(/[^\p{L}\p{N}\-_ ]+/gu, '').trim().replace(/\s+/g, '_').slice(0, 60)
+    : 'без_имени';
+  const dateStr = new Date().toLocaleDateString('ru-RU').split('.').join('-');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Смета_${safeName}_${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function loadFromFile(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = ''; // чтобы можно было выбрать тот же файл повторно
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let f;
+    try { f = JSON.parse(reader.result); } catch (e) {
+      alert('Не удалось прочитать файл — похоже, это не сохранённый расчёт этого калькулятора.');
+      return;
+    }
+    if (!f || (!f.fields && !f.checks)) {
+      alert('Файл не похож на сохранённый расчёт этого калькулятора.');
+      return;
+    }
+    skipSave = true; // не даём фоновому автосохранению перезаписать localStorage раньше времени
+    applyFormData(f);
+    renderWalls(wallRows, 'walls-body');
+    renderWalls(wallRows2, 'walls-body-2');
+    renderWalls(floorbeamRows, 'walls-body-fb');
+    renderWalls(frontonRows, 'walls-body-fr');
+    renderWalls(baseRows, 'walls-body-base');
+    renderOpenings();
+    renderTerrace();
+    updatePerimeterDisplay();
+    updateFloorbeamSummary();
+    updateFrontonSummary();
+    updateBaseSummary();
+    skipSave = false;
+    saveFormSoon();
+    calculate();
+    const hint = document.getElementById('restore-hint');
+    if (hint) {
+      const when = f.exportedAt ? new Date(f.exportedAt).toLocaleString('ru-RU') : '';
+      hint.innerHTML = 'Загружен расчёт «' + (f.name || 'без имени') + '»' + (when ? ' от ' + when : '');
+      hint.style.display = '';
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function clearForm() {
+  if (!confirm('Очистить все введённые данные и начать новый расчёт?')) return;
+  skipSave = true;                 // иначе beforeunload запишет форму обратно
+  clearTimeout(saveTimer);
+  localStorage.removeItem(FORM_KEY);
+  location.reload();
+}
+
+function showRestoreHint(f) {
+  const el = document.getElementById('restore-hint');
+  if (!el || !f) return;
+  const when = f.savedAt ? new Date(f.savedAt).toLocaleString('ru-RU') : '';
+  el.innerHTML = 'Восстановлены данные прошлого сеанса' + (when ? ' от ' + when : '')
+    + ' · <a href="#" onclick="clearForm();return false;">начать новый расчёт</a>';
+  el.style.display = '';
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+const restored = restoreForm();
+
+renderWalls(wallRows, 'walls-body');
+renderWalls(wallRows2, 'walls-body-2');
+renderWalls(floorbeamRows, 'walls-body-fb');
+renderWalls(frontonRows, 'walls-body-fr');
+renderWalls(baseRows, 'walls-body-base');
+fillPresets();
+renderOpenings();
+renderTerrace();
+suggestRoof();
+updatePerimeterDisplay();
+updateFloorbeamSummary();
+updateFrontonSummary();
+updateBaseSummary();
+updateBaseSectionChipLabels();
+updatePostSectionChipLabels();
+updateExtrasBaseChipLabels();
+if (restored) showRestoreHint(restored);
+
+// Прайс приезжает асинхронно: считаем сразу после его загрузки,
+// чтобы менеджер увидел готовый расчёт, а не пустую панель
+loadPrices().then(() => {
+  // Скидка по умолчанию (в %) берётся из панели цен, но только пока менеджер
+  // ничего не восстановил из прошлого сеанса и не менял поле сам в этом сеансе.
+  const discEl = document.getElementById('discount_pct');
+  if (discEl && !restored && typeof PRICES.discount === 'number') discEl.value = PRICES.discount;
+  updateBaseSectionChipLabels();
+  updatePostSectionChipLabels();
+  updateExtrasBaseChipLabels();
+  if (restored || lastResult) calculate();
+});
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('change', () => { if (lastResult) calculate(); });
+});
+
+// Любое изменение в форме — включая добавление и удаление строк — сохраняем
+const left = document.querySelector('.calc-left');
+if (left) {
+  ['input', 'change', 'click'].forEach(ev => left.addEventListener(ev, saveFormSoon));
+}
+document.querySelectorAll('#section-chips .chip').forEach(c => c.addEventListener('click', saveFormSoon));
+window.addEventListener('beforeunload', () => {
+  if (skipSave) return;
+  try { localStorage.setItem(FORM_KEY, JSON.stringify(collectForm())); } catch (e) {}
+});
+// beforeunload не всегда срабатывает (особенно на мобильных — сворачивание,
+// смахивание приложения, переход по ссылке). pagehide и visibilitychange
+// надёжнее ловят момент ухода со страницы, поэтому сохраняем и на них тоже —
+// без задержки, чтобы не потерять последние секунды ввода.
+window.addEventListener('pagehide', saveFormNow);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveFormNow();
+});
+['height1','beam_work_h'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', onDimChange);
+});
+</script>
+</body>
+</html>
+<!-- УДАЛЕНО: 3D-визуализация дома (three.js). Была скрыта (display:none) и
+     не показывалась пользователю, поэтому удалена целиком вместе со списком
+     длины/ширины дома, от которого она зависела. -->

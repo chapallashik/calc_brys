@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Смета — Калькулятор срубов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest: #1C3828;
+  --forest-mid: #2D5240;
+  --cream: #F5F0E8;
+  --cream-dark: #EAE3D5;
+  --oak: #C8872A;
+  --text: #1A1A1A;
+  --text-muted: #666;
+  --border: #D8D0C0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #eee;
+  color: var(--text);
+  padding: 30px 20px;
+}
+
+.receipt {
+  max-width: 700px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+
+/* ─── HEADER ─── */
+.receipt-header {
+  background: var(--forest);
+  background-image:
+    repeating-linear-gradient(92deg, transparent, transparent 120px, rgba(255,255,255,0.02) 120px, rgba(255,255,255,0.02) 122px);
+  padding: 36px 40px 28px;
+  color: white;
+}
+.receipt-header .company {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.receipt-header .tagline {
+  font-size: 13px;
+  opacity: 0.55;
+  letter-spacing: 0.04em;
+}
+.receipt-header .meta {
+  margin-top: 20px;
+  display: flex;
+  gap: 32px;
+}
+.receipt-header .meta-item .m-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  margin-bottom: 3px;
+}
+.receipt-header .meta-item .m-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ─── OBJECT ─── */
+.object-bar {
+  background: var(--cream-dark);
+  padding: 16px 40px;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.obj-item { display: flex; flex-direction: column; gap: 2px; }
+.obj-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.obj-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* ─── BODY ─── */
+.receipt-body { padding: 32px 40px; }
+
+.section-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin: 26px 0 6px;
+}
+.section-title:first-child { margin-top: 0; }
+.section-title:first-child { margin-top: 0; }
+
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--cream-dark);
+  gap: 24px;
+}
+.line:last-child { border-bottom: none; }
+.line .ln { color: var(--text); font-size: 13.5px; font-weight: 500; line-height: 1.45; flex: 1; }
+.line .ld { color: var(--text-muted); font-size: 11px; line-height: 1.5; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.line .lv { font-size: 13.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.line .lv.sub { font-weight: 400; color: var(--text-muted); font-size: 12.5px; }
+.line .lv.disc { color: #dc3545; }
+
+.subtotal {
+  display: flex;
+  justify-content: space-between;
+  background: var(--cream);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* ─── TOTAL ─── */
+.receipt-total {
+  background: var(--forest);
+  margin: 32px 40px;
+  border-radius: 12px;
+  padding: 24px 28px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.receipt-total { align-items: flex-start; }
+.receipt-total .rt-label {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.receipt-total .rt-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: #E8A84A;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.receipt-total .rt-price.sm { font-size: 24px; color: var(--cream); }
+.receipt-total .rt-sub {
+  font-size: 11px;
+  opacity: 0.45;
+  margin-top: 16px;
+  line-height: 1.55;
+  max-width: 320px;
+}
+.rt-breakdown {
+  text-align: right;
+  font-size: 12.5px;
+  line-height: 1.9;
+  opacity: 0.75;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rt-bd-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.doc-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700; color: #E8A84A;
+}
+.doc-type {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+  opacity: 0.5; margin-top: 3px;
+}
+
+/* ─── DISCLAIMER ─── */
+.disclaimer {
+  margin: 0 40px 32px;
+  padding: 14px 18px;
+  background: #FEF9F0;
+  border: 1px solid #F0D080;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #7A5E10;
+  line-height: 1.6;
+}
+
+/* ─── FOOTER ─── */
+.receipt-footer {
+  background: var(--cream-dark);
+  padding: 16px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+}
+.receipt-footer .ft-text { font-size: 12px; color: var(--text-muted); }
+.receipt-footer .ft-stamp {
+  background: var(--forest);
+  color: white;
+  border-radius: 50%;
+  width: 60px; height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  text-align: center;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+/* ─── PRINT BUTTON ─── */
+.print-bar {
+  max-width: 700px;
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.btn-print {
+  background: var(--forest); color: white; border: none; border-radius: 8px;
+  padding: 11px 22px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-print:hover { background: var(--forest-mid); }
+.btn-close {
+  background: white; color: var(--text); border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 11px 20px; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer;
+}
+
+@media print {
+  body { background: white; padding: 0; }
+  .print-bar { display: none; }
+  .receipt { box-shadow: none; border-radius: 0; }
+}
+</style>
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="print-bar">
+  <button class="btn-close" onclick="window.close()">Закрыть</button>
+  <button class="btn-print" onclick="window.print()">Печать / PDF</button>
+</div>
+
+<div class="receipt" id="receipt">
+  <div style="text-align:center;padding:60px;color:#999">Загрузка данных...</div>
+</div>
+
+<script>
+function fmt(n) {
+  return Math.round(n).toLocaleString('ru-RU') + ' ₽';
+}
+function fmtN(n, d = 2) {
+  return parseFloat(n.toFixed(d)).toLocaleString('ru-RU');
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+
+window.onload = function() {
+  const raw = localStorage.getItem('sruby_print_data');
+  const box = document.getElementById('receipt');
+  if (!raw) {
+    box.innerHTML = '<div style="padding:60px;text-align:center;color:#999">Нет данных. Сначала выполните расчёт на главной странице.</div>';
+    return;
+  }
+
+  const data = JSON.parse(raw);
+  const sec  = data.selectedSection;
+  const r    = data.results[sec];
+  if (!r || !r.g) {
+    box.innerHTML = '<div style="padding:60px;text-align:center;color:#999">Расчёт устарел. Вернитесь на главную и нажмите «Рассчитать стоимость» заново.</div>';
+    return;
+  }
+
+  const { g, w, ter, pst, rf, bs, ex, P } = r;
+  const k = sec.split('x')[0];
+  const secLabel = sec.replace('x', ' × ');
+  const n  = (v, d = 2) => fmtN(v, d);
+  const rub = v => Math.round(v).toLocaleString('ru-RU');
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' });
+  const docNum  = 'РС-' + now.getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000);
+
+  // строка сметы: наименование, расшифровка, сумма
+  const line = (name, desc, value, cls) => `
+    <div class="line">
+      <div>
+        <div class="ln">${name}</div>
+        ${desc ? `<div class="ld">${desc}</div>` : ''}
+      </div>
+      <div class="lv${cls ? ' ' + cls : ''}">${value}</div>
+    </div>`;
+  const title = t => `<div class="section-title">${t}</div>`;
+
+  const wallH = g.f1.crowns * g.workH;
+
+  // ── Стены и перегородки
+  // Клиенту не показываем закупочные цены и % маржи — только физические величины и итоговую сумму строки.
+  let html = title('Стены и перегородки — брус ' + secLabel + ' мм')
+    + line('Брус профилированный ' + secLabel + ' мм, сосна',
+           `Объём ${n(g.vol, 3)} м³, с запасом на подрезку ${n(g.volR, 3)} м³`,
+           fmt(w.priceKit))
+    + line('Монтаж стенового комплекта',
+           `${n(g.volR, 2)} м³`,
+           fmt(w.priceAsm))
+    + line('Джут межвенцовый',
+           `${n(w.juteMP, 0)} м.п.`,
+           fmt(w.priceJuteOnly))
+    + line('Шканты',
+           `${n(w.juteMP, 0)} шт`,
+           fmt(w.priceDowelOnly));
+
+  // ── Терраса
+  if (ter) html += title('Вылет для террасы и коньковая балка')
+    + line('Брус профилированный ' + secLabel + ' мм',
+           `${n(ter.len, 1)} м × ${ter.crowns} венц. = ${n(ter.mp, 0)} м.п. · объём с запасом ${n(ter.volR, 3)} м³`,
+           fmt(ter.priceKit))
+    + line('Монтаж', '', fmt(ter.priceAsm))
+    + line('Джут и шканты', '', fmt(ter.priceJute));
+
+  // ── Опорные столбы
+  if (pst) html += title('Опорные столбы')
+    + line('Брус строганный, ' + pst.qty + ' шт',
+           `${pst.qty} шт × ${n(pst.len, 1)} м = ${n(pst.vol, 3)} м³`,
+           fmt(pst.costMat))
+    + line('Отстрожка и монтаж',
+           `${pst.qty} шт`,
+           fmt(pst.price - pst.costMat));
+
+  // ── Кровля
+  if (rf) html += title('Кровля — ' + n(rf.area, 1) + ' м²')
+    + line('Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, fmt(rf.rafterCost))
+    + line('Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, fmt(rf.obrCost))
+    + line('Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, fmt(rf.membraneCost))
+    + line('Металлочерепица', `${n(rf.area, 1)} м²`, fmt(rf.tilesCost))
+    + line('Метизы и крепёж', `${n(rf.area, 1)} м²`, fmt(rf.hwCost))
+    + line('Монтаж кровли', `${n(rf.area, 1)} м²`, fmt(rf.workCost))
+    + (rf.warmArea ? line('Утепление тёплой кровли',
+        `${n(rf.warmArea, 1)} м²`,
+        fmt(rf.warmMat + rf.warmWork)) : '')
+    + (rf.frontonArea ? line('Фронтоны каркасные, 2 шт',
+        `${n(rf.frontonArea, 1)} м²`, fmt(rf.frontonCost)) : '')
+    + line('Доборные элементы', '', fmt(rf.addonCost));
+
+  // ── Нижняя обвязка
+  if (bs) html += title('Нижняя обвязка (лиственница)')
+    + line(`Брус ${bs.secA * 1000}×${bs.secB * 1000} мм, лиственница`,
+           `${n(bs.len, 1)} м.п. · ${n(bs.vol, 3)} м³`,
+           fmt(bs.price));
+
+  // ── Доп. материалы
+  if (ex && ex.items.length) html += title('Дополнительные материалы')
+    + ex.items.map(i => line(i.name, `${i.qty} шт · ${n(i.vol, 3)} м³`, fmt(i.sum))).join('');
+
+  // ── Надбавки
+  if (r.cedar || r.drying) {
+    html += title('Надбавки');
+    if (r.cedar)  html += line('Материал — кедр', `${n(r.volAll, 3)} м³`, fmt(r.cedar));
+    if (r.drying) html += line('Камерная (вакуумная) сушка', `${n(r.volAll, 3)} м³`, fmt(r.drying));
+  }
+
+  // ── Скидка
+  if (r.discPct) html += title('Акция')
+    + line(`Скидка ${r.discPct}% — только на сруб без сборки`, '', '−' + fmt(r.discNo), 'disc');
+
+  box.innerHTML = `
+    <div class="receipt-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
+        <div>
+          <div class="company">Калькулятор срубов</div>
+          <div class="tagline">Профилированный брус · Рубка в чашу</div>
+        </div>
+        <div style="text-align:right">
+          <div class="doc-num">${docNum}</div>
+          <div class="doc-type">Коммерческое предложение</div>
+        </div>
+      </div>
+      <div class="meta" style="margin-top:24px">
+        <div class="meta-item">
+          <div class="m-label">Дата расчёта</div>
+          <div class="m-value">${dateStr}</div>
+        </div>
+        <div class="meta-item">
+          <div class="m-label">Сечение бруса</div>
+          <div class="m-value">${secLabel} мм · ${r.cedar ? 'кедр' : 'сосна'}</div>
+        </div>
+        <div class="meta-item">
+          <div class="m-label">Высота стен, 1 этаж</div>
+          <div class="m-value">${n(wallH, 2)} м · ${g.f1.crowns} венцов</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="object-bar">
+      <div class="obj-item">
+        <div class="obj-label">Объём чистый</div>
+        <div class="obj-value">${n(g.vol, 2)} м³</div>
+      </div>
+      <div class="obj-item">
+        <div class="obj-label">С запасом +${P.beam_reserve}%</div>
+        <div class="obj-value">${n(g.volR, 2)} м³</div>
+      </div>
+      <div class="obj-item">
+        <div class="obj-label">Погонные метры</div>
+        <div class="obj-value">${n(g.mpTotal, 0)} м.п.</div>
+      </div>
+      ${rf  ? `<div class="obj-item"><div class="obj-label">Кровля</div><div class="obj-value">${n(rf.area, 1)} м²</div></div>` : ''}
+      ${bs  ? `<div class="obj-item"><div class="obj-label">Обвязка</div><div class="obj-value">${n(bs.len, 0)} м.п.</div></div>` : ''}
+      ${ter ? `<div class="obj-item"><div class="obj-label">Терраса</div><div class="obj-value">${n(ter.mp, 0)} м.п.</div></div>` : ''}
+    </div>
+
+    <div class="receipt-body">${html}</div>
+
+    <div class="receipt-total">
+      <div>
+        <div class="rt-label">Стеновой комплект без сборки</div>
+        <div class="rt-price sm">${fmt(r.noAsmFinal)}</div>
+        <div class="rt-label" style="margin-top:18px">Со сборкой — кровля, обвязка, терраса</div>
+        <div class="rt-price">${fmt(r.withAsmFinal)}</div>
+        <div class="rt-sub">Без учёта доставки, лаг и разъездов рабочих · расчёт ориентировочный</div>
+      </div>
+      <div class="rt-breakdown">
+        <div class="rt-bd-title">Состав цены со сборкой</div>
+        <div>Стены и перегородки — ${fmt(w.withAssembly)}</div>
+        ${rf  ? `<div>Кровля — ${fmt(rf.clientPrice)}</div>` : ''}
+        ${bs  ? `<div>Нижняя обвязка — ${fmt(bs.price)}</div>` : ''}
+        ${ter ? `<div>Терраса — ${fmt(ter.withAssembly)}</div>` : ''}
+        ${pst ? `<div>Опорные столбы — ${fmt(pst.price)}</div>` : ''}
+        ${r.cedar  ? `<div>Кедр — ${fmt(r.cedar)}</div>` : ''}
+        ${r.drying ? `<div>Камерная сушка — ${fmt(r.drying)}</div>` : ''}
+        ${r.discNo ? `<div style="color:#F0A0A0">Скидка на сруб без сборки — −${fmt(r.discNo)}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      Данный расчёт является ориентировочным коммерческим предложением и не является договором. Точная стоимость определяется после замера и согласования проекта. Цены актуальны на дату составления расчёта. Доставка материала, лаги перекрытий и разъезды монтажной бригады рассчитываются отдельно.
+    </div>
+
+    <div class="receipt-footer">
+      <div class="ft-text">
+        <div style="font-weight:600;margin-bottom:4px">Калькулятор срубов</div>
+        <div>Профилированный брус · Рубка в чашу · Монтаж под ключ</div>
+      </div>
+      <div class="ft-stamp">СРУБ<br>РАСЧЁТ</div>
+    </div>
+  `;
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Панель администратора — Калькулятор срубов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest: #1C3828;
+  --forest-mid: #2D5240;
+  --forest-light: #3D6B53;
+  --cream: #F5F0E8;
+  --cream-dark: #EAE3D5;
+  --oak: #C8872A;
+  --oak-light: #E8A84A;
+  --text: #1A1A1A;
+  --text-muted: #666;
+  --white: #FFFFFF;
+  --border: #D8D0C0;
+  --shadow: 0 4px 24px rgba(28,56,40,0.12);
+  --radius: 12px;
+  --red: #dc3545;
+  --green: #198754;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+header {
+  background: var(--forest);
+  padding: 0;
+}
+.header-wood {
+  background:
+    repeating-linear-gradient(92deg, transparent, transparent 180px, rgba(255,255,255,0.03) 180px, rgba(255,255,255,0.03) 182px),
+    repeating-linear-gradient(88deg, transparent, transparent 90px, rgba(0,0,0,0.04) 90px, rgba(0,0,0,0.04) 91px);
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left h1 { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 26px; font-weight: 700; }
+.header-left p { color: rgba(245,240,232,0.55); font-size: 13px; margin-top: 4px; }
+
+.header-nav { background: var(--forest-mid); padding: 0 40px; display: flex; border-top: 1px solid rgba(255,255,255,0.06); }
+.header-nav a { color: rgba(245,240,232,0.6); text-decoration: none; font-size: 13px; padding: 12px 18px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.header-nav a:hover, .header-nav a.active { color: var(--oak-light); border-bottom-color: var(--oak); }
+
+.container { max-width: 900px; margin: 0 auto; padding: 36px 20px 56px; }
+
+/* ─── AUTH OVERLAY ──────────── */
+.auth-overlay {
+  position: fixed; inset: 0;
+  background: rgba(28,56,40,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+.auth-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 40px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.auth-box h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 8px; color: var(--forest); }
+.auth-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.auth-input {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 16px;
+  font-size: 16px; font-family: 'Inter', sans-serif; margin-bottom: 16px;
+  text-align: center; letter-spacing: 4px;
+}
+.auth-input:focus { outline: none; border-color: var(--forest-light); }
+.auth-btn {
+  width: 100%; background: var(--forest); color: var(--white); border: none; border-radius: 8px;
+  padding: 13px; font-size: 15px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; transition: background 0.2s;
+}
+.auth-btn:hover { background: var(--forest-light); }
+.auth-error { color: var(--red); font-size: 13px; margin-top: 10px; }
+.auth-hint { font-size: 11px; color: var(--text-muted); margin-top: 10px; opacity: 0.7; }
+
+/* ─── CARDS ─────────────────── */
+.card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 24px; overflow: hidden; }
+.card-header { background: var(--forest); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
+.card-header h2 { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--cream); font-size: 18px; letter-spacing: 0.01em; }
+.card-header .card-hint { color: rgba(245,240,232,0.5); font-size: 12px; }
+.card-body { padding: 24px 28px 28px; }
+
+/* ─── PRICE TABLE ────────────── */
+.price-group + .price-group { margin-top: 32px; }
+.price-group h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted); margin-bottom: 4px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.price-row {
+  display: flex; align-items: center; gap: 24px; padding: 10px 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+.price-row:last-child { border-bottom: none; }
+.price-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 400; line-height: 1.45; color: var(--text); }
+.price-sublabel { display: block; font-size: 11px; line-height: 1.4; color: var(--text-muted); opacity: 0.75; margin-top: 2px; }
+.price-input-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.price-unit { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 52px; }
+.price-input {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
+  font-size: 15px; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
+  width: 120px; text-align: right; background: var(--cream);
+  transition: border-color 0.2s, background 0.2s;
+}
+.price-input:focus { outline: none; border-color: var(--forest-light); background: var(--white); }
+.price-input.changed { border-color: var(--oak); background: #FEF9F0; }
+
+/* ─── BUTTONS ────────────────── */
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.price-input.wide { width: 280px; text-align: left; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+.conn-intro { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 18px; }
+.conn-intro code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--cream-dark); padding: 1px 5px; border-radius: 4px; }
+.card-hint.ok { color: #6FCF97; }
+.card-hint.bad { color: #F0A0A0; }
+#conn-card.collapsed .card-body { display: none; }
+.btn-draft {
+  background: var(--white); color: var(--forest); border: 1.5px solid var(--forest);
+  border-radius: 8px; padding: 12px 22px; font-family: 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+}
+.btn-draft:hover { background: var(--cream-dark); }
+.btn-note {
+  margin-top: 14px; font-size: 12px; line-height: 1.6; color: var(--text-muted);
+}
+.btn-note b { font-weight: 600; color: var(--text); }
+.btn-note code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 11.5px;
+  background: var(--cream-dark); padding: 1px 5px; border-radius: 4px;
+}
+
+.modal {
+  position: fixed; inset: 0; background: rgba(20,32,25,0.55);
+  display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 200;
+}
+.modal-box {
+  background: var(--white); border-radius: var(--radius); padding: 28px;
+  width: 100%; max-width: 620px; box-shadow: 0 24px 70px rgba(0,0,0,0.3);
+}
+.modal-box h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--forest); margin-bottom: 8px; }
+.modal-box p { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 16px; }
+.modal-box code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+  background: var(--cream-dark); padding: 1px 5px; border-radius: 4px;
+}
+.modal-box textarea {
+  width: 100%; height: 260px; resize: vertical;
+  font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.5;
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 12px;
+  background: var(--cream); color: var(--text);
+}
+.modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+.btn-save {
+  background: var(--green); color: var(--white); border: none; border-radius: 8px;
+  padding: 12px 28px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.btn-save:hover { background: #157347; }
+.btn-reset {
+  background: none; color: var(--red); border: 1.5px solid var(--red); border-radius: 8px;
+  padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-reset:hover { background: var(--red); color: white; }
+.btn-back {
+  background: none; color: var(--forest); border: 1.5px solid var(--forest); border-radius: 8px;
+  padding: 10px 20px; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+.toast {
+  position: fixed; bottom: 30px; right: 30px;
+  background: var(--forest); color: var(--white);
+  border-radius: 10px; padding: 14px 24px;
+  font-size: 14px; font-weight: 500;
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.3s;
+  box-shadow: var(--shadow);
+  z-index: 9999;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.updated-badge {
+  background: var(--cream-dark); border-radius: 6px; padding: 10px 14px;
+  font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+}
+</style>
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<!-- AUTH OVERLAY -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <h2>Панель цен</h2>
+    <p>Введите пароль для доступа к настройкам</p>
+    <input class="auth-input" type="password" id="auth-input" placeholder="••••" onkeyup="if(event.key==='Enter')authCheck()">
+    <button class="auth-btn" onclick="authCheck()">Войти</button>
+    <div class="auth-error" id="auth-error"></div>
+    <div class="auth-hint" id="auth-hint"></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-wood">
+    <div class="header-left">
+      <h1>Панель администратора</h1>
+      <p>Управление ценами калькулятора</p>
+    </div>
+    <a href="index.html" class="btn-back">Калькулятор</a>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Калькулятор</a>
+    <a href="admin.html" class="active">Панель цен</a>
+  </nav>
+</header>
+
+<div class="container" id="admin-content" style="display:none">
+
+  <div class="card" id="conn-card">
+    <div class="card-header">
+      <h2>Подключение</h2>
+      <span class="card-hint" id="conn-state">не настроено</span>
+    </div>
+    <div class="card-body">
+      <p class="conn-intro">
+        Панель сама записывает цены в файл <code>prices.json</code> вашего репозитория.
+        Нужен токен доступа — вводится один раз и хранится только в этом браузере.
+      </p>
+      <div class="price-group">
+        <div class="price-row">
+          <div class="price-label">Репозиторий
+            <span class="price-sublabel">в формате логин/название</span>
+          </div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="gh_repo" placeholder="chapallashik/название-репозитория" spellcheck="false">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Ветка
+            <span class="price-sublabel">обычно main</span>
+          </div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="gh_branch" value="main" spellcheck="false">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Токен доступа
+            <span class="price-sublabel">Fine-grained token с правом Contents: Read and write</span>
+          </div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="password" id="gh_token" placeholder="github_pat_..." spellcheck="false">
+          </div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn-draft" onclick="saveConn()">Сохранить подключение</button>
+        <button class="btn-draft" onclick="testConn()">Проверить</button>
+        <button class="btn-draft" onclick="shareConn()">Ссылка для коллеги</button>
+        <button class="btn-reset" onclick="clearConn()">Отключить</button>
+      </div>
+      <p class="btn-note" style="margin-top:14px">
+        Где взять токен: GitHub → Settings → Developer settings → Personal access tokens →
+        Fine-grained tokens → Generate new token. В <b>Repository access</b> выбрать свой репозиторий,
+        в <b>Permissions → Repository permissions → Contents</b> поставить <b>Read and write</b>.
+        Срок действия лучше поставить максимальный, иначе публикация перестанет работать после истечения.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Доступ</h2>
+      <span class="card-hint">пароль к этой панели</span>
+    </div>
+    <div class="card-body">
+      <p class="conn-intro">
+        Калькулятор открыт всем без пароля — пароль закрывает только эту панель.
+        Он не хранится в открытом виде: в репозиторий уходит лишь его хеш.
+        Новый пароль начинает действовать на всех устройствах.
+      </p>
+      <div class="price-group">
+        <div class="price-row">
+          <div class="price-label">Новый пароль
+            <span class="price-sublabel">не короче 6 символов</span>
+          </div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="password" id="pass_new" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Повторите пароль</div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="password" id="pass_rep" autocomplete="new-password">
+          </div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn-draft" id="btn-pass" onclick="changePass()">Сменить пароль</button>
+      </div>
+      <p class="btn-note" style="margin-top:14px">
+        Пароль отсекает случайных посетителей. Реальную защиту даёт токен: без него
+        изменить цены нельзя, даже зная пароль. Поэтому храните токен аккуратнее пароля.
+      </p>
+    </div>
+  </div>
+
+  <div class="updated-badge">
+    <span id="last-updated">Цены не обновлялись</span>
+    <span style="margin-left:auto; opacity:0.6">Источник цен — prices.json в репозитории</span>
+  </div>
+
+  <!-- Блок 1: Материал -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Материал — Брус сосна</h2>
+      <span class="card-hint">руб/м³</span>
+    </div>
+    <div class="card-body">
+      <div class="price-group">
+        <h3>Цена материала (сосна), ₽/м³</h3>
+        <div class="price-row">
+          <div class="price-label">100 × 150 мм<div class="price-sublabel">Сосна, профилированный</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="pine_100" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">150 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="pine_150" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">180 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="pine_180" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">200 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="pine_200" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="price-group">
+        <h3>Работа — профилирование + рубка чаш, ₽/м³</h3>
+        <div class="price-row">
+          <div class="price-label">100 мм<div class="price-sublabel">+750+750 за сечение 100 мм</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="work_100" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">150 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="work_150" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">180 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="work_180" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">200 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="work_200" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="price-group">
+        <h3>Монтаж сруба, ₽/м³</h3>
+        <div class="price-row">
+          <div class="price-label">100 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="assembly_100" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">150 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="assembly_150" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">180 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="assembly_180" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">200 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="assembly_200" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="price-group">
+        <h3>Маржа и запасы</h3>
+        <div class="price-row">
+          <div class="price-label">Запас на брус<div class="price-sublabel">Добавляется к объёму перед расчётом</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="beam_reserve" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Маржа на материал/работу</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="margin_main" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Маржа на монтаж</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="margin_assembly" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Камерная сушка</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="drying" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Скидка по умолчанию<span style="display:block;font-size:11px;opacity:.6;font-weight:400;">Подставляется в калькулятор при новом расчёте, менеджер может менять её там для конкретного клиента. Действует только на сруб без сборки.</span></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="discount" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Блок 2: Джут и шканты -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Джут и шканты</h2>
+      <span class="card-hint">расходные материалы</span>
+    </div>
+    <div class="card-body">
+      <div class="price-group">
+        <h3>Цена джута, ₽/м.п.</h3>
+        <div class="price-row">
+          <div class="price-label">Для бруса 100 мм<div class="price-sublabel">Ширина 50 мм, П-образный профиль</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="jute_100" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Для бруса 150 мм<div class="price-sublabel">Ширина 80 мм</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="jute_150" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Для бруса 180 мм<div class="price-sublabel">Ширина 80 мм</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="jute_180" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Для бруса 200 мм<div class="price-sublabel">Ширина 100 мм</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="jute_200" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Запас на джут</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="jute_reserve" value="" step="5">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="price-group">
+        <h3>Шканты</h3>
+        <div class="price-row">
+          <div class="price-label">Цена шканта<div class="price-sublabel">250 мм, диаметр 25 мм. Количество ≈ м.п.</div></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="dowel" value="" step="1">
+            <span class="price-unit">₽/шт</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Блок 3: Кровля -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Кровля</h2>
+      <span class="card-hint">цены на материалы и работу</span>
+    </div>
+    <div class="card-body">
+      <div class="price-group">
+        <h3>Материалы</h3>
+        <div class="price-row">
+          <div class="price-label">Доска обрезная (стропила)</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_board_price" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Доска обрезная (обрешётка)</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_obreshetka_price" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Мембрана — цена рулона</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_membrane_roll" value="">
+            <span class="price-unit">₽/рул.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Площадь рулона мембраны</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_membrane_roll_area" value="" step="5">
+            <span class="price-unit">м²</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Металлочерепица</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_tiles_sqm" value="">
+            <span class="price-unit">₽/м²</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Метизы и крепёж</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_hardware_sqm" value="">
+            <span class="price-unit">₽/м²</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Доборы (% от материалов)</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_addon_pct" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+      </div>
+      <div class="price-group">
+        <h3>Работа и опции</h3>
+        <div class="price-row">
+          <div class="price-label">Работа по монтажу кровли</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_work_sqm" value="">
+            <span class="price-unit">₽/м²</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Фронтон каркасный (холодный)</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_fronton_sqm" value="">
+            <span class="price-unit">₽/м²</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Тёплая кровля — утепление и плёнки</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_warm_mat" value="">
+            <span class="price-unit">₽/м²</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Тёплая кровля — работа</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_warm_work" value="">
+            <span class="price-unit">₽/м²</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Маржа на кровлю</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="roof_margin" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Блок 4: Обвязка -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Нижняя обвязка (лиственница)</h2>
+    </div>
+    <div class="card-body">
+      <div class="price-group">
+      <h3>Материал, работа и маржа</h3>
+      <div class="price-row">
+        <div class="price-label">Цена лиственницы</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_larch" value="">
+          <span class="price-unit">₽/м³</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Работа по обвязке</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_work" value="">
+          <span class="price-unit">₽/м³</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Маржа на обвязку</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_margin" value="" step="1">
+          <span class="price-unit">%</span>
+        </div>
+      </div>
+      </div>
+
+      <div class="price-group">
+      <h3>Сечение бруса обвязки — своё для каждого сечения сруба</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin:-4px 0 10px;">Клиент со срубом одной толщины может взять обвязку другого сечения — задайте здесь, какой брус обвязки подставляется по умолчанию для каждого сечения сруба.</p>
+      <div class="price-row">
+        <div class="price-label">Сруб 100 мм → обвязка, ширина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_w_100" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Сруб 100 мм → обвязка, толщина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_h_100" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Сруб 150 мм → обвязка, ширина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_w_150" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Сруб 150 мм → обвязка, толщина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_h_150" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Сруб 180 мм → обвязка, ширина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_w_180" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Сруб 180 мм → обвязка, толщина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_h_180" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Сруб 200 мм → обвязка, ширина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_w_200" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-label">Сруб 200 мм → обвязка, толщина</div>
+        <div class="price-input-wrap">
+          <input class="price-input" type="number" data-key="base_h_200" value="" step="10">
+          <span class="price-unit">мм</span>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Блок 5: Терраса, столбы, надбавки -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Терраса, столбы и надбавки</h2>
+    </div>
+    <div class="card-body">
+        <div class="price-group">
+          <h3>Терраса — работа по подготовке, ₽/м³</h3>
+        <div class="price-row">
+          <div class="price-label">100 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_work_100" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">150 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_work_150" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">180 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_work_180" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">200 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_work_200" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        </div>
+        <div class="price-group">
+          <h3>Терраса — джут, ₽/м.п.</h3>
+        <div class="price-row">
+          <div class="price-label">100 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_jute_100" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">150 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_jute_150" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">180 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_jute_180" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">200 × 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_jute_200" value="" step="0.1">
+            <span class="price-unit">₽/м.п.</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Запас джут/шканты по террасе</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="ter_jute_reserve" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+        </div>
+        <div class="price-group">
+          <h3>Опорные столбы</h3>
+        <div class="price-row">
+          <div class="price-label">Материал</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_price" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Работа, столб 100 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_work_100" value="">
+            <span class="price-unit">₽/шт</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Работа, столб 150 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_work_150" value="">
+            <span class="price-unit">₽/шт</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Работа, столб 180 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_work_180" value="">
+            <span class="price-unit">₽/шт</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Работа, столб 200 мм</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_work_200" value="">
+            <span class="price-unit">₽/шт</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Маржа</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_margin" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+
+        <h3 style="margin-top:18px;">Сечение столба — выбирается на сайте независимо от сруба</h3>
+        <div class="price-row">
+          <div class="price-label">Столб 100, ширина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_w_100" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Столб 100, толщина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_h_100" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Столб 150, ширина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_w_150" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Столб 150, толщина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_h_150" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Столб 180, ширина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_w_180" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Столб 180, толщина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_h_180" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Столб 200, ширина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_w_200" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Столб 200, толщина</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="post_h_200" value="" step="10">
+            <span class="price-unit">мм</span>
+          </div>
+        </div>
+        </div>
+        <div class="price-group">
+          <h3>Надбавки и доп. материалы</h3>
+        <div class="price-row">
+          <div class="price-label">Кедр — доплата за м³</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="cedar_price" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Кедр — маржа</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="cedar_margin" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Камерная сушка</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="drying" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Скидка по умолчанию<span style="display:block;font-size:11px;opacity:.6;font-weight:400;">Подставляется в калькулятор при новом расчёте, менеджер может менять её там для конкретного клиента. Действует только на сруб без сборки.</span></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="discount" value="" step="1">
+            <span class="price-unit">%</span>
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Лаги и обвязка (доп.)</div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="extra_lag_price" value="">
+            <span class="price-unit">₽/м³</span>
+          </div>
+        </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-save" id="btn-publish" onclick="publish()">Опубликовать для всех</button>
+    <button class="btn-draft" onclick="saveDraft()">Сохранить черновик</button>
+    <button class="btn-reset" onclick="dropDraft()">Убрать черновик</button>
+    <button class="btn-reset" onclick="resetAll()">Заводские значения</button>
+  </div>
+  <p class="btn-note">
+    <b>Опубликовать</b> — записывает цены в репозиторий, у всех обновится в течение минуты.<br>
+    <b>Черновик</b> — цены сохраняются только в этом браузере, чтобы прикинуть расчёт, не трогая общие.
+  </p>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ─── DEFAULT PRICES (same as index.html) ───────
+const DEFAULT_PRICES = {
+  // ── Стеновой комплект (лист «= Расчет куб деньги этап 2. скр»)
+  pine_100: 21000, pine_150: 21000, pine_180: 21000, pine_200: 21000,   // материал сосна, ₽/м³ (G1)
+  work_100: 10000, work_150: 7000,  work_180: 7000,  work_200: 7000,    // профилирование+рубка чаш, ₽/м³ (H2:H5)
+  assembly_100: 8500, assembly_150: 7000, assembly_180: 7000, assembly_200: 7000, // монтаж, ₽/м³ (H8:H11)
+  beam_reserve: 7,        // запас по брусу, % (E1)
+  margin_main: 25,        // маржа на комплект, % (J1)
+  margin_assembly: 10,    // маржа на монтаж/джут, % (J7)
+  jute_100: 6, jute_150: 6, jute_180: 14.8, jute_200: 14.8,             // джут ₽/м.п. (G14/G19/G24/G28)
+  dowel: 10,              // шкант, ₽/шт
+  jute_reserve: 20,       // запас джут/шканты по срубу, % (C14)
+  ter_jute_reserve: 30,   // запас джут/шканты по террасе, % (лист террасы, C14)
+
+  // ── Терраса: вылет + коньковая балка (лист «=Тер. Расчет в деньги этап2 СКР»)
+  ter_work_100: 10000, ter_work_150: 7000, ter_work_180: 7000, ter_work_200: 7000,
+  // по террасе джут берётся из прайс-таблицы рулонов (E50:E52), а не по 6 ₽ как по срубу
+  ter_jute_100: 6, ter_jute_150: 6, ter_jute_180: 14.8, ter_jute_200: 14.8,
+
+  // ── Опорные столбы (лист «Расчет по столбам опор СКР»)
+  post_price: 21000,      // ₽/м³ (D12)
+  post_work_100: 2000, post_work_150: 2000, post_work_180: 2500, post_work_200: 2500, // ₽/шт (C14:F14)
+  // Сечение столба, мм — своё для каждого сечения сруба (по умолчанию как было зашито в коде)
+  post_w_100: 100, post_h_100: 100, post_w_150: 150, post_h_150: 150,
+  post_w_180: 180, post_h_180: 180, post_w_200: 200, post_h_200: 200,
+  post_margin: 25,        // % (C19)
+
+  // ── Кровля (лист «Цена кровли ч. 2. СКР»)
+  roof_work_sqm: 1600,          // работа, ₽/м² (B4)
+  roof_board_price: 21000,      // доска, ₽/м³ (B3)
+  roof_obreshetka_price: 21000,
+  rafter_w: 0.05,  rafter_h: 0.15, rafter_l: 6,   // стропило 50×150×6
+  obr_w: 0.025,    obr_h: 0.15,    obr_l: 6,      // обрешётка 25×150×6
+  roof_membrane_roll: 10000, roof_membrane_roll_area: 70,   // мембрана (B9/C9)
+  roof_tiles_sqm: 1000,         // металлочерепица, ₽/м² (B15)
+  roof_hardware_sqm: 100,       // метизы, ₽/м² (B16)
+  roof_warm_mat: 1000,          // тёплая кровля: утепление+плёнки, ₽/м² (B17)
+  roof_warm_work: 600,          // тёплая кровля: работа, ₽/м² (B18)
+  roof_addon_pct: 10,           // доборы, % от материалов (F19)
+  roof_fronton_sqm: 3000,       // каркасный фронтон, ₽/м² (B20)
+  roof_margin: 10,              // маржа на кровлю, % (E27)
+
+  // ── Нижняя обвязка, лиственница (лист «=Обвязка этап 2. СКР»)
+  base_larch: 23000, base_work: 11000, base_margin: 25,
+  // Сечение бруса обвязки, мм — своё для каждого сечения сруба (по умолчанию как было зашито в коде)
+  base_w_100: 100, base_h_100: 150, base_w_150: 150, base_h_150: 150,
+  base_w_180: 200, base_h_180: 200, base_w_200: 200, base_h_200: 200,
+
+  // ── Надбавки
+  drying: 5000,           // камерная сушка, ₽/м³ (лист «Разное » C6)
+  cedar_price: 4000,      // кедр, ₽/м³ (лист 2, столбец R)
+  cedar_margin: 25,       // % к доплате за кедр
+  discount: 10,           // акционная скидка, % (лист «Финал по Акции» C10)
+
+  // ── Доп. материалы для варианта без сборки (лист «Для заказчика »)
+  extra_lag_price: 23000, // лаги и обвязка, ₽/м³
+};
+
+// ═══════════════════════════════════════════════
+// ВХОД В ПАНЕЛЬ
+// Пароль нигде не хранится в открытом виде: в prices.json лежит
+// только PBKDF2-хеш с солью. Сменить пароль можно прямо из панели —
+// новый хеш публикуется вместе с ценами и действует у всех.
+// ═══════════════════════════════════════════════
+const DEFAULT_PASS = 'admin123';
+const PBKDF2_ITER = 200000;
+let PUBLISHED_AUTH = null;      // {salt, hash, iter} из prices.json
+
+function hex(buf) {
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hashPass(pass, saltHex, iter) {
+  const salt = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+  return hex(bits);
+}
+
+async function makeAuth(pass) {
+  const saltHex = hex(crypto.getRandomValues(new Uint8Array(16)));
+  return { salt: saltHex, iter: PBKDF2_ITER, hash: await hashPass(pass, saltHex, PBKDF2_ITER) };
+}
+
+// Хеш нужен до входа, поэтому читаем файл заранее
+async function preloadAuth() {
+  try {
+    const res = await fetch('prices.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc && doc.auth && doc.auth.hash) PUBLISHED_AUTH = doc.auth;
+    }
+  } catch (e) {}
+  const hint = document.getElementById('auth-hint');
+  if (hint) hint.textContent = PUBLISHED_AUTH ? '' : 'Пароль не менялся: admin123';
+}
+
+const CONN_FROM_LINK = adoptConnFromHash();
+
+async function authCheck() {
+  const input = document.getElementById('auth-input');
+  const err = document.getElementById('auth-error');
+  const val = input.value;
+  err.textContent = '';
+
+  let ok;
+  if (PUBLISHED_AUTH) {
+    err.textContent = 'Проверяем…';
+    ok = (await hashPass(val, PUBLISHED_AUTH.salt, PUBLISHED_AUTH.iter || PBKDF2_ITER)) === PUBLISHED_AUTH.hash;
+  } else {
+    ok = val === DEFAULT_PASS;   // пароль ещё не задавали
+  }
+  err.textContent = '';
+
+  if (!ok) {
+    err.textContent = 'Неверный пароль';
+    input.value = '';
+    return;
+  }
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('admin-content').style.display = 'block';
+  fillConn();
+  loadPrices();
+  if (getConn()) testConn();
+  if (CONN_FROM_LINK) showToast('Подключение получено по ссылке — настраивать ничего не нужно');
+  if (!PUBLISHED_AUTH) showToast('Используется пароль по умолчанию — смените его в блоке «Доступ»');
+}
+
+// ─── Смена пароля ───────────────────────────────
+async function changePass() {
+  const p1 = document.getElementById('pass_new').value;
+  const p2 = document.getElementById('pass_rep').value;
+  if (p1.length < 6) { showToast('Пароль должен быть не короче 6 символов'); return; }
+  if (p1 !== p2)     { showToast('Пароли не совпадают'); return; }
+  if (!getConn())    { showToast('Сначала настройте подключение к репозиторию'); return; }
+
+  const btn = document.getElementById('btn-pass');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Меняем…';
+  try {
+    const auth = await makeAuth(p1);
+    await pushFile(buildJSON(auth), 'Смена пароля панели');
+    PUBLISHED_AUTH = auth;
+    document.getElementById('pass_new').value = '';
+    document.getElementById('pass_rep').value = '';
+    showToast('Пароль изменён — действует на всех устройствах');
+  } catch (e) {
+    showToast(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// ИСТОЧНИК ЦЕН
+// prices.json в репозитории — единый прайс для всех устройств.
+// localStorage — только личный черновик, привязанный к версии
+// опубликованного файла. Появилась новая версия — черновик снимается.
+// ═══════════════════════════════════════════════
+let PUBLISHED = { ...DEFAULT_PRICES };
+let PUBLISHED_AT = null;
+let HAS_FILE = false;
+
+async function loadPrices() {
+  try {
+    const res = await fetch('prices.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc && doc.prices) {
+        PUBLISHED = { ...DEFAULT_PRICES, ...doc.prices };
+        PUBLISHED_AT = doc.updated || null;
+        HAS_FILE = true;
+        if (doc.auth && doc.auth.hash) PUBLISHED_AUTH = doc.auth;
+      }
+    }
+  } catch (e) {}
+
+  let prices = { ...PUBLISHED };
+  let draftAt = null;
+  try {
+    const raw = localStorage.getItem('sruby_draft');
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.prices && d.basedOn === (PUBLISHED_AT || 'defaults')) {
+        prices = { ...prices, ...d.prices };
+        draftAt = d.savedAt;
+      } else {
+        localStorage.removeItem('sruby_draft');
+      }
+    }
+  } catch (e) {}
+
+  document.querySelectorAll('.price-input[data-key]').forEach(input => {
+    const k = input.dataset.key;
+    if (prices[k] !== undefined) input.value = prices[k];
+    if (draftAt && prices[k] !== PUBLISHED[k]) input.classList.add('changed');
+    input.addEventListener('input', () => input.classList.add('changed'));
+  });
+
+  const badge = document.getElementById('last-updated');
+  if (!HAS_FILE) {
+    badge.textContent = 'prices.json не загрузился — показаны цены из кода';
+  } else if (draftAt) {
+    badge.textContent = 'Опубликовано ' + PUBLISHED_AT
+      + ' · есть несохранённый черновик от ' + new Date(draftAt).toLocaleString('ru-RU');
+  } else {
+    badge.textContent = 'Опубликовано ' + PUBLISHED_AT + ' · цены едины для всех устройств';
+  }
+}
+
+function collect() {
+  const prices = { ...DEFAULT_PRICES };
+  document.querySelectorAll('.price-input[data-key]').forEach(input => {
+    prices[input.dataset.key] = parseFloat(input.value) || 0;
+  });
+  return prices;
+}
+
+// ─── ЧЕРНОВИК: только на этом устройстве ───────
+function saveDraft() {
+  localStorage.setItem('sruby_draft', JSON.stringify({
+    prices: collect(),
+    basedOn: PUBLISHED_AT || 'defaults',
+    savedAt: Date.now(),
+  }));
+  loadPrices();
+  showToast('Черновик сохранён — виден только в этом браузере');
+}
+
+function dropDraft() {
+  if (!confirm('Удалить черновик и вернуться к опубликованным ценам?')) return;
+  localStorage.removeItem('sruby_draft');
+  document.querySelectorAll('.price-input').forEach(i => i.classList.remove('changed'));
+  loadPrices();
+  showToast('Черновик удалён');
+}
+
+function resetAll() {
+  if (!confirm('Подставить заводские значения во все поля? Публикация при этом не произойдёт.')) return;
+  document.querySelectorAll('.price-input[data-key]').forEach(input => {
+    input.value = DEFAULT_PRICES[input.dataset.key];
+    input.classList.add('changed');
+  });
+  showToast('Подставлены заводские значения — не забудьте опубликовать');
+}
+
+// ─── ПУБЛИКАЦИЯ: файл для репозитория ───────────
+function buildJSON(authOverride) {
+  const d = new Date();
+  const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+              + '-' + String(d.getDate()).padStart(2, '0')
+              + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const auth = authOverride || PUBLISHED_AUTH;
+  const doc = {
+    updated: stamp,
+    comment: 'Файл обновляется автоматически из панели цен. Вручную не редактировать.',
+  };
+  if (auth) doc.auth = auth;      // PBKDF2-хеш пароля панели, не сам пароль
+  doc.prices = collect();
+  return JSON.stringify(doc, null, 2) + '\n';
+}
+
+// ═══════════════════════════════════════════════
+// ПОДКЛЮЧЕНИЕ К РЕПОЗИТОРИЮ
+// Панель пишет prices.json напрямую через GitHub API.
+// Токен хранится только в этом браузере и никуда больше не уходит.
+// ═══════════════════════════════════════════════
+const GH_PATH = 'prices.json';
+
+function getConn() {
+  try { return JSON.parse(localStorage.getItem('sruby_gh') || 'null'); } catch { return null; }
+}
+
+function fillConn() {
+  const c = getConn();
+  if (!c) return;
+  document.getElementById('gh_repo').value = c.repo || '';
+  document.getElementById('gh_branch').value = c.branch || 'main';
+  document.getElementById('gh_token').value = c.token || '';
+}
+
+function connState(text, cls) {
+  const el = document.getElementById('conn-state');
+  el.textContent = text;
+  el.className = 'card-hint' + (cls ? ' ' + cls : '');
+}
+
+// Передача настроек коллеге: всё уходит в часть адреса после #,
+// которую браузер НЕ отправляет на сервер и не пишет в логи Pages.
+function shareConn() {
+  const c = getConn();
+  if (!c) { showToast('Сначала сохраните подключение'); return; }
+  const payload = toBase64(JSON.stringify(c));
+  const link = location.origin + location.pathname + '#conn=' + encodeURIComponent(payload);
+  navigator.clipboard.writeText(link)
+    .then(() => showToast('Ссылка скопирована. Отправьте её лично, не в общий чат'))
+    .catch(() => prompt('Скопируйте ссылку и отправьте лично:', link));
+}
+
+// Приём настроек из ссылки при первом открытии
+function adoptConnFromHash() {
+  const m = location.hash.match(/conn=([^&]+)/);
+  if (!m) return false;
+  try {
+    const json = new TextDecoder().decode(
+      Uint8Array.from(atob(decodeURIComponent(m[1])), ch => ch.charCodeAt(0)));
+    const c = JSON.parse(json);
+    if (c && c.repo && c.token) {
+      localStorage.setItem('sruby_gh', JSON.stringify({
+        repo: c.repo, branch: c.branch || 'main', token: c.token,
+      }));
+      history.replaceState(null, '', location.pathname);   // вычищаем адресную строку
+      return true;
+    }
+  } catch (e) {}
+  history.replaceState(null, '', location.pathname);
+  return false;
+}
+
+function saveConn() {
+  const repo = document.getElementById('gh_repo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, '');
+  const branch = document.getElementById('gh_branch').value.trim() || 'main';
+  const token = document.getElementById('gh_token').value.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { showToast('Репозиторий указывается как логин/название'); return; }
+  if (!token) { showToast('Вставьте токен доступа'); return; }
+  localStorage.setItem('sruby_gh', JSON.stringify({ repo, branch, token }));
+  showToast('Подключение сохранено');
+  testConn();
+}
+
+function clearConn() {
+  if (!confirm('Удалить подключение из этого браузера?')) return;
+  localStorage.removeItem('sruby_gh');
+  document.getElementById('gh_token').value = '';
+  connState('не настроено');
+  showToast('Подключение удалено');
+}
+
+async function ghGet() {
+  const c = getConn();
+  if (!c) throw new Error('Подключение не настроено');
+  if (!navigator.onLine) throw new Error('Нет интернета — проверить связь с репозиторием нельзя');
+  const url = `https://api.github.com/repos/${c.repo}/contents/${GH_PATH}?ref=${c.branch}&t=${Date.now()}`;
+  const res = await fetch(url, {
+    headers: { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github+json' },
+    cache: 'no-store',
+  });
+  if (res.status === 401) throw new Error('Токен не принят — проверьте, что он не истёк');
+  if (res.status === 403) throw new Error('Нет прав на запись — в токене нужно Contents: Read and write');
+  if (res.status === 404) throw new Error('Не найден репозиторий, ветка или файл prices.json');
+  if (!res.ok) throw new Error('GitHub ответил ошибкой ' + res.status);
+  return res.json();
+}
+
+async function testConn() {
+  connState('проверяем…');
+  try {
+    const f = await ghGet();
+    connState('подключено · ' + getConn().repo, 'ok');
+    showToast('Связь есть, файл найден (' + Math.round(f.size / 1024 * 10) / 10 + ' КБ)');
+  } catch (e) {
+    connState(e.message, 'bad');
+    showToast(e.message);
+  }
+}
+
+// UTF-8 → base64 (btoa не умеет кириллицу напрямую)
+function toBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+
+// Запись файла в репозиторий
+async function pushFile(text, message) {
+  const c = getConn();
+  if (!c) throw new Error('Подключение не настроено');
+  if (!navigator.onLine) throw new Error('Нет интернета — опубликовать цены сейчас нельзя');
+  const cur = await ghGet();                       // нужен sha текущего файла
+  const res = await fetch(`https://api.github.com/repos/${c.repo}/contents/${GH_PATH}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: 'Bearer ' + c.token,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message, content: toBase64(text), sha: cur.sha, branch: c.branch }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(res.status === 409
+      ? 'Файл кто-то изменил параллельно — обновите страницу и повторите'
+      : 'Не удалось сохранить: ' + res.status + ' ' + t.slice(0, 120));
+  }
+  return res.json();
+}
+
+async function publish() {
+  if (!getConn()) {
+    showToast('Сначала настройте подключение в блоке «Подключение»');
+    document.getElementById('gh_repo').focus();
+    return;
+  }
+  const btn = document.getElementById('btn-publish');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Публикуем…';
+  try {
+    await pushFile(buildJSON(), 'Обновление цен из панели');
+    localStorage.removeItem('sruby_draft');
+    document.querySelectorAll('.price-input').forEach(i => i.classList.remove('changed'));
+    await loadPrices();
+    showToast('Цены опубликованы — появятся у всех в течение минуты');
+  } catch (e) {
+    showToast(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+preloadAuth();
+
+// Allow pressing Enter in auth
+document.getElementById('auth-input').addEventListener('keyup', e => {
+  if (e.key === 'Enter') authCheck();
+});
+</script>
+</body>
+</html>
