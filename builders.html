@@ -770,21 +770,52 @@ footer {
 .calculating { animation: pulse 1s infinite; }
 
 /* ─── СТРОИТЕЛИ: доп. стили ───────────────────── */
-.bt-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.bt-table-wrap { overflow-x: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; }
+.bt-table { width: 100%; min-width: 920px; border-collapse: separate; border-spacing: 0; font-size: 13px; table-layout: fixed; }
+.bt-table col.c-section  { width: 9%; }
+.bt-table col.c-name     { width: 27%; }
+.bt-table col.c-sec      { width: 11%; }
+.bt-table col.c-vol      { width: 10%; }
+.bt-table col.c-price    { width: 10%; }
+.bt-table col.c-cost     { width: 10%; }
+.bt-table col.c-mpct     { width: 7%;  }
+.bt-table col.c-mrub     { width: 9%;  }
+.bt-table col.c-final    { width: 13%; }
 .bt-table th {
   text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em;
-  color: var(--text-muted); padding: 8px 6px; border-bottom: 2px solid var(--forest);
+  color: rgba(245,240,232,0.75); background: var(--forest);
+  padding: 11px 10px; line-height: 1.3;
+  border-right: 1px solid rgba(245,240,232,0.12);
 }
+.bt-table th:last-child { border-right: none; }
 .bt-table th.num, .bt-table td.num { text-align: right; }
-.bt-table td { padding: 9px 6px; border-bottom: 1px dashed var(--border); vertical-align: top; }
-.bt-table tr.total td { font-weight: 700; font-size: 14px; border-top: 2px solid var(--forest); border-bottom: none; }
-.bt-table .row-sub { display: block; font-size: 11px; color: var(--text-muted); }
+.bt-table td {
+  padding: 12px 10px; vertical-align: middle; line-height: 1.4;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  white-space: normal; overflow-wrap: break-word;
+}
+.bt-table td:last-child { border-right: none; }
+.bt-table td.nowrap { white-space: nowrap; }
+.bt-table tbody tr:nth-child(odd) { background: var(--white); }
+.bt-table tbody tr:nth-child(even) { background: var(--cream-dark); }
+.bt-table tr.total td {
+  font-weight: 700; font-size: 14px; background: var(--forest); color: var(--cream);
+  border-top: 2px solid var(--forest); border-bottom: none; border-right-color: rgba(245,240,232,0.15);
+  padding-top: 13px; padding-bottom: 13px;
+}
+.bt-table tr.total td.num strong { color: var(--oak-light); }
+.bt-table .row-sub { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
+.bt-table td.num strong { font-variant-numeric: tabular-nums; }
 .bt-bags-input {
   width: 70px; padding: 6px 8px; border: 1px solid var(--oak); border-radius: 6px;
   font-size: 13px; text-align: right; background: #FFF8EC;
 }
 .bt-empty { padding: 60px 24px; text-align: center; color: var(--text-muted); }
 .bt-empty a { color: var(--oak); font-weight: 600; }
+@media (max-width: 900px) {
+  #bt-scroll-hint { display: block !important; }
+}
 .bt-actions { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
 .bt-actions button {
   background: var(--oak); color: white; border: none; border-radius: 8px;
@@ -825,7 +856,7 @@ footer {
 </header>
 
 <div class="container" id="main-content" style="display:none;">
-  <div class="card" style="max-width:920px;margin:24px auto;">
+  <div class="card" style="max-width:1080px;margin:24px auto;">
     <div class="card-header">
       <h2>Сечение сруба</h2>
     </div>
@@ -837,12 +868,19 @@ footer {
         <div class="chip" data-val="200x150">200 мм</div>
       </div>
       <p class="field-hint" id="bt-hint" style="margin-top:6px;"></p>
+      <p class="field-hint" style="margin-top:2px;display:none;" id="bt-scroll-hint">← Таблица шире экрана, листайте её вбок пальцем →</p>
 
       <div class="bt-actions">
         <button onclick="downloadXlsx()">⬇ Скачать таблицу для бригады (.xlsx)</button>
       </div>
 
+      <div class="bt-table-wrap">
       <table class="bt-table" id="bt-table">
+        <colgroup>
+          <col class="c-section"><col class="c-name"><col class="c-sec">
+          <col class="c-vol"><col class="c-price"><col class="c-cost">
+          <col class="c-mpct"><col class="c-mrub"><col class="c-final">
+        </colgroup>
         <thead>
           <tr>
             <th>Раздел</th><th>Позиция</th><th>Сечение</th>
@@ -853,6 +891,7 @@ footer {
         </thead>
         <tbody id="bt-tbody"></tbody>
       </table>
+      </div>
     </div>
   </div>
 </div>
@@ -1021,17 +1060,17 @@ function render() {
   const tbody = document.getElementById('bt-tbody');
   tbody.innerHTML = ROWS.map(row => `
     <tr>
-      <td>${row.section}</td>
+      <td class="nowrap">${row.section}</td>
       <td>${row.name}${row.sub ? `<span class="row-sub">${row.sub}</span>` : ''}</td>
-      <td>${row.secLbl}</td>
-      <td class="num">${row.isBags
+      <td class="nowrap">${row.secLbl}</td>
+      <td class="num nowrap">${row.isBags
         ? `<input type="number" class="bt-bags-input" value="${row.vol}" step="0.5" min="0" onchange="onBagsChange(this.value)"> ${row.unit}`
         : `${n2(row.vol)} ${row.unit}`}</td>
-      <td class="num">${row.price != null ? fmt(row.price) : '—'}</td>
-      <td class="num">${fmt(row.cost)}</td>
-      <td class="num">${row.marginPct == null ? '—' : row.marginPct + '%'}</td>
-      <td class="num">${fmt(row.marginRub)}</td>
-      <td class="num"><strong>${fmt(row.final)}</strong></td>
+      <td class="num nowrap">${row.price != null ? fmt(row.price) : '—'}</td>
+      <td class="num nowrap">${fmt(row.cost)}</td>
+      <td class="num nowrap">${row.marginPct == null ? '—' : row.marginPct + '%'}</td>
+      <td class="num nowrap">${fmt(row.marginRub)}</td>
+      <td class="num nowrap"><strong>${fmt(row.final)}</strong></td>
     </tr>`).join('');
 
   const sumCost = ROWS.reduce((s, r) => s + r.cost, 0);
