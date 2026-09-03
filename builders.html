@@ -6,7 +6,7 @@
 <title>Смета для строителей</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
 :root {
   --forest: #1C3828;
@@ -1055,25 +1055,93 @@ function onBagsChange(v) {
   render();
 }
 
-function downloadXlsx() {
-  const data = [
-    ['Раздел', 'Позиция', 'Сечение', 'Объём', 'Ед.', 'Цена, ₽/ед.', 'Итого, ₽', 'Маржа, %', 'Маржа, ₽', 'Цена для заказчика, ₽'],
+async function downloadXlsx() {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Калькулятор срубов';
+  const ws = wb.addWorksheet('Строители', { views: [{ state: 'frozen', ySplit: 1 }] });
+
+  ws.columns = [
+    { width: 10 },  // Раздел
+    { width: 46 },  // Позиция
+    { width: 13 },  // Сечение
+    { width: 10 },  // Объём
+    { width: 8 },   // Ед.
+    { width: 13 },  // Цена/ед.
+    { width: 13 },  // Итого
+    { width: 11 },  // Маржа %
+    { width: 13 },  // Маржа ₽
+    { width: 18 },  // Цена для заказчика
   ];
-  ROWS.forEach(r => {
-    data.push([r.section, r.name + (r.sub ? ' (' + r.sub + ')' : ''), r.secLbl,
-      Number(r.vol.toFixed(3)), r.unit, r.price || '', Math.round(r.cost), (r.marginPct == null ? '—' : r.marginPct + '%'), Math.round(r.marginRub), Math.round(r.final)]);
+
+  const HEAD_FILL   = 'FF1C3828'; // тёмно-зелёный, как шапка сайта
+  const HEAD_FONT   = 'FFF5F0E8';
+  const MARGIN_FILL = 'FFD9EAD3'; // светло-зелёный — колонки маржи
+  const FINAL_FILL  = 'FF93C47D'; // насыщенный зелёный — цена для заказчика
+  const WARN_FILL   = 'FFFFF200'; // жёлтый — предупреждающая строка (синтепон)
+  const TOTAL_FILL  = 'FFEAE3D5';
+
+  const header = ws.addRow(['Раздел', 'Позиция', 'Сечение', 'Объём', 'Ед.', 'Цена, ₽/ед.', 'Итого, ₽', 'Маржа, %', 'Маржа, ₽', 'Цена для заказчика, ₽']);
+  header.eachCell(c => {
+    c.font = { bold: true, color: { argb: HEAD_FONT }, size: 11 };
+    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: HEAD_FILL } };
+    c.alignment = { vertical: 'middle', wrapText: true };
   });
+  header.height = 30;
+
+  ROWS.forEach(r => {
+    const row = ws.addRow([
+      r.section,
+      r.name + (r.sub ? ' (' + r.sub + ')' : ''),
+      r.secLbl,
+      Number(r.vol.toFixed(3)),
+      r.unit,
+      r.price || null,
+      Math.round(r.cost),
+      r.marginPct == null ? '—' : r.marginPct / 100,
+      Math.round(r.marginRub),
+      Math.round(r.final),
+    ]);
+    ['F', 'G'].forEach(col => { row.getCell(col === 'F' ? 6 : 7).numFmt = '#,##0'; });
+    row.getCell(6).numFmt = '#,##0';
+    row.getCell(7).numFmt = '#,##0';
+    row.getCell(8).numFmt = r.marginPct == null ? '@' : '0%';
+    row.getCell(9).numFmt = '#,##0';
+    row.getCell(10).numFmt = '#,##0';
+    row.getCell(8).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: r.isBags ? WARN_FILL : MARGIN_FILL } };
+    row.getCell(9).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: r.isBags ? WARN_FILL : MARGIN_FILL } };
+    row.getCell(10).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FINAL_FILL } };
+    row.getCell(10).font = { bold: true };
+    row.alignment = { vertical: 'top', wrapText: true };
+  });
+
   const sumCost = ROWS.reduce((s, r) => s + r.cost, 0);
   const sumMargin = ROWS.reduce((s, r) => s + r.marginRub, 0);
   const sumFinal = ROWS.reduce((s, r) => s + r.final, 0);
-  data.push(['Итого', '', '', '', '', '', Math.round(sumCost), '', Math.round(sumMargin), Math.round(sumFinal)]);
+  const totalRow = ws.addRow(['Итого', '', '', '', '', '', Math.round(sumCost), '', Math.round(sumMargin), Math.round(sumFinal)]);
+  totalRow.eachCell(c => {
+    c.font = { bold: true, size: 12 };
+    c.border = { top: { style: 'medium', color: { argb: 'FF1C3828' } } };
+    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: TOTAL_FILL } };
+  });
+  totalRow.getCell(7).numFmt = '#,##0';
+  totalRow.getCell(9).numFmt = '#,##0';
+  totalRow.getCell(10).numFmt = '#,##0';
 
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{ wch: 10 }, { wch: 42 }, { wch: 14 }, { wch: 9 }, { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 }];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Строители');
+  const noteRow = ws.addRow(['ВАЖНО: расчёт для сечения ' + curSec.replace('x', '×') + ' мм. Работа по сборке стенового комплекта в этом сечении — ' + fmt(STORE.P['assembly_' + curSec.split('x')[0]]) + ' ₽ за 1 м³.']);
+  ws.mergeCells(noteRow.number, 1, noteRow.number, 10);
+  noteRow.getCell(1).font = { italic: true, color: { argb: 'FF666666' }, size: 10 };
+
   const secLbl = curSec.replace('x', '-');
-  XLSX.writeFile(wb, `Смета_для_строителей_${secLbl}мм.xlsx`);
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Смета_для_строителей_${secLbl}мм.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 </script>
 </body>
