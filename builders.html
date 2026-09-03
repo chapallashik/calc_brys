@@ -808,8 +808,9 @@ footer {
 .bt-table .row-sub { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
 .bt-table td.num strong { font-variant-numeric: tabular-nums; }
 .bt-bags-input {
-  width: 70px; padding: 6px 8px; border: 1px solid var(--oak); border-radius: 6px;
-  font-size: 13px; text-align: right; background: #FFF8EC;
+  width: 52px; padding: 3px 6px; border: 1px solid var(--oak); border-radius: 5px;
+  font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.4; text-align: right;
+  background: #FFF8EC; vertical-align: middle;
 }
 .bt-empty { padding: 60px 24px; text-align: center; color: var(--text-muted); }
 .bt-empty a { color: var(--oak); font-weight: 600; }
@@ -1064,7 +1065,7 @@ function render() {
       <td>${row.name}${row.sub ? `<span class="row-sub">${row.sub}</span>` : ''}</td>
       <td class="nowrap">${row.secLbl}</td>
       <td class="num nowrap">${row.isBags
-        ? `<input type="number" class="bt-bags-input" value="${row.vol}" step="0.5" min="0" onchange="onBagsChange(this.value)"> ${row.unit}`
+        ? `<input type="number" class="bt-bags-input" value="${row.vol}" step="0.5" min="0" onchange="onBagsChange(this.value)">`
         : `${n2(row.vol)} ${row.unit}`}</td>
       <td class="num nowrap">${row.price != null ? fmt(row.price) : '—'}</td>
       <td class="num nowrap">${fmt(row.cost)}</td>
