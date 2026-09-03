@@ -402,10 +402,15 @@ input[type="number"]:focus, select:focus {
 }
 
 /* ─── РЕЖИМ МЕНЕДЖЕРА: скрыть формулы, себестоимость и маржу ─── */
-body.role-manager .res-formula,
-body.role-manager .mgr-hide {
+/* Оставляем только финальные итоги по разделам (accent) — всё
+   остальное (из чего цена сложена) скрываем целиком, не только формулы. */
+body.role-manager .res-row:not(.accent),
+body.role-manager .res-formula {
   display: none !important;
 }
+body.role-manager .mgr-full-label { display: none; }
+body.role-manager .mgr-short-label { display: inline; }
+.mgr-short-label { display: none; }
 body.role-manager .header-nav a[href="admin.html"] {
   display: none !important;
 }
@@ -2289,7 +2294,7 @@ function renderResults(results, sec) {
     + (g.fr.mp ? row('Фронтоны', n(g.fr.mp, 0) + ' м.п.', { formula: `${n(g.fr.len, 1)} м × ${g.fr.crowns} венц., объём ÷ 2` }) : '')
     + (g.openMP ? row('Вычет проёмов', '−' + n(g.openMP, 0) + ' м.п.') : '')
     + row('Объём бруса', n(g.vol, 3) + ' м³')
-    + row('Объём с запасом', n(g.volR, 3) + ' м³', { accent: true, formula: `запас ${P.beam_reserve}%` });
+    + row('<span class="mgr-full-label">Объём с запасом</span><span class="mgr-short-label">Объём</span>', n(g.volR, 3) + ' м³', { accent: true, formula: `запас ${P.beam_reserve}%` });
 
   html += head('Стеновой комплект')
     + row('Материал и работа', fmt(w.costKit), { formula: `${n(g.volR, 3)} м³ × (${n(P['pine_' + k], 0)} + ${n(P['work_' + k], 0)}) ₽/м³`, mgrHide: true })
@@ -2333,11 +2338,11 @@ function renderResults(results, sec) {
     + row('Итого материалы', fmt(ex.total), { accent: true, formula: 'сумма позиций выше, без маржи — это цена только на материал для самостоятельной сборки' });
 
   if (r.cedar || r.drying) html += head('Надбавки')
-    + (r.cedar ? row('Кедр', fmt(r.cedar), { formula: `${n(r.volAll, 3)} м³ × ${n(P.cedar_price, 0)} ₽ + ${P.cedar_margin}%` }) : '')
-    + (r.drying ? row('Камерная сушка', fmt(r.drying), { formula: `${n(r.volAll, 3)} м³ × ${n(P.drying, 0)} ₽` }) : '');
+    + (r.cedar ? row('Кедр', fmt(r.cedar), { accent: true, formula: `${n(r.volAll, 3)} м³ × ${n(P.cedar_price, 0)} ₽ + ${P.cedar_margin}%` }) : '')
+    + (r.drying ? row('Камерная сушка', fmt(r.drying), { accent: true, formula: `${n(r.volAll, 3)} м³ × ${n(P.drying, 0)} ₽` }) : '');
 
   if (r.discPct) html += head('Акция')
-    + row('Скидка на сруб без сборки', '−' + fmt(r.discNo), { formula: `${r.discPct}% от ${fmt(w.noAssembly)} · на террасу, кедр, сушку и «со сборкой» не действует` });
+    + row('Скидка на сруб без сборки', '−' + fmt(r.discNo), { accent: true, formula: `${r.discPct}% от ${fmt(w.noAssembly)} · на террасу, кедр, сушку и «со сборкой» не действует` });
 
   // Разбивка «из чего сложился итог» — для двух главных цифр внизу,
   // чтобы можно было быстро понять, в каком блоке искать расхождение.
