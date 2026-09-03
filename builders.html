@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Смета для строителей</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --forest: #1C3828;
+  --forest-mid: #2D5240;
+  --forest-light: #3D6B53;
+  --cream: #F5F0E8;
+  --cream-dark: #EAE3D5;
+  --oak: #C8872A;
+  --oak-light: #E8A84A;
+  --text: #1A1A1A;
+  --text-muted: #666;
+  --white: #FFFFFF;
+  --border: #D8D0C0;
+  --shadow: 0 4px 24px rgba(28,56,40,0.12);
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ─── HEADER ─────────────────────────────────── */
+header {
+  background: var(--forest);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-wood {
+  background:
+    repeating-linear-gradient(
+      92deg,
+      transparent, transparent 180px,
+      rgba(255,255,255,0.03) 180px, rgba(255,255,255,0.03) 182px
+    ),
+    repeating-linear-gradient(
+      88deg,
+      transparent, transparent 90px,
+      rgba(0,0,0,0.04) 90px, rgba(0,0,0,0.04) 91px
+    );
+  padding: 36px 40px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.header-left p {
+  color: rgba(245,240,232,0.65);
+  font-size: 14px;
+  margin-top: 6px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+.header-accent {
+  background: var(--oak);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.header-nav {
+  background: var(--forest-mid);
+  padding: 0 40px;
+  display: flex;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.header-nav a {
+  color: rgba(245,240,232,0.6);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 12px 18px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.header-nav a:hover, .header-nav a.active {
+  color: var(--oak-light);
+  border-bottom-color: var(--oak);
+}
+
+/* ─── LAYOUT ─────────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .header-wood { padding: 28px 20px; }
+  .header-nav { padding: 0 20px; }
+}
+
+/* ─── CARDS ──────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.card-header {
+  background: var(--forest);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-header .step-num {
+  background: var(--oak);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.card-header h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.card-body { padding: 24px; }
+
+/* ─── FORM ELEMENTS ──────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-row.one { grid-template-columns: 1fr; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+input[type="number"], select {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--cream);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  appearance: none;
+}
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--forest-light);
+  box-shadow: 0 0 0 3px rgba(61,107,83,0.12);
+  background: var(--white);
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* ─── WALL TABLE ─────────────────────────────── */
+.walls-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.walls-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--cream-dark);
+}
+.walls-table td {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.walls-table tr:hover td { background: var(--cream); }
+
+.wall-type-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-outer { background: #E8F0EC; color: var(--forest); }
+.badge-inner { background: #FDF0E0; color: #8A5C10; }
+
+.wall-input {
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 14px;
+  width: 90px;
+  background: var(--cream);
+  font-family: 'Inter', sans-serif;
+}
+.wall-input:focus {
+  outline: none;
+  border-color: var(--forest-light);
+  background: var(--white);
+}
+
+.wall-del {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.wall-del:hover { color: #e55; }
+
+.btn-add-wall {
+  margin-top: 12px;
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--forest-light);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-add-wall:hover {
+  border-color: var(--forest-light);
+  background: var(--cream);
+}
+
+/* ─── SECTION TOGGLE ─────────────────────────── */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 10px;
+  border-top: 1px solid var(--cream-dark);
+  margin-top: 8px;
+}
+.toggle-switch {
+  position: relative;
+  width: 42px; height: 24px;
+  flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #ccc;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--forest-light); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.collapsible { overflow: hidden; transition: max-height 0.3s ease; }
+.collapsible.collapsed { max-height: 0 !important; }
+
+/* ─── OPTIONS GRID ───────────────────────────── */
+.option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.chip {
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--cream);
+  color: var(--text);
+  user-select: none;
+}
+.chip:hover { border-color: var(--forest-light); }
+.chip.selected {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+/* ─── RIGHT PANEL ────────────────────────────── */
+/* ─── STICKY PRICE BAR ───────────────────────── */
+.sticky-price-bar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--forest);
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px -6px rgba(0,0,0,0.35);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.spb-chip {
+  padding: 8px 10px;
+  text-align: center;
+  cursor: pointer;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.15s;
+}
+.spb-chip:last-child { border-right: none; }
+.spb-chip:hover { background: rgba(255,255,255,0.06); }
+.spb-chip.selected { background: var(--oak); }
+.spb-chip .spb-name {
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: rgba(245,240,232,0.55);
+  margin-bottom: 2px;
+}
+.spb-chip.selected .spb-name { color: rgba(28,20,10,0.65); }
+.spb-chip .spb-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.spb-chip.selected .spb-price { color: var(--forest); }
+@media (max-width: 560px) {
+  .spb-chip .spb-name { font-size: 9px; }
+  .spb-chip .spb-price { font-size: 12px; }
+  .spb-chip { padding: 7px 4px; }
+}
+
+/* ─── РЕЖИМ МЕНЕДЖЕРА: скрыть формулы, себестоимость и маржу ─── */
+/* Оставляем только финальные итоги по разделам (accent) — всё
+   остальное (из чего цена сложена) скрываем целиком, не только формулы. */
+body.role-manager .res-row:not(.accent),
+body.role-manager .res-formula {
+  display: none !important;
+}
+body.role-manager .mgr-full-label { display: none; }
+body.role-manager .mgr-short-label { display: inline; }
+.mgr-short-label { display: none; }
+body.role-manager .header-nav a[href="admin.html"] {
+  display: none !important;
+}
+
+/* ─── ПАНЕЛЬ РОЛИ (переключатель админ/менеджер) ───────────── */
+.role-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 6px 40px;
+  background: rgba(0,0,0,0.15);
+  font-size: 12px;
+}
+.role-bar .role-badge {
+  color: rgba(245,240,232,0.55);
+  letter-spacing: 0.03em;
+}
+.role-bar button {
+  background: none;
+  border: 1px solid rgba(245,240,232,0.25);
+  color: rgba(245,240,232,0.75);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.role-bar button:hover { border-color: rgba(245,240,232,0.6); color: var(--cream); }
+.role-auth-overlay {
+  position: fixed; inset: 0; background: rgba(20,16,10,0.72);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.role-auth-box {
+  background: var(--white); border-radius: 12px; padding: 28px 26px;
+  width: 300px; box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+}
+.role-auth-box h3 { font-size: 16px; margin-bottom: 6px; }
+.role-auth-box p { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; }
+.role-auth-box input {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px;
+  font-size: 14px; margin-bottom: 10px;
+}
+.role-auth-box .err { color: #B23B3B; font-size: 12px; min-height: 16px; margin-bottom: 6px; }
+.role-auth-box .role-auth-actions { display: flex; gap: 8px; }
+.role-auth-box button.primary {
+  flex: 1; background: var(--oak); color: white; border: none; border-radius: 7px;
+  padding: 9px; font-weight: 600; cursor: pointer;
+}
+.role-auth-box button.secondary {
+  background: none; border: 1px solid var(--border); border-radius: 7px;
+  padding: 9px 14px; cursor: pointer; color: var(--text-muted);
+}
+
+.results-panel {
+  position: sticky;
+  top: 20px;
+}
+
+.result-section {
+  border-bottom: 1px solid var(--cream-dark);
+  padding: 16px 0;
+}
+.result-section:first-child { padding-top: 0; }
+.result-section:last-child { border-bottom: none; padding-bottom: 0; }
+
+.result-section h3,
+.res-h {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 22px 0 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cream-dark);
+}
+.res-h:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.res-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 5px 0;
+}
+.res-row .res-label {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+}
+.res-row .res-formula {
+  display: block;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.res-row .res-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.res-row.accent { padding: 8px 0 4px; }
+.res-row.accent .res-label { color: var(--text); font-weight: 600; }
+.res-row.accent .res-value { font-size: 14px; font-weight: 600; color: var(--forest); }
+
+.result-line {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 6px; gap: 8px;
+}
+.result-line .rl-label { font-size: 13px; color: var(--text-muted); flex: 1; min-width: 0; }
+.result-line .rl-value { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.result-line .rl-value.dim { color: var(--text-muted); font-weight: 400; }
+
+.restore-hint {
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.restore-hint a { color: var(--forest); font-weight: 600; }
+.btn-clear {
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-clear:hover { border-color: var(--forest-light); color: var(--text); }
+
+.price-banner {
+  padding: 10px 24px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--cream-dark);
+  border-bottom: 1px solid var(--border);
+}
+.price-banner b { font-weight: 600; color: var(--text); }
+.price-banner.draft { background: #FDF3E0; color: #7A5410; }
+.price-banner.draft b { color: #7A5410; }
+.price-banner.warn { background: #FBEAEA; color: #8A2F2F; }
+.price-banner.offline { background: #EAF0EC; color: #2C4A38; }
+.price-banner.offline b { color: #2C4A38; }
+.price-banner.warn b { color: #8A2F2F; }
+
+.total-block {
+  background: var(--forest);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 24px;
+  color: var(--white);
+}
+.total-block .total-row + .total-row,
+.total-block .total-sub + .total-row {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(245,240,232,0.16);
+}
+.total-block .total-label {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.total-block .total-price {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.05;
+  color: var(--oak-light);
+  font-variant-numeric: tabular-nums;
+}
+.total-block .total-price.sm { font-size: 22px; color: var(--cream); }
+.total-block .total-sub {
+  font-size: 11px;
+  opacity: 0.5;
+  line-height: 1.5;
+  margin-top: 14px;
+}
+
+.section-prices {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.section-price-card {
+  background: var(--cream-dark);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.section-price-card:hover { border-color: var(--forest-light); }
+.section-price-card.selected {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.section-price-card .sp-name {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.section-price-card.selected .sp-name { color: rgba(255,255,255,0.6); }
+.section-price-card .sp-price {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.section-price-card.selected .sp-price { color: var(--oak-light); }
+
+/* ─── BUTTONS ────────────────────────────────── */
+.btn-calc {
+  width: 100%;
+  background: var(--oak);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 16px;
+  letter-spacing: 0.02em;
+}
+.btn-calc:hover { background: #b0781f; }
+.btn-calc:active { transform: scale(0.98); }
+
+.btn-print {
+  width: 100%;
+  background: none;
+  color: var(--forest);
+  border: 1.5px solid var(--forest);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-print:hover { background: var(--forest); color: var(--white); }
+
+/* ─── NOTICE ─────────────────────────────────── */
+.notice {
+  background: #FEF9F0;
+  border: 1px solid #F0D080;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #7A5E10;
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+/* ─── SUMMARY METRICS ────────────────────────── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+.metric {
+  background: var(--cream-dark);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.metric .m-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--forest);
+  font-family: 'Playfair Display', serif;
+}
+.metric .m-unit {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+/* ─── SECTION DIVIDER ────────────────────────── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 0;
+}
+.section-divider span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.section-divider::before, .section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── FOOTER ─────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+/* ─── SPINNER ANIMATION ──────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.calculating { animation: pulse 1s infinite; }
+
+/* ─── СТРОИТЕЛИ: доп. стили ───────────────────── */
+.bt-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.bt-table th {
+  text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--text-muted); padding: 8px 6px; border-bottom: 2px solid var(--forest);
+}
+.bt-table th.num, .bt-table td.num { text-align: right; }
+.bt-table td { padding: 9px 6px; border-bottom: 1px dashed var(--border); vertical-align: top; }
+.bt-table tr.total td { font-weight: 700; font-size: 14px; border-top: 2px solid var(--forest); border-bottom: none; }
+.bt-table .row-sub { display: block; font-size: 11px; color: var(--text-muted); }
+.bt-bags-input {
+  width: 70px; padding: 6px 8px; border: 1px solid var(--oak); border-radius: 6px;
+  font-size: 13px; text-align: right; background: #FFF8EC;
+}
+.bt-empty { padding: 60px 24px; text-align: center; color: var(--text-muted); }
+.bt-empty a { color: var(--oak); font-weight: 600; }
+.bt-actions { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
+.bt-actions button {
+  background: var(--oak); color: white; border: none; border-radius: 8px;
+  padding: 11px 20px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+  display: flex; align-items: center; gap: 8px;
+}
+.bt-actions button:hover { background: #B0781F; }
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="auth-overlay" style="position:fixed;inset:0;background:rgba(20,16,10,0.72);display:flex;align-items:center;justify-content:center;z-index:200;">
+  <div style="background:var(--white);border-radius:12px;padding:28px 26px;width:300px;box-shadow:0 20px 50px rgba(0,0,0,0.35);">
+    <h3 style="font-size:16px;margin-bottom:6px;">Только для администратора</h3>
+    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px;">Тот же пароль, что и в панели цен.</p>
+    <input type="password" id="auth-input" placeholder="••••" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:14px;margin-bottom:10px;" onkeyup="if(event.key==='Enter')authCheck()">
+    <div id="auth-error" style="color:#B23B3B;font-size:12px;min-height:16px;margin-bottom:6px;"></div>
+    <div style="display:flex;gap:8px;">
+      <a href="index.html" style="flex:none;background:none;border:1px solid var(--border);border-radius:7px;padding:9px 14px;cursor:pointer;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;">На калькулятор</a>
+      <button onclick="authCheck()" style="flex:1;background:var(--oak);color:white;border:none;border-radius:7px;padding:9px;font-weight:600;cursor:pointer;">Войти</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="header-wood">
+    <div class="header-left">
+      <h1>Смета для строителей</h1>
+      <p>Материалы и работа по факту, с маржой — для бригады</p>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Калькулятор</a>
+    <a href="admin.html">Панель цен</a>
+    <a href="foreus.html">Для нас</a>
+    <a href="builders.html" class="active">Строители</a>
+  </nav>
+</header>
+
+<div class="container" id="main-content" style="display:none;">
+  <div class="card" style="max-width:920px;margin:24px auto;">
+    <div class="card-header">
+      <h2>Сечение сруба</h2>
+    </div>
+    <div class="card-body">
+      <div class="option-chips" id="bt-sec-chips" style="margin-bottom:6px;">
+        <div class="chip selected" data-val="100x150">100 мм</div>
+        <div class="chip" data-val="150x150">150 мм</div>
+        <div class="chip" data-val="180x150">180 мм</div>
+        <div class="chip" data-val="200x150">200 мм</div>
+      </div>
+      <p class="field-hint" id="bt-hint" style="margin-top:6px;"></p>
+
+      <div class="bt-actions">
+        <button onclick="downloadXlsx()">⬇ Скачать таблицу для бригады (.xlsx)</button>
+      </div>
+
+      <table class="bt-table" id="bt-table">
+        <thead>
+          <tr>
+            <th>Раздел</th><th>Позиция</th><th>Сечение</th>
+            <th class="num">Объём</th><th class="num">Цена, ₽/ед.</th>
+            <th class="num">Итого, ₽</th><th class="num">Маржа, %</th>
+            <th class="num">Маржа, ₽</th><th class="num">Цена для заказчика, ₽</th>
+          </tr>
+        </thead>
+        <tbody id="bt-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="bt-empty" id="empty-state" style="display:none;">
+  <p>Пока нет данных расчёта. Откройте <a href="index.html">калькулятор</a>, введите стены и нажмите «Рассчитать стоимость» — эта страница заполнится сама.</p>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// АВТОРИЗАЦИЯ — тот же пароль/хэш, что в панели цен
+// ═══════════════════════════════════════════════
+const DEFAULT_PASS = 'admin123';
+const PBKDF2_ITER = 200000;
+let PUBLISHED_AUTH = null;
+
+function hex(buf) { return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join(''); }
+async function hashPass(pass, saltHex, iter) {
+  const salt = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+  return hex(bits);
+}
+
+async function authCheck() {
+  const input = document.getElementById('auth-input');
+  const err = document.getElementById('auth-error');
+  const val = input.value;
+  let ok;
+  if (PUBLISHED_AUTH) {
+    ok = (await hashPass(val, PUBLISHED_AUTH.salt, PUBLISHED_AUTH.iter || PBKDF2_ITER)) === PUBLISHED_AUTH.hash;
+  } else {
+    ok = val === DEFAULT_PASS;
+  }
+  if (!ok) { err.textContent = 'Неверный пароль'; input.value = ''; return; }
+  localStorage.setItem('sruby_role', 'admin');
+  unlock();
+}
+
+function unlock() {
+  document.getElementById('auth-overlay').style.display = 'none';
+  init();
+}
+
+(async function () {
+  try {
+    const res = await fetch('prices.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc && doc.auth && doc.auth.hash) PUBLISHED_AUTH = doc.auth;
+    }
+  } catch (e) {}
+  if (localStorage.getItem('sruby_role') === 'admin') unlock();
+})();
+
+// ═══════════════════════════════════════════════
+// ДАННЫЕ И РАСЧЁТ
+// ═══════════════════════════════════════════════
+let STORE = null;
+let curSec = '100x150';
+let ROWS = []; // последний расчёт, нужен для скачивания
+const fmt = n => Math.round(n || 0).toLocaleString('ru-RU');
+const fmtN = (n, d) => Number(n || 0).toLocaleString('ru-RU', { maximumFractionDigits: d });
+
+function getBags() {
+  return parseFloat(localStorage.getItem('sruby_syntepon_bags')) || 1;
+}
+function setBags(v) {
+  localStorage.setItem('sruby_syntepon_bags', v);
+}
+
+function init() {
+  try { STORE = JSON.parse(localStorage.getItem('sruby_results_data') || 'null'); } catch (e) { STORE = null; }
+  if (!STORE || !STORE.results) {
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  document.getElementById('main-content').style.display = 'block';
+
+  document.querySelectorAll('#bt-sec-chips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#bt-sec-chips .chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+      curSec = c.dataset.val;
+      render();
+    });
+  });
+  render();
+}
+
+// Строит список строк сметы для строителей — тот же состав, что в листе «Строители» экселя.
+function buildRows() {
+  const r = STORE.results[curSec];
+  const P = STORE.P;
+  const k = curSec.split('x')[0];
+  const secLabel = curSec.replace('x', '×') + ' мм';
+  const rows = [];
+
+  const addRow = (section, name, secLbl, vol, unit, price, cost, marginPct, sub) => {
+    const marginRub = cost * marginPct / 100;
+    const final = cost + marginRub;
+    rows.push({ section, name, secLbl, vol, unit, price, cost, marginPct, marginRub, final, sub });
+  };
+
+  // 1. Работа — стеновой комплект (сруб + терраса), одной строкой, как в экселе
+  const asmVol = r.g.volR + (r.ter ? r.ter.volR : 0);
+  addRow('Работа', 'Стеновой комплект, сборка', secLabel, asmVol, 'м³', P['assembly_' + k],
+    asmVol * P['assembly_' + k], P.margin_assembly, r.ter ? 'сруб + терраса' : 'сруб');
+
+  // 2–3. Столбы опорные (материал + работа), если включены
+  if (r.pst) {
+    const postSecLbl = (STORE.postSection || '150') + '×' + (STORE.postSection || '150') + ' мм';
+    addRow('Работа', 'Столбы опорные, отстрожка и монтаж', postSecLbl, r.pst.qty, 'шт', P['post_work_' + (STORE.postSection || '150')],
+      r.pst.costWork, P.post_margin);
+    addRow('Материал', 'Столбы опорные', postSecLbl, r.pst.vol, 'м³', P.post_price,
+      r.pst.costMat, P.post_margin);
+  }
+
+  // 4–5. Обвязка (материал + работа), если включена
+  if (r.bs) {
+    const baseK = STORE.baseSection || '150';
+    const baseSecLbl = `${P['base_w_' + baseK] || 150}×${P['base_h_' + baseK] || 150} мм`;
+    addRow('Материал', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_larch,
+      r.bs.vol * P.base_larch, P.base_margin);
+    addRow('Работа', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_work,
+      r.bs.vol * P.base_work, P.base_margin);
+  }
+
+  // 6–7. Джут и шканты (сруб + терраса вместе, запас уже учтён)
+  const juteMPTotal = r.w.juteMP + (r.ter ? r.ter.juteMP : 0);
+  addRow('Материал', 'Джут (запас +20%)', secLabel, juteMPTotal, 'м.п.', P['jute_' + k],
+    juteMPTotal * P['jute_' + k], P.margin_assembly);
+  addRow('Материал', 'Шканты (запас +20%)', secLabel, juteMPTotal, 'шт', P.dowel,
+    juteMPTotal * P.dowel, P.margin_assembly);
+
+  // 8. Синтепон — ручной ввод количества мешков. В экселе эта строка специально
+  // обнулена (K14=-1) — стоимость мешков в цену для заказчика не закладывается,
+  // это внутренний расходник бригады.
+  const bags = getBags();
+  const synteponCost = bags * P.syntepon_price;
+  rows.push({
+    section: 'Материал', name: 'Обмотка угловых соединений — синтепон', secLbl: '—',
+    vol: bags, unit: 'мешков', price: P.syntepon_price, cost: synteponCost,
+    marginPct: null, marginRub: -synteponCost, final: 0, sub: 'в цену для заказчика не входит', isBags: true,
+  });
+
+  // 9–12. Кровля, если включена
+  if (r.rf) {
+    const roofMatCost = r.rf.rafterCost + r.rf.obrCost + r.rf.membraneCost + r.rf.tilesCost + r.rf.hwCost + r.rf.addonCost + r.rf.frontonCost;
+    addRow('Материал', 'Кровля — материал (стропила, обрешётка, мембрана, черепица, крепёж, доборы)', n2(r.rf.area) + ' м²', r.rf.area, 'м²', null,
+      roofMatCost, P.roof_margin);
+    if (r.rf.warmArea) addRow('Материал', 'Кровля — утепление, материал', n2(r.rf.warmArea) + ' м²', r.rf.warmArea, 'м²', null,
+      r.rf.warmMat, P.roof_margin);
+    addRow('Работа', 'Кровля — монтаж', n2(r.rf.area) + ' м²', r.rf.area, 'м²', P.roof_work_sqm,
+      r.rf.workCost, P.roof_margin);
+    if (r.rf.warmArea) addRow('Работа', 'Кровля — утепление, работа', n2(r.rf.warmArea) + ' м²', r.rf.warmArea, 'м²', null,
+      r.rf.warmWork, P.roof_margin);
+  }
+
+  return rows;
+}
+function n2(v) { return Number(v || 0).toLocaleString('ru-RU', { maximumFractionDigits: 2 }); }
+
+function render() {
+  ROWS = buildRows();
+  const tbody = document.getElementById('bt-tbody');
+  tbody.innerHTML = ROWS.map(row => `
+    <tr>
+      <td>${row.section}</td>
+      <td>${row.name}${row.sub ? `<span class="row-sub">${row.sub}</span>` : ''}</td>
+      <td>${row.secLbl}</td>
+      <td class="num">${row.isBags
+        ? `<input type="number" class="bt-bags-input" value="${row.vol}" step="0.5" min="0" onchange="onBagsChange(this.value)"> ${row.unit}`
+        : `${n2(row.vol)} ${row.unit}`}</td>
+      <td class="num">${row.price != null ? fmt(row.price) : '—'}</td>
+      <td class="num">${fmt(row.cost)}</td>
+      <td class="num">${row.marginPct == null ? '—' : row.marginPct + '%'}</td>
+      <td class="num">${fmt(row.marginRub)}</td>
+      <td class="num"><strong>${fmt(row.final)}</strong></td>
+    </tr>`).join('');
+
+  const sumCost = ROWS.reduce((s, r) => s + r.cost, 0);
+  const sumMargin = ROWS.reduce((s, r) => s + r.marginRub, 0);
+  const sumFinal = ROWS.reduce((s, r) => s + r.final, 0);
+  tbody.innerHTML += `
+    <tr class="total">
+      <td colspan="5">Итого</td>
+      <td class="num">${fmt(sumCost)}</td>
+      <td></td>
+      <td class="num">${fmt(sumMargin)}</td>
+      <td class="num">${fmt(sumFinal)}</td>
+    </tr>`;
+
+  const when = STORE.savedAt ? new Date(STORE.savedAt).toLocaleString('ru-RU') : '';
+  document.getElementById('bt-hint').textContent = 'По данным расчёта от ' + when + ' · обновляется автоматически при пересчёте на калькуляторе';
+}
+
+function onBagsChange(v) {
+  setBags(parseFloat(v) || 0);
+  render();
+}
+
+function downloadXlsx() {
+  const data = [
+    ['Раздел', 'Позиция', 'Сечение', 'Объём', 'Ед.', 'Цена, ₽/ед.', 'Итого, ₽', 'Маржа, %', 'Маржа, ₽', 'Цена для заказчика, ₽'],
+  ];
+  ROWS.forEach(r => {
+    data.push([r.section, r.name + (r.sub ? ' (' + r.sub + ')' : ''), r.secLbl,
+      Number(r.vol.toFixed(3)), r.unit, r.price || '', Math.round(r.cost), (r.marginPct == null ? '—' : r.marginPct + '%'), Math.round(r.marginRub), Math.round(r.final)]);
+  });
+  const sumCost = ROWS.reduce((s, r) => s + r.cost, 0);
+  const sumMargin = ROWS.reduce((s, r) => s + r.marginRub, 0);
+  const sumFinal = ROWS.reduce((s, r) => s + r.final, 0);
+  data.push(['Итого', '', '', '', '', '', Math.round(sumCost), '', Math.round(sumMargin), Math.round(sumFinal)]);
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{ wch: 10 }, { wch: 42 }, { wch: 14 }, { wch: 9 }, { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Строители');
+  const secLbl = curSec.replace('x', '-');
+  XLSX.writeFile(wb, `Смета_для_строителей_${secLbl}мм.xlsx`);
+}
+</script>
+</body>
+</html>

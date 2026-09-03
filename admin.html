@@ -221,6 +221,8 @@ header {
   <nav class="header-nav">
     <a href="index.html">Калькулятор</a>
     <a href="admin.html" class="active">Панель цен</a>
+    <a href="foreus.html">Для нас</a>
+    <a href="builders.html">Строители</a>
   </nav>
 </header>
 
@@ -930,6 +932,13 @@ header {
             <span class="price-unit">₽/м³</span>
           </div>
         </div>
+        <div class="price-row">
+          <div class="price-label">Синтепон для обмотки углов<span style="display:block;font-size:11px;opacity:.6;font-weight:400;">Лист «Строители» — количество мешков вводится вручную там же</span></div>
+          <div class="price-input-wrap">
+            <input class="price-input" type="number" data-key="syntepon_price" value="">
+            <span class="price-unit">₽/мешок</span>
+          </div>
+        </div>
         </div>
     </div>
   </div>
@@ -1005,6 +1014,7 @@ const DEFAULT_PRICES = {
 
   // ── Доп. материалы для варианта без сборки (лист «Для заказчика »)
   extra_lag_price: 23000, // лаги и обвязка, ₽/м³
+  syntepon_price: 3000, // ₽/мешок, обмотка угловых соединений для строителей
 };
 
 // ═══════════════════════════════════════════════

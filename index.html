@@ -411,7 +411,9 @@ body.role-manager .res-formula {
 body.role-manager .mgr-full-label { display: none; }
 body.role-manager .mgr-short-label { display: inline; }
 .mgr-short-label { display: none; }
-body.role-manager .header-nav a[href="admin.html"] {
+body.role-manager .header-nav a[href="admin.html"],
+body.role-manager .header-nav a[href="foreus.html"],
+body.role-manager .header-nav a[href="builders.html"] {
   display: none !important;
 }
 
@@ -786,6 +788,8 @@ footer {
   <nav class="header-nav">
     <a href="index.html" class="active">Калькулятор</a>
     <a href="admin.html">Панель цен</a>
+    <a href="foreus.html">Для нас</a>
+    <a href="builders.html">Строители</a>
   </nav>
   <div class="role-bar">
     <span class="role-badge" id="role-badge">Режим: менеджер</span>
@@ -1408,6 +1412,7 @@ const DEFAULT_PRICES = {
 
   // ── Доп. материалы для варианта без сборки (лист «Для заказчика »)
   extra_lag_price: 23000, // лаги и обвязка, ₽/м³
+  syntepon_price: 3000, // ₽/мешок, обмотка угловых соединений для строителей
 };
 
 // ═══════════════════════════════════════════════
@@ -2020,7 +2025,8 @@ function calcTerrace(P, sectionKey) {
   const priceJute = (juteMP * P['ter_jute_' + k] + juteMP * P.dowel) * (1 + P.margin_assembly / 100);
 
   return {
-    mp: t.mp, crowns: t.crowns, len: t.len, vol, volR,
+    mp: t.mp, crowns: t.crowns, len: t.len, vol, volR, juteMP,
+    costKit, costAsm,
     priceKit, priceAsm, priceJute,
     noAssembly: priceKit,
     withAssembly: priceKit + priceAsm + priceJute,
@@ -2182,6 +2188,16 @@ function calculate() {
   lastResult = { results, selectedSection, P };
   renderResults(results, selectedSection);
   document.getElementById('btn-print').style.display = 'flex';
+
+  // Данные для вкладок «Для нас» и «Строители» — обновляются при каждом
+  // расчёте, поэтому эти вкладки всегда показывают актуальную цифру,
+  // в том числе после загрузки сохранённого файла хоть через месяц.
+  try {
+    localStorage.setItem('sruby_results_data', JSON.stringify({
+      results, P, baseSection, postSection, extrasBaseSection,
+      savedAt: Date.now(),
+    }));
+  } catch (e) {}
 }
 
 function recalcLive() { if (lastResult) calculate(); }
@@ -2427,7 +2443,9 @@ const TOGGLE_PAIRS = [
 
 function collectForm() {
   const f = { fields: {}, checks: {}, sec: selectedSection, baseSection, postSection, extrasBaseSection,
-              wallRows, wallRows2, floorbeamRows, frontonRows, baseRows, openingRows, terraceRows, savedAt: Date.now() };
+              wallRows, wallRows2, floorbeamRows, frontonRows, baseRows, openingRows, terraceRows,
+              synteponBags: localStorage.getItem('sruby_syntepon_bags') || '1',
+              savedAt: Date.now() };
   document.querySelectorAll('.calc-left input, .calc-left select').forEach(el => {
     if (!el.id) return;
     if (el.type === 'checkbox') f.checks[el.id] = el.checked;
@@ -2546,6 +2564,7 @@ function loadFromFile(event) {
     }
     skipSave = true; // не даём фоновому автосохранению перезаписать localStorage раньше времени
     applyFormData(f);
+    if (f.synteponBags) { try { localStorage.setItem('sruby_syntepon_bags', f.synteponBags); } catch (e) {} }
     renderWalls(wallRows, 'walls-body');
     renderWalls(wallRows2, 'walls-body-2');
     renderWalls(floorbeamRows, 'walls-body-fb');

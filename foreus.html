@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Для нас — внутренняя маржа</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest: #1C3828;
+  --forest-mid: #2D5240;
+  --forest-light: #3D6B53;
+  --cream: #F5F0E8;
+  --cream-dark: #EAE3D5;
+  --oak: #C8872A;
+  --oak-light: #E8A84A;
+  --text: #1A1A1A;
+  --text-muted: #666;
+  --white: #FFFFFF;
+  --border: #D8D0C0;
+  --shadow: 0 4px 24px rgba(28,56,40,0.12);
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ─── HEADER ─────────────────────────────────── */
+header {
+  background: var(--forest);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-wood {
+  background:
+    repeating-linear-gradient(
+      92deg,
+      transparent, transparent 180px,
+      rgba(255,255,255,0.03) 180px, rgba(255,255,255,0.03) 182px
+    ),
+    repeating-linear-gradient(
+      88deg,
+      transparent, transparent 90px,
+      rgba(0,0,0,0.04) 90px, rgba(0,0,0,0.04) 91px
+    );
+  padding: 36px 40px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.header-left p {
+  color: rgba(245,240,232,0.65);
+  font-size: 14px;
+  margin-top: 6px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+.header-accent {
+  background: var(--oak);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.header-nav {
+  background: var(--forest-mid);
+  padding: 0 40px;
+  display: flex;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.header-nav a {
+  color: rgba(245,240,232,0.6);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 12px 18px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.header-nav a:hover, .header-nav a.active {
+  color: var(--oak-light);
+  border-bottom-color: var(--oak);
+}
+
+/* ─── LAYOUT ─────────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .header-wood { padding: 28px 20px; }
+  .header-nav { padding: 0 20px; }
+}
+
+/* ─── CARDS ──────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.card-header {
+  background: var(--forest);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-header .step-num {
+  background: var(--oak);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.card-header h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.card-body { padding: 24px; }
+
+/* ─── FORM ELEMENTS ──────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-row.one { grid-template-columns: 1fr; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+input[type="number"], select {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--cream);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  appearance: none;
+}
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--forest-light);
+  box-shadow: 0 0 0 3px rgba(61,107,83,0.12);
+  background: var(--white);
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* ─── WALL TABLE ─────────────────────────────── */
+.walls-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.walls-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--cream-dark);
+}
+.walls-table td {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.walls-table tr:hover td { background: var(--cream); }
+
+.wall-type-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-outer { background: #E8F0EC; color: var(--forest); }
+.badge-inner { background: #FDF0E0; color: #8A5C10; }
+
+.wall-input {
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 14px;
+  width: 90px;
+  background: var(--cream);
+  font-family: 'Inter', sans-serif;
+}
+.wall-input:focus {
+  outline: none;
+  border-color: var(--forest-light);
+  background: var(--white);
+}
+
+.wall-del {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.wall-del:hover { color: #e55; }
+
+.btn-add-wall {
+  margin-top: 12px;
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--forest-light);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-add-wall:hover {
+  border-color: var(--forest-light);
+  background: var(--cream);
+}
+
+/* ─── SECTION TOGGLE ─────────────────────────── */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 10px;
+  border-top: 1px solid var(--cream-dark);
+  margin-top: 8px;
+}
+.toggle-switch {
+  position: relative;
+  width: 42px; height: 24px;
+  flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #ccc;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--forest-light); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.collapsible { overflow: hidden; transition: max-height 0.3s ease; }
+.collapsible.collapsed { max-height: 0 !important; }
+
+/* ─── OPTIONS GRID ───────────────────────────── */
+.option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.chip {
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--cream);
+  color: var(--text);
+  user-select: none;
+}
+.chip:hover { border-color: var(--forest-light); }
+.chip.selected {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+/* ─── RIGHT PANEL ────────────────────────────── */
+/* ─── STICKY PRICE BAR ───────────────────────── */
+.sticky-price-bar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--forest);
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px -6px rgba(0,0,0,0.35);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.spb-chip {
+  padding: 8px 10px;
+  text-align: center;
+  cursor: pointer;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.15s;
+}
+.spb-chip:last-child { border-right: none; }
+.spb-chip:hover { background: rgba(255,255,255,0.06); }
+.spb-chip.selected { background: var(--oak); }
+.spb-chip .spb-name {
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: rgba(245,240,232,0.55);
+  margin-bottom: 2px;
+}
+.spb-chip.selected .spb-name { color: rgba(28,20,10,0.65); }
+.spb-chip .spb-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.spb-chip.selected .spb-price { color: var(--forest); }
+@media (max-width: 560px) {
+  .spb-chip .spb-name { font-size: 9px; }
+  .spb-chip .spb-price { font-size: 12px; }
+  .spb-chip { padding: 7px 4px; }
+}
+
+/* ─── РЕЖИМ МЕНЕДЖЕРА: скрыть формулы, себестоимость и маржу ─── */
+/* Оставляем только финальные итоги по разделам (accent) — всё
+   остальное (из чего цена сложена) скрываем целиком, не только формулы. */
+body.role-manager .res-row:not(.accent),
+body.role-manager .res-formula {
+  display: none !important;
+}
+body.role-manager .mgr-full-label { display: none; }
+body.role-manager .mgr-short-label { display: inline; }
+.mgr-short-label { display: none; }
+body.role-manager .header-nav a[href="admin.html"] {
+  display: none !important;
+}
+
+/* ─── ПАНЕЛЬ РОЛИ (переключатель админ/менеджер) ───────────── */
+.role-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 6px 40px;
+  background: rgba(0,0,0,0.15);
+  font-size: 12px;
+}
+.role-bar .role-badge {
+  color: rgba(245,240,232,0.55);
+  letter-spacing: 0.03em;
+}
+.role-bar button {
+  background: none;
+  border: 1px solid rgba(245,240,232,0.25);
+  color: rgba(245,240,232,0.75);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.role-bar button:hover { border-color: rgba(245,240,232,0.6); color: var(--cream); }
+.role-auth-overlay {
+  position: fixed; inset: 0; background: rgba(20,16,10,0.72);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.role-auth-box {
+  background: var(--white); border-radius: 12px; padding: 28px 26px;
+  width: 300px; box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+}
+.role-auth-box h3 { font-size: 16px; margin-bottom: 6px; }
+.role-auth-box p { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; }
+.role-auth-box input {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px;
+  font-size: 14px; margin-bottom: 10px;
+}
+.role-auth-box .err { color: #B23B3B; font-size: 12px; min-height: 16px; margin-bottom: 6px; }
+.role-auth-box .role-auth-actions { display: flex; gap: 8px; }
+.role-auth-box button.primary {
+  flex: 1; background: var(--oak); color: white; border: none; border-radius: 7px;
+  padding: 9px; font-weight: 600; cursor: pointer;
+}
+.role-auth-box button.secondary {
+  background: none; border: 1px solid var(--border); border-radius: 7px;
+  padding: 9px 14px; cursor: pointer; color: var(--text-muted);
+}
+
+.results-panel {
+  position: sticky;
+  top: 20px;
+}
+
+.result-section {
+  border-bottom: 1px solid var(--cream-dark);
+  padding: 16px 0;
+}
+.result-section:first-child { padding-top: 0; }
+.result-section:last-child { border-bottom: none; padding-bottom: 0; }
+
+.result-section h3,
+.res-h {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 22px 0 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cream-dark);
+}
+.res-h:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.res-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 5px 0;
+}
+.res-row .res-label {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+}
+.res-row .res-formula {
+  display: block;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.res-row .res-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.res-row.accent { padding: 8px 0 4px; }
+.res-row.accent .res-label { color: var(--text); font-weight: 600; }
+.res-row.accent .res-value { font-size: 14px; font-weight: 600; color: var(--forest); }
+
+.result-line {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 6px; gap: 8px;
+}
+.result-line .rl-label { font-size: 13px; color: var(--text-muted); flex: 1; min-width: 0; }
+.result-line .rl-value { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.result-line .rl-value.dim { color: var(--text-muted); font-weight: 400; }
+
+.restore-hint {
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.restore-hint a { color: var(--forest); font-weight: 600; }
+.btn-clear {
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-clear:hover { border-color: var(--forest-light); color: var(--text); }
+
+.price-banner {
+  padding: 10px 24px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--cream-dark);
+  border-bottom: 1px solid var(--border);
+}
+.price-banner b { font-weight: 600; color: var(--text); }
+.price-banner.draft { background: #FDF3E0; color: #7A5410; }
+.price-banner.draft b { color: #7A5410; }
+.price-banner.warn { background: #FBEAEA; color: #8A2F2F; }
+.price-banner.offline { background: #EAF0EC; color: #2C4A38; }
+.price-banner.offline b { color: #2C4A38; }
+.price-banner.warn b { color: #8A2F2F; }
+
+.total-block {
+  background: var(--forest);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 24px;
+  color: var(--white);
+}
+.total-block .total-row + .total-row,
+.total-block .total-sub + .total-row {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(245,240,232,0.16);
+}
+.total-block .total-label {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.total-block .total-price {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.05;
+  color: var(--oak-light);
+  font-variant-numeric: tabular-nums;
+}
+.total-block .total-price.sm { font-size: 22px; color: var(--cream); }
+.total-block .total-sub {
+  font-size: 11px;
+  opacity: 0.5;
+  line-height: 1.5;
+  margin-top: 14px;
+}
+
+.section-prices {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.section-price-card {
+  background: var(--cream-dark);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.section-price-card:hover { border-color: var(--forest-light); }
+.section-price-card.selected {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.section-price-card .sp-name {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.section-price-card.selected .sp-name { color: rgba(255,255,255,0.6); }
+.section-price-card .sp-price {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.section-price-card.selected .sp-price { color: var(--oak-light); }
+
+/* ─── BUTTONS ────────────────────────────────── */
+.btn-calc {
+  width: 100%;
+  background: var(--oak);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 16px;
+  letter-spacing: 0.02em;
+}
+.btn-calc:hover { background: #b0781f; }
+.btn-calc:active { transform: scale(0.98); }
+
+.btn-print {
+  width: 100%;
+  background: none;
+  color: var(--forest);
+  border: 1.5px solid var(--forest);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-print:hover { background: var(--forest); color: var(--white); }
+
+/* ─── NOTICE ─────────────────────────────────── */
+.notice {
+  background: #FEF9F0;
+  border: 1px solid #F0D080;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #7A5E10;
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+/* ─── SUMMARY METRICS ────────────────────────── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+.metric {
+  background: var(--cream-dark);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.metric .m-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--forest);
+  font-family: 'Playfair Display', serif;
+}
+.metric .m-unit {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+/* ─── SECTION DIVIDER ────────────────────────── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 0;
+}
+.section-divider span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.section-divider::before, .section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── FOOTER ─────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+/* ─── SPINNER ANIMATION ──────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.calculating { animation: pulse 1s infinite; }
+
+/* ─── ДЛЯ НАС: доп. стили ───────────────────── */
+.fu-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.fu-table tr { border-bottom: 1px dashed var(--border); }
+.fu-table tr:last-child { border-bottom: none; }
+.fu-table td { padding: 10px 4px; font-size: 14px; }
+.fu-table td.val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.fu-table tr.total td { font-weight: 700; font-size: 15px; border-top: 2px solid var(--forest); padding-top: 14px; }
+.fu-table tr.margin td { color: var(--oak); }
+.fu-table tr.margin td.val { font-size: 20px; }
+.fu-sub { font-size: 11.5px; color: var(--text-muted); font-weight: 400; }
+.fu-empty { padding: 60px 24px; text-align: center; color: var(--text-muted); }
+.fu-empty a { color: var(--oak); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="auth-overlay" style="position:fixed;inset:0;background:rgba(20,16,10,0.72);display:flex;align-items:center;justify-content:center;z-index:200;">
+  <div style="background:var(--white);border-radius:12px;padding:28px 26px;width:300px;box-shadow:0 20px 50px rgba(0,0,0,0.35);">
+    <h3 style="font-size:16px;margin-bottom:6px;">Только для администратора</h3>
+    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px;">Тот же пароль, что и в панели цен.</p>
+    <input type="password" id="auth-input" placeholder="••••" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:14px;margin-bottom:10px;" onkeyup="if(event.key==='Enter')authCheck()">
+    <div id="auth-error" style="color:#B23B3B;font-size:12px;min-height:16px;margin-bottom:6px;"></div>
+    <div style="display:flex;gap:8px;">
+      <a href="index.html" style="flex:none;background:none;border:1px solid var(--border);border-radius:7px;padding:9px 14px;cursor:pointer;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;">На калькулятор</a>
+      <button onclick="authCheck()" style="flex:1;background:var(--oak);color:white;border:none;border-radius:7px;padding:9px;font-weight:600;cursor:pointer;">Войти</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="header-wood">
+    <div class="header-left">
+      <h1>Для нас</h1>
+      <p>Розница минус себестоимость — маржа по сечениям и материалу</p>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Калькулятор</a>
+    <a href="admin.html">Панель цен</a>
+    <a href="foreus.html" class="active">Для нас</a>
+    <a href="builders.html">Строители</a>
+  </nav>
+</header>
+
+<div class="container" id="main-content" style="display:none;">
+  <div class="card" style="max-width:640px;margin:24px auto;">
+    <div class="card-header">
+      <h2>Выбор сечения и материала</h2>
+    </div>
+    <div class="card-body">
+      <label class="hint" style="display:block;margin-bottom:8px;">Сечение сруба</label>
+      <div class="option-chips" id="fu-sec-chips" style="margin-bottom:18px;">
+        <div class="chip selected" data-val="100x150">100 мм</div>
+        <div class="chip" data-val="150x150">150 мм</div>
+        <div class="chip" data-val="180x150">180 мм</div>
+        <div class="chip" data-val="200x150">200 мм</div>
+      </div>
+      <label class="hint" style="display:block;margin-bottom:8px;">Материал</label>
+      <div class="option-chips" id="fu-mat-chips" style="margin-bottom:8px;">
+        <div class="chip selected" data-val="sosna">Сосна</div>
+        <div class="chip" data-val="kedr">Кедр</div>
+      </div>
+
+      <table class="fu-table" id="fu-table"></table>
+
+      <div style="margin-top:16px;font-size:11.5px;color:var(--text-muted);" id="fu-meta"></div>
+    </div>
+  </div>
+</div>
+
+<div class="fu-empty" id="empty-state" style="display:none;">
+  <p>Пока нет данных расчёта. Откройте <a href="index.html">калькулятор</a>, введите стены и нажмите «Рассчитать стоимость» — эта страница заполнится сама.</p>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// АВТОРИЗАЦИЯ — тот же пароль/хэш, что в панели цен
+// ═══════════════════════════════════════════════
+const DEFAULT_PASS = 'admin123';
+const PBKDF2_ITER = 200000;
+let PUBLISHED_AUTH = null;
+
+function hex(buf) { return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join(''); }
+async function hashPass(pass, saltHex, iter) {
+  const salt = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+  return hex(bits);
+}
+
+async function authCheck() {
+  const input = document.getElementById('auth-input');
+  const err = document.getElementById('auth-error');
+  const val = input.value;
+  let ok;
+  if (PUBLISHED_AUTH) {
+    ok = (await hashPass(val, PUBLISHED_AUTH.salt, PUBLISHED_AUTH.iter || PBKDF2_ITER)) === PUBLISHED_AUTH.hash;
+  } else {
+    ok = val === DEFAULT_PASS;
+  }
+  if (!ok) { err.textContent = 'Неверный пароль'; input.value = ''; return; }
+  localStorage.setItem('sruby_role', 'admin');
+  unlock();
+}
+
+function unlock() {
+  document.getElementById('auth-overlay').style.display = 'none';
+  init();
+}
+
+(async function () {
+  try {
+    const res = await fetch('prices.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc && doc.auth && doc.auth.hash) PUBLISHED_AUTH = doc.auth;
+    }
+  } catch (e) {}
+  if (localStorage.getItem('sruby_role') === 'admin') unlock();
+})();
+
+// ═══════════════════════════════════════════════
+// ДАННЫЕ И РАСЧЁТ
+// ═══════════════════════════════════════════════
+let STORE = null;
+let curSec = '100x150';
+let curMat = 'sosna';
+const fmt = n => Math.round(n || 0).toLocaleString('ru-RU') + ' ₽';
+
+function init() {
+  try { STORE = JSON.parse(localStorage.getItem('sruby_results_data') || 'null'); } catch (e) { STORE = null; }
+  if (!STORE || !STORE.results) {
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  document.getElementById('main-content').style.display = 'block';
+
+  document.querySelectorAll('#fu-sec-chips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#fu-sec-chips .chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+      curSec = c.dataset.val;
+      render();
+    });
+  });
+  document.querySelectorAll('#fu-mat-chips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#fu-mat-chips .chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+      curMat = c.dataset.val;
+      render();
+    });
+  });
+  render();
+}
+
+function render() {
+  const r = STORE.results[curSec];
+  const P = STORE.P;
+  if (!r) return;
+
+  const wallRetail = r.w.priceKit;
+  const wallCost = r.w.costKit;
+  const terRetail = r.ter ? r.ter.priceKit : 0;
+  const terCost = r.ter ? r.ter.costKit : 0;
+
+  // Кедр — доплата поверх сосны, независимо от того, включена ли галочка «Кедр»
+  // в текущем расчёте (та же формула, что и в блоке «Надбавки»).
+  const cedarRetail = curMat === 'kedr' ? r.volAll * P.cedar_price * (1 + P.cedar_margin / 100) : 0;
+  const cedarCost    = curMat === 'kedr' ? r.volAll * P.cedar_price : 0;
+
+  const dryingRetail = r.drying > 0 ? r.drying : 0; // как было посчитано в самом расчёте (если сушка включена)
+  const dryingCost = dryingRetail; // на сушку наценка не начисляется
+
+  const kitRetail = wallRetail + terRetail + cedarRetail;
+  const kitCost   = wallCost + terCost + cedarCost;
+
+  const totalRetail = kitRetail + dryingRetail;
+  const totalCost    = kitCost + dryingCost;
+  const marginRub = totalRetail - totalCost;
+  const marginPct = totalCost > 0 ? (marginRub / totalCost * 100) : 0;
+
+  const matLabel = curMat === 'kedr' ? 'кедр' : 'сосна';
+  const secLabel = curSec.replace('x', '×') + ' мм, ' + matLabel;
+
+  let rows = '';
+  rows += `<tr><td>Стеновой комплект — розница<div class="fu-sub">${secLabel}, без сборки: сруб${r.ter ? ' + терраса' : ''}${curMat === 'kedr' ? ' + доплата за кедр' : ''}</div></td><td class="val">${fmt(kitRetail)}</td></tr>`;
+  if (dryingRetail) rows += `<tr><td>Сушка — розница</td><td class="val">${fmt(dryingRetail)}</td></tr>`;
+  rows += `<tr class="total"><td>Общее итого — розница</td><td class="val">${fmt(totalRetail)}</td></tr>`;
+  rows += `<tr><td style="padding-top:18px;">Стеновой комплект — себестоимость</td><td class="val" style="padding-top:18px;">${fmt(kitCost)}</td></tr>`;
+  if (dryingCost) rows += `<tr><td>Сушка — себестоимость</td><td class="val">${fmt(dryingCost)}</td></tr>`;
+  rows += `<tr class="total"><td>Общее итого — себестоимость</td><td class="val">${fmt(totalCost)}</td></tr>`;
+  rows += `<tr class="margin"><td style="padding-top:18px;">Маржа, ₽ <span class="fu-sub">(${marginPct.toFixed(1)}% от себестоимости)</span></td><td class="val" style="padding-top:18px;">${fmt(marginRub)}</td></tr>`;
+
+  document.getElementById('fu-table').innerHTML = rows;
+  const when = STORE.savedAt ? new Date(STORE.savedAt).toLocaleString('ru-RU') : '';
+  document.getElementById('fu-meta').textContent = 'По данным расчёта от ' + when + ' · обновляется автоматически при пересчёте на калькуляторе';
+}
+</script>
+</body>
+</html>
