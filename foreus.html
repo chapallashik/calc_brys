@@ -954,11 +954,19 @@ function render() {
   const secLabel = curSec.replace('x', '×') + ' мм, ' + matLabel;
 
   let rows = '';
-  rows += `<tr><td>Стеновой комплект — розница<div class="fu-sub">${secLabel}, без сборки: сруб${r.ter ? ' + терраса' : ''}${curMat === 'kedr' ? ' + доплата за кедр' : ''}</div></td><td class="val">${fmt(kitRetail)}</td></tr>`;
-  if (dryingRetail) rows += `<tr><td>Сушка — розница</td><td class="val">${fmt(dryingRetail)}</td></tr>`;
+  const retailSub = `${secLabel}, без сборки: сруб ${fmt(wallRetail)}` + (r.ter ? ` + терраса ${fmt(terRetail)}` : '') + (cedarRetail ? ` + кедр ${fmt(cedarRetail)}` : '');
+  rows += `<tr><td>Стеновой комплект — розница<div class="fu-sub">${retailSub}</div></td><td class="val">${fmt(kitRetail)}</td></tr>`;
+  rows += dryingRetail
+    ? `<tr><td>Сушка — розница</td><td class="val">${fmt(dryingRetail)}</td></tr>`
+    : `<tr><td style="color:var(--text-muted);">Сушка — розница <span class="fu-sub">(выключена на калькуляторе)</span></td><td class="val" style="color:var(--text-muted);">—</td></tr>`;
   rows += `<tr class="total"><td>Общее итого — розница</td><td class="val">${fmt(totalRetail)}</td></tr>`;
-  rows += `<tr><td style="padding-top:18px;">Стеновой комплект — себестоимость</td><td class="val" style="padding-top:18px;">${fmt(kitCost)}</td></tr>`;
-  if (dryingCost) rows += `<tr><td>Сушка — себестоимость</td><td class="val">${fmt(dryingCost)}</td></tr>`;
+  const costSub = r.ter
+    ? `сруб ${fmt(wallCost)} + терраса ${fmt(terCost)}${cedarCost ? ' + кедр ' + fmt(cedarCost) : ''}`
+    : '';
+  rows += `<tr><td style="padding-top:18px;">Стеновой комплект — себестоимость${costSub ? `<div class="fu-sub">${costSub}</div>` : ''}</td><td class="val" style="padding-top:18px;">${fmt(kitCost)}</td></tr>`;
+  rows += dryingCost
+    ? `<tr><td>Сушка — себестоимость</td><td class="val">${fmt(dryingCost)}</td></tr>`
+    : '';
   rows += `<tr class="total"><td>Общее итого — себестоимость</td><td class="val">${fmt(totalCost)}</td></tr>`;
   rows += `<tr class="margin"><td style="padding-top:18px;">Маржа, ₽ <span class="fu-sub">(${marginPct.toFixed(1)}% от себестоимости)</span></td><td class="val" style="padding-top:18px;">${fmt(marginRub)}</td></tr>`;
 
