@@ -1045,6 +1045,16 @@ async function preloadAuth() {
   } catch (e) {}
   const hint = document.getElementById('auth-hint');
   if (hint) hint.textContent = PUBLISHED_AUTH ? '' : 'Пароль не менялся: admin123';
+
+  // Уже входили как администратор на калькуляторе (index.html) в этом браузере —
+  // не спрашиваем пароль второй раз.
+  if (localStorage.getItem('sruby_role') === 'admin') {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    fillConn();
+    loadPrices();
+    if (getConn()) testConn();
+  }
 }
 
 const CONN_FROM_LINK = adoptConnFromHash();
@@ -1071,6 +1081,7 @@ async function authCheck() {
   }
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('admin-content').style.display = 'block';
+  localStorage.setItem('sruby_role', 'admin');
   fillConn();
   loadPrices();
   if (getConn()) testConn();

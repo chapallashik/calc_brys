@@ -401,6 +401,65 @@ input[type="number"]:focus, select:focus {
   .spb-chip { padding: 7px 4px; }
 }
 
+/* ─── РЕЖИМ МЕНЕДЖЕРА: скрыть формулы, себестоимость и маржу ─── */
+body.role-manager .res-formula,
+body.role-manager .mgr-hide {
+  display: none !important;
+}
+body.role-manager .header-nav a[href="admin.html"] {
+  display: none !important;
+}
+
+/* ─── ПАНЕЛЬ РОЛИ (переключатель админ/менеджер) ───────────── */
+.role-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 6px 40px;
+  background: rgba(0,0,0,0.15);
+  font-size: 12px;
+}
+.role-bar .role-badge {
+  color: rgba(245,240,232,0.55);
+  letter-spacing: 0.03em;
+}
+.role-bar button {
+  background: none;
+  border: 1px solid rgba(245,240,232,0.25);
+  color: rgba(245,240,232,0.75);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.role-bar button:hover { border-color: rgba(245,240,232,0.6); color: var(--cream); }
+.role-auth-overlay {
+  position: fixed; inset: 0; background: rgba(20,16,10,0.72);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.role-auth-box {
+  background: var(--white); border-radius: 12px; padding: 28px 26px;
+  width: 300px; box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+}
+.role-auth-box h3 { font-size: 16px; margin-bottom: 6px; }
+.role-auth-box p { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; }
+.role-auth-box input {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px;
+  font-size: 14px; margin-bottom: 10px;
+}
+.role-auth-box .err { color: #B23B3B; font-size: 12px; min-height: 16px; margin-bottom: 6px; }
+.role-auth-box .role-auth-actions { display: flex; gap: 8px; }
+.role-auth-box button.primary {
+  flex: 1; background: var(--oak); color: white; border: none; border-radius: 7px;
+  padding: 9px; font-weight: 600; cursor: pointer;
+}
+.role-auth-box button.secondary {
+  background: none; border: 1px solid var(--border); border-radius: 7px;
+  padding: 9px 14px; cursor: pointer; color: var(--text-muted);
+}
+
 .results-panel {
   position: sticky;
   top: 20px;
@@ -723,7 +782,24 @@ footer {
     <a href="index.html" class="active">Калькулятор</a>
     <a href="admin.html">Панель цен</a>
   </nav>
+  <div class="role-bar">
+    <span class="role-badge" id="role-badge">Режим: менеджер</span>
+    <button id="role-btn" onclick="onRoleBtnClick()">Режим администратора</button>
+  </div>
 </header>
+
+<div class="role-auth-overlay" id="role-auth-overlay" style="display:none;">
+  <div class="role-auth-box">
+    <h3>Вход для администратора</h3>
+    <p>Тот же пароль, что и в панели цен.</p>
+    <input type="password" id="role-auth-input" placeholder="••••" onkeyup="if(event.key==='Enter')roleAuthCheck()">
+    <div class="err" id="role-auth-error"></div>
+    <div class="role-auth-actions">
+      <button class="secondary" onclick="document.getElementById('role-auth-overlay').style.display='none'">Отмена</button>
+      <button class="primary" onclick="roleAuthCheck()">Войти</button>
+    </div>
+  </div>
+</div>
 
 <div class="sticky-price-bar" id="sticky-price-bar" style="display:none;"></div>
 
@@ -2108,6 +2184,79 @@ function recalcLive() { if (lastResult) calculate(); }
 // ═══════════════════════════════════════════════
 // ВЫВОД
 // ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// РОЛИ: админ / менеджер
+// Один и тот же пароль, что и в панели цен (хэш хранится в prices.json→auth).
+// Успешный вход запоминается в localStorage, поэтому переход в панель цен
+// пароль повторно не спрашивает.
+// ═══════════════════════════════════════════════
+const ROLE_DEFAULT_PASS = 'admin123';
+const ROLE_PBKDF2_ITER = 200000;
+let ROLE_PUBLISHED_AUTH = null;
+
+function roleHex(buf) { return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join(''); }
+async function roleHashPass(pass, saltHex, iter) {
+  const salt = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+  return roleHex(bits);
+}
+
+function applyRole() {
+  const isAdmin = localStorage.getItem('sruby_role') === 'admin';
+  document.body.classList.toggle('role-manager', !isAdmin);
+  const badge = document.getElementById('role-badge');
+  const btn = document.getElementById('role-btn');
+  if (badge) badge.textContent = 'Режим: ' + (isAdmin ? 'администратор' : 'менеджер');
+  if (btn) btn.textContent = isAdmin ? 'Выйти в режим менеджера' : 'Режим администратора';
+}
+
+function onRoleBtnClick() {
+  const isAdmin = localStorage.getItem('sruby_role') === 'admin';
+  if (isAdmin) {
+    localStorage.removeItem('sruby_role');
+    applyRole();
+    if (lastResult) renderResults(lastResult.results, selectedSection);
+  } else {
+    document.getElementById('role-auth-overlay').style.display = 'flex';
+    document.getElementById('role-auth-input').value = '';
+    document.getElementById('role-auth-error').textContent = '';
+    document.getElementById('role-auth-input').focus();
+  }
+}
+
+async function roleAuthCheck() {
+  const input = document.getElementById('role-auth-input');
+  const err = document.getElementById('role-auth-error');
+  const val = input.value;
+  let ok;
+  if (ROLE_PUBLISHED_AUTH) {
+    ok = (await roleHashPass(val, ROLE_PUBLISHED_AUTH.salt, ROLE_PUBLISHED_AUTH.iter || ROLE_PBKDF2_ITER)) === ROLE_PUBLISHED_AUTH.hash;
+  } else {
+    ok = val === ROLE_DEFAULT_PASS;
+  }
+  if (!ok) {
+    err.textContent = 'Неверный пароль';
+    input.value = '';
+    return;
+  }
+  localStorage.setItem('sruby_role', 'admin');
+  document.getElementById('role-auth-overlay').style.display = 'none';
+  applyRole();
+  if (lastResult) renderResults(lastResult.results, selectedSection);
+}
+
+(async function preloadRoleAuth() {
+  try {
+    const res = await fetch('prices.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc && doc.auth && doc.auth.hash) ROLE_PUBLISHED_AUTH = doc.auth;
+    }
+  } catch (e) {}
+})();
+applyRole();
+
 function renderResults(results, sec) {
   const r = results[sec];
   const { g, w, ter, pst, rf, bs, ex, P } = r;
@@ -2115,7 +2264,7 @@ function renderResults(results, sec) {
 
   // Строка результата: подпись, значение и необязательная формула мелким шрифтом
   const row = (label, value, opt = {}) => `
-    <div class="res-row${opt.accent ? ' accent' : ''}">
+    <div class="res-row${opt.accent ? ' accent' : ''}${opt.mgrHide ? ' mgr-hide' : ''}">
       <div class="res-label">${label}${opt.formula ? `<span class="res-formula">${opt.formula}</span>` : ''}</div>
       <div class="res-value">${value}</div>
     </div>`;
@@ -2143,8 +2292,8 @@ function renderResults(results, sec) {
     + row('Объём с запасом', n(g.volR, 3) + ' м³', { accent: true, formula: `запас ${P.beam_reserve}%` });
 
   html += head('Стеновой комплект')
-    + row('Материал и работа', fmt(w.costKit), { formula: `${n(g.volR, 3)} м³ × (${n(P['pine_' + k], 0)} + ${n(P['work_' + k], 0)}) ₽/м³` })
-    + row('Маржа', fmt(w.priceKit - w.costKit), { formula: `${P.margin_main}%` })
+    + row('Материал и работа', fmt(w.costKit), { formula: `${n(g.volR, 3)} м³ × (${n(P['pine_' + k], 0)} + ${n(P['work_' + k], 0)}) ₽/м³`, mgrHide: true })
+    + row('Маржа', fmt(w.priceKit - w.costKit), { formula: `${P.margin_main}%`, mgrHide: true })
     + row('Комплект без сборки', fmt(w.priceKit), { accent: true, formula: 'материал и работа + маржа (см. выше)' })
     + row('Монтаж сруба', fmt(w.priceAsm), { formula: `${n(g.volR, 3)} м³ × ${n(P['assembly_' + k], 0)} ₽ + ${P.margin_assembly}%` })
     + row('Джут', fmt(w.priceJuteOnly), { formula: `${n(w.juteMP, 0)} м.п. × ${P['jute_' + k]} ₽ + ${P.margin_assembly}%` })
@@ -2171,12 +2320,12 @@ function renderResults(results, sec) {
     + (rf.warmArea ? row('Тёплая кровля', fmt(rf.warmMat + rf.warmWork), { formula: `${n(rf.warmArea, 1)} м² · материал и работа` }) : '')
     + row('Доборы', fmt(rf.addonCost), { formula: `${P.roof_addon_pct}% от материалов` })
     + (rf.frontonArea ? row('Каркасный фронтон', fmt(rf.frontonCost), { formula: `${n(rf.frontonArea, 1)} м² × ${n(P.roof_fronton_sqm, 0)} ₽` }) : '')
-    + row('Себестоимость', fmt(rf.totalCost), { formula: 'сумма позиций выше' })
+    + row('Себестоимость', fmt(rf.totalCost), { formula: 'сумма позиций выше', mgrHide: true })
     + row('Кровля для клиента', fmt(rf.clientPrice), { accent: true, formula: `маржа ${P.roof_margin}%` });
 
   if (bs) html += head('Нижняя обвязка · лиственница')
     + row('Объём', n(bs.vol, 3) + ' м³', { formula: `${n(bs.len, 1)} м.п. · брус ${bs.secA * 1000}×${bs.secB * 1000} мм` })
-    + row('Материал и работа', fmt(bs.cost), { formula: `${n(P.base_larch, 0)} + ${n(P.base_work, 0)} ₽/м³` })
+    + row('Материал и работа', fmt(bs.cost), { formula: `${n(P.base_larch, 0)} + ${n(P.base_work, 0)} ₽/м³`, mgrHide: true })
     + row('Обвязка для клиента', fmt(bs.price), { accent: true, formula: `маржа ${P.base_margin}%` });
 
   if (ex) html += head('Доп. материалы · для заказа без сборки')
