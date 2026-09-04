@@ -2193,6 +2193,7 @@ function calculate() {
   try {
     localStorage.setItem('sruby_results_data', JSON.stringify({
       results, P, baseSection, postSection, extrasBaseSection,
+      selectedSection, isCedar: getB('is_cedar'), hasDrying: getB('has_drying'),
       savedAt: Date.now(),
     }));
   } catch (e) {}
