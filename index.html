@@ -408,9 +408,7 @@ body.role-manager .res-row:not(.accent),
 body.role-manager .res-formula {
   display: none !important;
 }
-body.role-manager .mgr-full-label { display: none; }
-body.role-manager .mgr-short-label { display: inline; }
-.mgr-short-label { display: none; }
+
 body.role-manager .header-nav a[href="admin.html"],
 body.role-manager .header-nav a[href="foreus.html"],
 body.role-manager .header-nav a[href="builders.html"] {
@@ -888,7 +886,7 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_floor2').click()">Добавить второй этаж</span>
           </div>
-          <div class="collapsible collapsed" id="floor2-block" style="max-height:400px;">
+          <div class="collapsible collapsed" id="floor2-block" style="max-height:1200px;">
             <div style="padding-top:12px;">
               <div class="form-row">
                 <div class="field">
@@ -920,7 +918,7 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_floorbeam').click()">Межэтажный венец перекрытия</span>
           </div>
-          <div class="collapsible collapsed" id="floorbeam-block" style="max-height:900px;">
+          <div class="collapsible collapsed" id="floorbeam-block" style="max-height:1200px;">
             <div style="padding-top:12px;">
               <div class="form-row">
                 <div class="field">
@@ -957,7 +955,7 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_openings').click()">Вычесть оконные и дверные проёмы</span>
           </div>
-          <div class="collapsible collapsed" id="openings-block" style="max-height:500px;">
+          <div class="collapsible collapsed" id="openings-block" style="max-height:1200px;">
             <div style="padding-top:12px;">
               <table class="walls-table">
                 <thead><tr><th>Проём</th><th>Ширина, м</th><th>Высота, м</th><th>Кол-во</th><th></th></tr></thead>
@@ -976,7 +974,7 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_frontons').click()">Добавить фронтоны</span>
           </div>
-          <div class="collapsible collapsed" id="frontons-block" style="max-height:900px;">
+          <div class="collapsible collapsed" id="frontons-block" style="max-height:1200px;">
             <div style="padding-top:12px;">
               <div class="form-row">
                 <div class="field">
@@ -1121,7 +1119,7 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_base').click()">Включить обвязку (лиственница)</span>
           </div>
-          <div class="collapsible" id="base-block" style="max-height:900px;">
+          <div class="collapsible" id="base-block" style="max-height:1200px;">
             <div style="padding-top:16px;">
               <label class="hint" style="display:block;margin-bottom:8px;">Сечение обвязки — выбирается отдельно от сечения сруба (например, сруб 100 мм + обвязка 150 мм)</label>
               <div class="section-toggle" style="margin-bottom:10px;">
@@ -1172,7 +1170,7 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_terrace').click()">Вылет для террасы и коньковая балка</span>
           </div>
-          <div class="collapsible collapsed" id="terrace-block" style="max-height:600px;">
+          <div class="collapsible collapsed" id="terrace-block" style="max-height:1200px;">
             <div style="padding-top:16px;">
               <div class="form-row one">
                 <div class="field">
@@ -1196,7 +1194,7 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_posts').click()">Опорные столбы</span>
           </div>
-          <div class="collapsible collapsed" id="posts-block" style="max-height:500px;">
+          <div class="collapsible collapsed" id="posts-block" style="max-height:1200px;">
             <div style="padding-top:12px;">
               <label class="hint" style="display:block;margin-bottom:8px;">Сечение столбов — выбирается отдельно от сечения сруба</label>
               <div class="option-chips" id="post-section-chips" style="margin-bottom:16px;">
@@ -2302,15 +2300,6 @@ function renderResults(results, sec) {
 
   let html = head('Все варианты бруса · со сборкой')
     + `<div class="section-prices">${secCards}</div>`;
-
-  html += head('Объёмы')
-    + row('Этаж 1', n(g.f1.mp, 0) + ' м.п.', { formula: `${n(g.f1.len, 1)} м × ${g.f1.crowns} венц.` })
-    + (g.f2.mp ? row('Этаж 2', n(g.f2.mp, 0) + ' м.п.', { formula: `${n(g.f2.len, 1)} м × ${g.f2.crowns} венц.` }) : '')
-    + (g.fb.mp ? row('Венец перекрытия', n(g.fb.mp, 0) + ' м.п.', { formula: `${n(g.fb.len, 1)} м × ${g.fb.crowns} венц.` }) : '')
-    + (g.fr.mp ? row('Фронтоны', n(g.fr.mp, 0) + ' м.п.', { formula: `${n(g.fr.len, 1)} м × ${g.fr.crowns} венц., объём ÷ 2` }) : '')
-    + (g.openMP ? row('Вычет проёмов', '−' + n(g.openMP, 0) + ' м.п.') : '')
-    + row('Объём бруса', n(g.vol, 3) + ' м³')
-    + row('<span class="mgr-full-label">Объём с запасом</span><span class="mgr-short-label">Объём</span>', n(g.volR, 3) + ' м³', { accent: true, formula: `запас ${P.beam_reserve}%` });
 
   html += head('Стеновой комплект')
     + row('Материал и работа', fmt(w.costKit), { formula: `${n(g.volR, 3)} м³ × (${n(P['pine_' + k], 0)} + ${n(P['work_' + k], 0)}) ₽/м³`, mgrHide: true })
