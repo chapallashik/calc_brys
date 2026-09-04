@@ -772,19 +772,19 @@ footer {
 /* ─── СТРОИТЕЛИ: доп. стили ───────────────────── */
 .bt-table-wrap { overflow-x: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; }
 .bt-table { width: 100%; min-width: 920px; border-collapse: separate; border-spacing: 0; font-size: 13px; table-layout: fixed; }
-.bt-table col.c-section  { width: 9%; }
-.bt-table col.c-name     { width: 27%; }
-.bt-table col.c-sec      { width: 11%; }
-.bt-table col.c-vol      { width: 10%; }
-.bt-table col.c-price    { width: 10%; }
+.bt-table col.c-section  { width: 8%; }
+.bt-table col.c-name     { width: 24%; }
+.bt-table col.c-sec      { width: 10%; }
+.bt-table col.c-vol      { width: 9%; }
+.bt-table col.c-price    { width: 11%; }
 .bt-table col.c-cost     { width: 10%; }
-.bt-table col.c-mpct     { width: 7%;  }
+.bt-table col.c-mpct     { width: 9%;  }
 .bt-table col.c-mrub     { width: 9%;  }
-.bt-table col.c-final    { width: 13%; }
+.bt-table col.c-final    { width: 12%; }
 .bt-table th {
   text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em;
   color: rgba(245,240,232,0.75); background: var(--forest);
-  padding: 11px 10px; line-height: 1.3;
+  padding: 11px 8px; line-height: 1.3; white-space: nowrap;
   border-right: 1px solid rgba(245,240,232,0.12);
 }
 .bt-table th:last-child { border-right: none; }
@@ -807,11 +807,12 @@ footer {
 .bt-table tr.total td.num strong { color: var(--oak-light); }
 .bt-table .row-sub { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
 .bt-table td.num strong { font-variant-numeric: tabular-nums; }
-.bt-bags-input {
-  width: 52px; padding: 3px 6px; border: 1px solid var(--oak); border-radius: 5px;
+.bt-cell-input {
+  width: 64px; padding: 3px 6px; border: 1px solid var(--oak); border-radius: 5px;
   font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.4; text-align: right;
   background: #FFF8EC; vertical-align: middle;
 }
+.bt-cell-input-pct { width: 46px; }
 .bt-empty { padding: 60px 24px; text-align: center; color: var(--text-muted); }
 .bt-empty a { color: var(--oak); font-weight: 600; }
 @media (max-width: 900px) {
@@ -873,6 +874,7 @@ footer {
 
       <div class="bt-actions">
         <button onclick="downloadXlsx()">⬇ Скачать таблицу для бригады (.xlsx)</button>
+        <button onclick="resetOverrides()" style="background:none;border:1px solid var(--oak);color:var(--oak);">↺ Сбросить правки цен и маржи</button>
       </div>
 
       <div class="bt-table-wrap">
@@ -981,6 +983,7 @@ function init() {
       document.querySelectorAll('#bt-sec-chips .chip').forEach(x => x.classList.remove('selected'));
       c.classList.add('selected');
       curSec = c.dataset.val;
+      overrides = {}; // ручные правки цены/маржи считаются для конкретного сечения
       render();
     });
   });
@@ -988,6 +991,11 @@ function init() {
 }
 
 // Строит список строк сметы для строителей — тот же состав, что в листе «Строители» экселя.
+// Ручные правки цены/маржи по каждой строке — храним по стабильному ключу,
+// не привязанному к порядку строк. Сбрасываются при смене сечения, потому что
+// цена за единицу almost всегда своя для каждого сечения.
+let overrides = {};
+
 function buildRows() {
   const r = STORE.results[curSec];
   const P = STORE.P;
@@ -995,64 +1003,74 @@ function buildRows() {
   const secLabel = curSec.replace('x', '×') + ' мм';
   const rows = [];
 
-  const addRow = (section, name, secLbl, vol, unit, price, cost, marginPct, sub) => {
+  const addRow = (key, section, name, secLbl, vol, unit, defPrice, fixedCost, defMarginPct, sub) => {
+    const ov = overrides[key] || {};
+    const price = ov.price != null ? ov.price : defPrice;
+    const marginPct = ov.marginPct != null ? ov.marginPct : defMarginPct;
+    const cost = defPrice != null ? vol * price : fixedCost;
     const marginRub = cost * marginPct / 100;
     const final = cost + marginRub;
-    rows.push({ section, name, secLbl, vol, unit, price, cost, marginPct, marginRub, final, sub });
+    rows.push({ key, section, name, secLbl, vol, unit, price, editablePrice: defPrice != null, cost, marginPct, marginRub, final, sub });
   };
 
   // 1. Работа — стеновой комплект (сруб + терраса), одной строкой, как в экселе
   const asmVol = r.g.volR + (r.ter ? r.ter.volR : 0);
-  addRow('Работа', 'Стеновой комплект, сборка', secLabel, asmVol, 'м³', P['assembly_' + k],
-    asmVol * P['assembly_' + k], P.margin_assembly, r.ter ? 'сруб + терраса' : 'сруб');
+  addRow('wall_assembly', 'Работа', 'Стеновой комплект, сборка', secLabel, asmVol, 'м³', P['assembly_' + k],
+    null, P.margin_assembly, r.ter ? 'сруб + терраса' : 'сруб');
 
   // 2–3. Столбы опорные (материал + работа), если включены
   if (r.pst) {
     const postSecLbl = (STORE.postSection || '150') + '×' + (STORE.postSection || '150') + ' мм';
-    addRow('Работа', 'Столбы опорные, отстрожка и монтаж', postSecLbl, r.pst.qty, 'шт', P['post_work_' + (STORE.postSection || '150')],
-      r.pst.costWork, P.post_margin);
-    addRow('Материал', 'Столбы опорные', postSecLbl, r.pst.vol, 'м³', P.post_price,
-      r.pst.costMat, P.post_margin);
+    addRow('posts_work', 'Работа', 'Столбы опорные, отстрожка и монтаж', postSecLbl, r.pst.qty, 'шт', P['post_work_' + (STORE.postSection || '150')],
+      null, P.post_margin);
+    addRow('posts_material', 'Материал', 'Столбы опорные', postSecLbl, r.pst.vol, 'м³', P.post_price,
+      null, P.post_margin);
   }
 
   // 4–5. Обвязка (материал + работа), если включена
   if (r.bs) {
     const baseK = STORE.baseSection || '150';
     const baseSecLbl = `${P['base_w_' + baseK] || 150}×${P['base_h_' + baseK] || 150} мм`;
-    addRow('Материал', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_larch,
-      r.bs.vol * P.base_larch, P.base_margin);
-    addRow('Работа', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_work,
-      r.bs.vol * P.base_work, P.base_margin);
+    addRow('obvyazka_material', 'Материал', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_larch,
+      null, P.base_margin);
+    addRow('obvyazka_work', 'Работа', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_work,
+      null, P.base_margin);
   }
 
   // 6–7. Джут и шканты (сруб + терраса вместе, запас уже учтён)
   const juteMPTotal = r.w.juteMP + (r.ter ? r.ter.juteMP : 0);
-  addRow('Материал', 'Джут (запас +20%)', secLabel, juteMPTotal, 'м.п.', P['jute_' + k],
-    juteMPTotal * P['jute_' + k], P.margin_assembly);
-  addRow('Материал', 'Шканты (запас +20%)', secLabel, juteMPTotal, 'шт', P.dowel,
-    juteMPTotal * P.dowel, P.margin_assembly);
+  addRow('jute', 'Материал', 'Джут (запас +20%)', secLabel, juteMPTotal, 'м.п.', P['jute_' + k],
+    null, P.margin_assembly);
+  addRow('dowel', 'Материал', 'Шканты (запас +20%)', secLabel, juteMPTotal, 'шт', P.dowel,
+    null, P.margin_assembly);
 
   // 8. Синтепон — ручной ввод количества мешков. В экселе эта строка специально
   // обнулена (K14=-1) — стоимость мешков в цену для заказчика не закладывается,
-  // это внутренний расходник бригады.
+  // это внутренний расходник бригады. Маржу можно поменять вручную, как и везде.
   const bags = getBags();
-  const synteponCost = bags * P.syntepon_price;
-  rows.push({
-    section: 'Материал', name: 'Обмотка угловых соединений — синтепон', secLbl: '—',
-    vol: bags, unit: 'мешков', price: P.syntepon_price, cost: synteponCost,
-    marginPct: null, marginRub: -synteponCost, final: 0, sub: 'в цену для заказчика не входит', isBags: true,
-  });
+  {
+    const ov = overrides['syntepon'] || {};
+    const price = ov.price != null ? ov.price : P.syntepon_price;
+    const marginPct = ov.marginPct != null ? ov.marginPct : -100;
+    const cost = bags * price;
+    const marginRub = cost * marginPct / 100;
+    rows.push({
+      key: 'syntepon', section: 'Материал', name: 'Обмотка угловых соединений — синтепон', secLbl: '—',
+      vol: bags, unit: 'мешков', price, editablePrice: true, cost, marginPct, marginRub, final: cost + marginRub,
+      sub: marginPct === -100 ? 'в цену для заказчика не входит' : '', isBags: true,
+    });
+  }
 
   // 9–12. Кровля, если включена
   if (r.rf) {
     const roofMatCost = r.rf.rafterCost + r.rf.obrCost + r.rf.membraneCost + r.rf.tilesCost + r.rf.hwCost + r.rf.addonCost + r.rf.frontonCost;
-    addRow('Материал', 'Кровля — материал (стропила, обрешётка, мембрана, черепица, крепёж, доборы)', n2(r.rf.area) + ' м²', r.rf.area, 'м²', null,
+    addRow('roof_material', 'Материал', 'Кровля — материал (стропила, обрешётка, мембрана, черепица, крепёж, доборы)', n2(r.rf.area) + ' м²', r.rf.area, 'м²', null,
       roofMatCost, P.roof_margin);
-    if (r.rf.warmArea) addRow('Материал', 'Кровля — утепление, материал', n2(r.rf.warmArea) + ' м²', r.rf.warmArea, 'м²', null,
+    if (r.rf.warmArea) addRow('roof_warm_material', 'Материал', 'Кровля — утепление, материал', n2(r.rf.warmArea) + ' м²', r.rf.warmArea, 'м²', null,
       r.rf.warmMat, P.roof_margin);
-    addRow('Работа', 'Кровля — монтаж', n2(r.rf.area) + ' м²', r.rf.area, 'м²', P.roof_work_sqm,
-      r.rf.workCost, P.roof_margin);
-    if (r.rf.warmArea) addRow('Работа', 'Кровля — утепление, работа', n2(r.rf.warmArea) + ' м²', r.rf.warmArea, 'м²', null,
+    addRow('roof_work', 'Работа', 'Кровля — монтаж', n2(r.rf.area) + ' м²', r.rf.area, 'м²', P.roof_work_sqm,
+      null, P.roof_margin);
+    if (r.rf.warmArea) addRow('roof_warm_work', 'Работа', 'Кровля — утепление, работа', n2(r.rf.warmArea) + ' м²', r.rf.warmArea, 'м²', null,
       r.rf.warmWork, P.roof_margin);
   }
 
@@ -1069,11 +1087,14 @@ function render() {
       <td>${row.name}${row.sub ? `<span class="row-sub">${row.sub}</span>` : ''}</td>
       <td class="nowrap">${row.secLbl}</td>
       <td class="num nowrap">${row.isBags
-        ? `<input type="number" class="bt-bags-input" value="${row.vol}" step="0.5" min="0" onchange="onBagsChange(this.value)">`
+        ? `<input type="number" class="bt-cell-input" value="${row.vol}" step="0.5" min="0" onchange="onBagsChange(this.value)">`
         : `${n2(row.vol)} ${row.unit}`}</td>
-      <td class="num nowrap">${row.price != null ? fmt(row.price) : '—'}</td>
+      <td class="num nowrap">${row.editablePrice
+        ? `<input type="number" class="bt-cell-input" value="${Math.round(row.price)}" step="10" onchange="onCellChange('${row.key}','price',this.value)">`
+        : '—'}</td>
       <td class="num nowrap">${fmt(row.cost)}</td>
-      <td class="num nowrap">${row.marginPct == null ? '—' : row.marginPct + '%'}</td>
+      <td class="num nowrap">${row.marginPct == null ? '—' :
+        `<input type="number" class="bt-cell-input bt-cell-input-pct" value="${row.marginPct}" step="1" onchange="onCellChange('${row.key}','marginPct',this.value)">`}</td>
       <td class="num nowrap">${fmt(row.marginRub)}</td>
       <td class="num nowrap"><strong>${fmt(row.final)}</strong></td>
     </tr>`).join('');
@@ -1091,11 +1112,23 @@ function render() {
     </tr>`;
 
   const when = STORE.savedAt ? new Date(STORE.savedAt).toLocaleString('ru-RU') : '';
-  document.getElementById('bt-hint').textContent = 'По данным расчёта от ' + when + ' · обновляется автоматически при пересчёте на калькуляторе';
+  document.getElementById('bt-hint').textContent = 'По данным расчёта от ' + when + ' · обновляется автоматически при пересчёте на калькуляторе · цену за единицу и маржу можно поправить вручную в любой строке';
 }
 
 function onBagsChange(v) {
   setBags(parseFloat(v) || 0);
+  render();
+}
+
+function onCellChange(key, field, value) {
+  const num = parseFloat(value);
+  if (!overrides[key]) overrides[key] = {};
+  overrides[key][field] = isNaN(num) ? null : num;
+  render();
+}
+
+function resetOverrides() {
+  overrides = {};
   render();
 }
 
@@ -1135,7 +1168,7 @@ async function downloadXlsx() {
   ROWS.forEach(r => {
     const rowNum = ws.rowCount + 1;
     const vol = Number(r.vol.toFixed(3));
-    const marginFrac = r.isBags ? -1 : (r.marginPct == null ? 0 : r.marginPct / 100); // синтепон = -100%, как в исходном экселе
+    const marginFrac = r.marginPct / 100; // маржа берётся из строки — уже с учётом ручных правок на странице
 
     const row = ws.addRow([
       r.section,
