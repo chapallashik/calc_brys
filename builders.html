@@ -110,7 +110,7 @@ header {
 
 /* ─── LAYOUT ─────────────────────────────────── */
 .container {
-  max-width: 1320px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -771,7 +771,7 @@ footer {
 
 /* ─── СТРОИТЕЛИ: доп. стили ───────────────────── */
 .bt-table-wrap { overflow-x: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; }
-.bt-table { width: 100%; min-width: 1040px; border-collapse: separate; border-spacing: 0; font-size: 13px; table-layout: fixed; }
+.bt-table { width: 100%; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; table-layout: fixed; }
 .bt-table col.c-section  { width: 8%; }
 .bt-table col.c-name     { width: 22%; }
 .bt-table col.c-sec      { width: 10%; }
@@ -782,9 +782,9 @@ footer {
 .bt-table col.c-mrub     { width: 9%;  }
 .bt-table col.c-final    { width: 11%; }
 .bt-table th {
-  text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em;
+  text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.01em;
   color: rgba(245,240,232,0.75); background: var(--forest);
-  padding: 11px 8px; line-height: 1.3; white-space: nowrap;
+  padding: 11px 6px; line-height: 1.3; white-space: nowrap;
   border-right: 1px solid rgba(245,240,232,0.12);
 }
 .bt-table th:last-child { border-right: none; }
@@ -858,7 +858,7 @@ footer {
 </header>
 
 <div class="container" id="main-content" style="display:none;">
-  <div class="card" style="max-width:1260px;margin:24px auto;">
+  <div class="card" style="max-width:1400px;margin:24px auto;">
     <div class="card-header">
       <h2>Сечение сруба</h2>
     </div>
@@ -889,7 +889,7 @@ footer {
             <th>Раздел</th><th>Позиция</th><th>Сечение</th>
             <th class="num">Объём</th><th class="num">Цена, ₽/ед.</th>
             <th class="num">Итого, ₽</th><th class="num">Маржа, %</th>
-            <th class="num">Маржа, ₽</th><th class="num">Цена для заказчика, ₽</th>
+            <th class="num">Маржа, ₽</th><th class="num">Цена заказчику, ₽</th>
           </tr>
         </thead>
         <tbody id="bt-tbody"></tbody>
