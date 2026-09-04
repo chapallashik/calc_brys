@@ -972,6 +972,10 @@ function init() {
   }
   document.getElementById('main-content').style.display = 'block';
 
+  // По умолчанию — то же сечение, что сейчас выбрано на калькуляторе.
+  curSec = STORE.selectedSection || '100x150';
+  document.querySelectorAll('#bt-sec-chips .chip').forEach(c => c.classList.toggle('selected', c.dataset.val === curSec));
+
   document.querySelectorAll('#bt-sec-chips .chip').forEach(c => {
     c.addEventListener('click', () => {
       document.querySelectorAll('#bt-sec-chips .chip').forEach(x => x.classList.remove('selected'));
