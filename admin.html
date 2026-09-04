@@ -116,6 +116,44 @@ header {
 .price-input:focus { outline: none; border-color: var(--forest-light); background: var(--white); }
 .price-input.changed { border-color: var(--oak); background: #FEF9F0; }
 
+/* ─── ПОДСВЕТКА СТРОК С МАРЖОЙ ───────────────── */
+/* Работает по всем полям data-key="*margin*" сразу — не нужно помечать
+   каждую строку вручную, новые поля маржи подсветятся сами. */
+.price-row:has(> .price-input[data-key*="margin"]),
+.price-row:has(.price-input-wrap > .price-input[data-key*="margin"]) {
+  background: #FBF0DC;
+  border-radius: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-left: -12px;
+  margin-right: -12px;
+  border-bottom-color: #EAD7AE;
+}
+.price-row:has(.price-input[data-key*="margin"]) .price-label {
+  color: #8A5A1E;
+  font-weight: 600;
+}
+.price-row:has(.price-input[data-key*="margin"]) .price-label::after {
+  content: "МАРЖА";
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #FFF;
+  background: var(--oak);
+  border-radius: 4px;
+  vertical-align: middle;
+}
+.price-input[data-key*="margin"] {
+  color: #A8551F;
+  font-weight: 700;
+  border-color: var(--oak);
+  background: #FFF6E9;
+}
+.price-input[data-key*="margin"]:focus { background: var(--white); }
+
 /* ─── BUTTONS ────────────────── */
 .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .price-input.wide { width: 280px; text-align: left; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
