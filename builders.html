@@ -1133,22 +1133,40 @@ async function downloadXlsx() {
   header.height = 30;
 
   ROWS.forEach(r => {
+    const rowNum = ws.rowCount + 1;
+    const vol = Number(r.vol.toFixed(3));
+    const marginFrac = r.isBags ? -1 : (r.marginPct == null ? 0 : r.marginPct / 100); // синтепон = -100%, как в исходном экселе
+
     const row = ws.addRow([
       r.section,
       r.name + (r.sub ? ' (' + r.sub + ')' : ''),
       r.secLbl,
-      Number(r.vol.toFixed(3)),
+      vol,                       // D — объём: обычное число (в исходнике бралось с других листов)
       r.unit,
-      r.price || null,
-      Math.round(r.cost),
-      r.marginPct == null ? '—' : r.marginPct / 100,
-      Math.round(r.marginRub),
-      Math.round(r.final),
+      r.price || null,           // F — цена за ед.: обычное число (тоже бралось с других листов)
+      null,                      // G — итого: формула ниже (если есть цена за ед.) либо число
+      marginFrac,                // H — маржа %: вводимое число, как и раньше
+      null,                      // I — маржа ₽: формула
+      null,                      // J — цена для заказчика: формула
     ]);
-    ['F', 'G'].forEach(col => { row.getCell(col === 'F' ? 6 : 7).numFmt = '#,##0'; });
+
+    // Итого = Объём × Цена — формула, только если в строке вообще есть цена за единицу
+    // (у сводных позиций кровли своей единой цены нет — там сумма нескольких материалов,
+    // такая же ситуация была и в исходном экселе — там это ссылка на другой лист, то есть
+    // просто число, а не формула внутри этой же таблицы).
+    if (r.price) {
+      row.getCell(7).value = { formula: `D${rowNum}*F${rowNum}` };
+    } else {
+      row.getCell(7).value = Math.round(r.cost);
+    }
+    // Маржа ₽ = Итого × Маржа % — всегда формула
+    row.getCell(9).value = { formula: `G${rowNum}*H${rowNum}` };
+    // Цена для заказчика = Итого + Маржа ₽ — всегда формула
+    row.getCell(10).value = { formula: `G${rowNum}+I${rowNum}` };
+
     row.getCell(6).numFmt = '#,##0';
     row.getCell(7).numFmt = '#,##0';
-    row.getCell(8).numFmt = r.marginPct == null ? '@' : '0%';
+    row.getCell(8).numFmt = '0%';
     row.getCell(9).numFmt = '#,##0';
     row.getCell(10).numFmt = '#,##0';
     row.getCell(8).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: r.isBags ? WARN_FILL : MARGIN_FILL } };
@@ -1158,10 +1176,12 @@ async function downloadXlsx() {
     row.alignment = { vertical: 'top', wrapText: true };
   });
 
-  const sumCost = ROWS.reduce((s, r) => s + r.cost, 0);
-  const sumMargin = ROWS.reduce((s, r) => s + r.marginRub, 0);
-  const sumFinal = ROWS.reduce((s, r) => s + r.final, 0);
-  const totalRow = ws.addRow(['Итого', '', '', '', '', '', Math.round(sumCost), '', Math.round(sumMargin), Math.round(sumFinal)]);
+  const firstDataRow = 2;
+  const lastDataRow = 1 + ROWS.length;
+  const totalRow = ws.addRow(['Итого', '', '', '', '', '', null, '', null, null]);
+  totalRow.getCell(7).value  = { formula: `SUM(G${firstDataRow}:G${lastDataRow})` };
+  totalRow.getCell(9).value  = { formula: `SUM(I${firstDataRow}:I${lastDataRow})` };
+  totalRow.getCell(10).value = { formula: `SUM(J${firstDataRow}:J${lastDataRow})` };
   totalRow.eachCell(c => {
     c.font = { bold: true, size: 12 };
     c.border = { top: { style: 'medium', color: { argb: 'FF1C3828' } } };
