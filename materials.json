@@ -1,0 +1,1311 @@
+{
+  "interior": [
+    {
+      "id": "int_hh_vagonka",
+      "name": "Вагонка 'ВС' (базовая, включена)",
+      "categories": [
+        "house_high"
+      ],
+      "price": 0
+    },
+    {
+      "id": "int_hh_imitatsia",
+      "name": "Имитация бруса",
+      "categories": [
+        "house_high"
+      ],
+      "price": 500
+    },
+    {
+      "id": "int_hl_osb",
+      "name": "ОСБ 9 мм (базовая, включена)",
+      "categories": [
+        "house_low"
+      ],
+      "price": 0
+    },
+    {
+      "id": "int_hl_vagonka",
+      "name": "Вагонка 'ВС' (базовая, включена)",
+      "categories": [
+        "house_low"
+      ],
+      "price": 0
+    },
+    {
+      "id": "int_hl_imitatsia",
+      "name": "Имитация бруса 'В'",
+      "categories": [
+        "house_low"
+      ],
+      "price": 500
+    },
+    {
+      "id": "int_cabin_osb",
+      "name": "ОСБ 9 мм (базовая, включена)",
+      "categories": [
+        "cabin"
+      ],
+      "price": 0
+    },
+    {
+      "id": "int_cabin_vagonka",
+      "name": "Вагонка 'ВС'",
+      "categories": [
+        "cabin"
+      ],
+      "price": 500
+    },
+    {
+      "id": "int_cabin_imitatsia",
+      "name": "Имитация бруса 'В'",
+      "categories": [
+        "cabin"
+      ],
+      "price": 500
+    },
+    {
+      "id": "int_hz_none",
+      "name": "Без отделки (базовая, включена)",
+      "categories": [
+        "hozblok"
+      ],
+      "price": 0
+    },
+    {
+      "id": "int_hz_osb",
+      "name": "ОСБ 9 мм",
+      "categories": [
+        "hozblok"
+      ],
+      "price": 300
+    },
+    {
+      "id": "int_hz_vagonka",
+      "name": "Вагонка класса В",
+      "categories": [
+        "hozblok"
+      ],
+      "price": 400
+    },
+    {
+      "id": "int_hz_mdf",
+      "name": "МДФ панели",
+      "categories": [
+        "hozblok"
+      ],
+      "price": 500
+    },
+    {
+      "id": "int_hz_pvc",
+      "name": "ПВХ панели",
+      "categories": [
+        "hozblok"
+      ],
+      "price": 500
+    },
+    {
+      "id": "int_chalet_vagonka",
+      "name": "Вагонка 'ВС' (базовая, включена)",
+      "categories": [
+        "chalet"
+      ],
+      "price": 0
+    }
+  ],
+  "floor": [
+    {
+      "id": "floor_house_base",
+      "name": "Обрезная доска 25мм 1 сорт (базовая)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "chalet"
+      ],
+      "price": 0
+    },
+    {
+      "id": "floor_cabin_base",
+      "name": "Обрезная доска 25мм (базовая)",
+      "categories": [
+        "cabin",
+        "hozblok"
+      ],
+      "price": 0
+    },
+    {
+      "id": "floor_cabin_osb12",
+      "name": "ОСБ 12мм",
+      "categories": [
+        "cabin",
+        "hozblok"
+      ],
+      "price": 500
+    },
+    {
+      "id": "floor_cabin_tongue28",
+      "name": "Шпунтованная доска 28мм",
+      "categories": [
+        "cabin",
+        "hozblok"
+      ],
+      "price": 1000
+    }
+  ],
+  "exterior": {
+    "houseHigh": [
+      {
+        "id": "ext_hh_vagonka",
+        "name": "Вагонка ВС",
+        "priceNoIns": 9500,
+        "priceWithIns": 12500
+      },
+      {
+        "id": "ext_hh_imitatsia",
+        "name": "Имитация бруса 'В'",
+        "priceNoIns": 10000,
+        "priceWithIns": 13000
+      }
+    ],
+    "houseLow": {
+      "noInsRate": 8000,
+      "cheapBaseRate": 9500,
+      "materials": [
+        {
+          "id": "ext_hl_vagonka",
+          "name": "Вагонка ВС",
+          "mode": "base",
+          "price": 10000
+        },
+        {
+          "id": "ext_hl_imitatsia",
+          "name": "Имитация бруса",
+          "mode": "base",
+          "price": 10000,
+          "addonOnTop": 500
+        },
+        {
+          "id": "ext_hl_blockhouse",
+          "name": "Блок-хаус",
+          "mode": "addon",
+          "price": 1000
+        },
+        {
+          "id": "ext_hl_proflist",
+          "name": "Профлист цветной",
+          "mode": "addon",
+          "price": 400
+        },
+        {
+          "id": "ext_hl_osb",
+          "name": "ОСБ 12мм",
+          "mode": "addon",
+          "price": 300
+        }
+      ]
+    },
+    "simple": [
+      {
+        "id": "ext_simple_vagonka",
+        "name": "Вагонка класса В",
+        "categories": [
+          "cabin",
+          "hozblok"
+        ],
+        "price": 0
+      },
+      {
+        "id": "ext_simple_blockhouse",
+        "name": "Блок-хаус",
+        "categories": [
+          "cabin",
+          "hozblok"
+        ],
+        "price": 1000
+      },
+      {
+        "id": "ext_simple_proflist",
+        "name": "Профлист цветной",
+        "categories": [
+          "cabin",
+          "hozblok"
+        ],
+        "price": 400
+      },
+      {
+        "id": "ext_simple_osb",
+        "name": "ОСБ 12мм",
+        "categories": [
+          "cabin",
+          "hozblok"
+        ],
+        "price": 300
+      },
+      {
+        "id": "ext_chalet_vagonka",
+        "name": "Вагонка ВС",
+        "categories": [
+          "chalet"
+        ],
+        "price": 14500
+      },
+      {
+        "id": "ext_chalet_imitatsia",
+        "name": "Имитация бруса В",
+        "categories": [
+          "chalet"
+        ],
+        "price": 15000
+      },
+      {
+        "id": "ext_simple_imitatsia_cabin",
+        "name": "Имитация бруса",
+        "categories": [
+          "cabin"
+        ],
+        "price": 500
+      },
+      {
+        "id": "ext_simple_imitatsia_hozblok",
+        "name": "Имитация бруса",
+        "categories": [
+          "hozblok"
+        ],
+        "price": 250
+      }
+    ]
+  },
+  "additions": [
+    {
+      "id": "win_lux_50_50_p",
+      "name": "Окно ПВХ 1-камерный 50х50 поворотное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 5500,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_50_50_po2",
+      "name": "Окно ПВХ 50х50 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 9000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_60_90_po",
+      "name": "Окно ПВХ 1-камерный 60х90 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 7500,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_60_120_po",
+      "name": "Окно ПВХ 1-камерный 60х120 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 10000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_60_180_po",
+      "name": "Окно ПВХ 1-камерный 60х180 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 12000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_100_po",
+      "name": "Окно ПВХ 1-камерный 100х100 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 9000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_120_po1",
+      "name": "Окно ПВХ 1-камерный 100х120 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 11000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_120_po2",
+      "name": "Окно ПВХ 100х120 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 14000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_120_120_po",
+      "name": "Окно ПВХ 1-камерный 120х120 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 13000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_140_po",
+      "name": "Окно ПВХ 1-камерный 100х140 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 14000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_150_po",
+      "name": "Окно ПВХ 1-камерный 100х150 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 15000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_120_150_po",
+      "name": "Окно ПВХ 1-камерный 120х150 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 16500,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_140_150_po",
+      "name": "Окно ПВХ 1-камерный 140х150 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 17000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_150_150_po",
+      "name": "Окно ПВХ 1-камерный 150х150 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 17500,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_150_100_po",
+      "name": "Окно ПВХ 1-камерный 150х100 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 18000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_150_190_po",
+      "name": "Окно ПВХ 1-камерный 150х190 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 25000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_180_190_po",
+      "name": "Окно ПВХ 1-камерный 180х190 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 26000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_180_200_po",
+      "name": "Окно ПВХ 1-камерный 180х200 поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 30000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_60_90_po2",
+      "name": "Окно ПВХ 60х90 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 10500,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_60_120_po2",
+      "name": "Окно ПВХ 60х120 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 13000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_60_180_po2",
+      "name": "Окно ПВХ 60х180 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 15000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_100_po2",
+      "name": "Окно ПВХ 100х100 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 12000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_120_120_po2",
+      "name": "Окно ПВХ 120х120 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 16000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_140_po2",
+      "name": "Окно ПВХ 100х140 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 17000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_100_150_po2",
+      "name": "Окно ПВХ 100х150 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 18000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_120_150_po2",
+      "name": "Окно ПВХ 120х150 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 19500,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_140_150_po2",
+      "name": "Окно ПВХ 140х150 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 20000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_150_150_po2",
+      "name": "Окно ПВХ 150х150 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 20500,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_150_100_po2",
+      "name": "Окно ПВХ 150х100 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 21000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_150_190_po2",
+      "name": "Окно ПВХ 150х190 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 28000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_180_190_po2",
+      "name": "Окно ПВХ 180х190 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 29000,
+      "hint": "none"
+    },
+    {
+      "id": "win_lux_180_200_po2",
+      "name": "Окно ПВХ 180х200 (2 камеры) поворотно-откидное",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "windows",
+      "unit": "quantity",
+      "price": 33000,
+      "hint": "none"
+    },
+    {
+      "id": "pile_76_1500",
+      "name": "Свая винтовая 76/1500",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 3550,
+      "hint": "none"
+    },
+    {
+      "id": "pile_76_2000",
+      "name": "Свая винтовая 76/2000",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 3700,
+      "hint": "none"
+    },
+    {
+      "id": "pile_76_2500",
+      "name": "Свая винтовая 76/2500",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 4000,
+      "hint": "none"
+    },
+    {
+      "id": "pile_76_3000",
+      "name": "Свая винтовая 76/3000",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 4300,
+      "hint": "none"
+    },
+    {
+      "id": "pile_89_2000",
+      "name": "Свая винтовая 89/2000",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 3900,
+      "hint": "none"
+    },
+    {
+      "id": "pile_89_2500",
+      "name": "Свая винтовая 89/2500",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 4200,
+      "hint": "none"
+    },
+    {
+      "id": "pile_89_3000",
+      "name": "Свая винтовая 89/3000",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 4600,
+      "hint": "none"
+    },
+    {
+      "id": "pile_108_2000",
+      "name": "Свая винтовая 108/2000",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 4700,
+      "hint": "none"
+    },
+    {
+      "id": "pile_108_2500",
+      "name": "Свая винтовая 108/2500",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 5100,
+      "hint": "none"
+    },
+    {
+      "id": "pile_108_3000",
+      "name": "Свая винтовая 108/3000",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "piles",
+      "unit": "quantity",
+      "price": 5600,
+      "hint": "none"
+    },
+    {
+      "id": "freestanding_porch",
+      "name": "Отдельностоящее крыльцо (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 7500,
+      "hint": "none"
+    },
+    {
+      "id": "partition_imitation_b",
+      "name": "Перегородка Имитация бруса \"В\" (за м.п.)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 4000,
+      "hint": "none"
+    },
+    {
+      "id": "partition_lining_bc_ins",
+      "name": "Перегородка Вагонка \"ВС\" с утеплителем (за м.п.)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "quantity",
+      "price": 4000,
+      "hint": "none"
+    },
+    {
+      "id": "partition_lining_bc",
+      "name": "Перегородка Вагонка \"ВС\" (за м.п.)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "quantity",
+      "price": 3500,
+      "hint": "none"
+    },
+    {
+      "id": "block_pads",
+      "name": "Подушки под блоки (за шт)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 1200,
+      "hint": "none"
+    },
+    {
+      "id": "veranda_ceiling_board",
+      "name": "Зашить потолок веранды (за м²)",
+      "categories": [
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 1000,
+      "hint": "none"
+    },
+    {
+      "id": "door_metal_12",
+      "name": "Дверь металлическая (Россия)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "doors",
+      "unit": "quantity",
+      "price": 12000,
+      "hint": "none"
+    },
+    {
+      "id": "door_metal_7cm",
+      "name": "Дверь металлическая 7 см",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "doors",
+      "unit": "quantity",
+      "price": 20000,
+      "hint": "none"
+    },
+    {
+      "id": "door_panel_6",
+      "name": "Дверь филенчатая деревянная",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "doors",
+      "unit": "quantity",
+      "price": 6000,
+      "hint": "none"
+    },
+    {
+      "id": "door_pvc_35",
+      "name": "Дверь входная ПВХ",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "doors",
+      "unit": "quantity",
+      "price": 35000,
+      "hint": "none"
+    },
+    {
+      "id": "door_wood_double",
+      "name": "Дверь деревянная распашная 1.4х1.9 м",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "doors",
+      "unit": "quantity",
+      "price": 3000,
+      "hint": "none"
+    },
+    {
+      "id": "floor_hatch",
+      "name": "Люк в полу",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "doors",
+      "unit": "quantity",
+      "price": 10000,
+      "hint": "none"
+    },
+    {
+      "id": "antiseptic_bottom",
+      "name": "Антисептик дна",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 500,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "rodent_mesh",
+      "name": "Сетка от грызунов",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 600,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "block_20_20_40",
+      "name": "Блок 20х20х40",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 500,
+      "hint": "none"
+    },
+    {
+      "id": "ramp_2m",
+      "name": "Пандус (до 2 м)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 5000,
+      "hint": "none"
+    },
+    {
+      "id": "floor_tongue_28_add",
+      "name": "Пол: Шпунтованная доска 28 мм (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 1000,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "floor_osb_12_add",
+      "name": "Пол: ОСБ 12 мм (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 500,
+      "hint": "houseArea"
+    },
+    {
+      "id": "floor_osb_15_add",
+      "name": "Пол: ОСБ 15 мм (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 700,
+      "hint": "houseArea"
+    },
+    {
+      "id": "floor_osb_18_add",
+      "name": "Пол: ОСБ 18 мм (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 800,
+      "hint": "houseArea"
+    },
+    {
+      "id": "floor_tongue_35_add",
+      "name": "Пол: Шпунтованная доска 35 мм (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 1300,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "floor_board_35_150_add",
+      "name": "Пол: Доска обрезная 35х150 мм (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 500,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "ins_basalt_ceiling_200",
+      "name": "Утепление: 200 мм базальтовая плита потолка (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 1000,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "ins_basalt_floor_200",
+      "name": "Утепление: 200 мм базальтовая плита пола (за м²)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 1000,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "roof_double_pitch_1800",
+      "name": "Крыша двухскатная с коньком 40-70 см",
+      "categories": [
+        "cabin",
+        "hozblok"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 1800,
+      "hint": "houseArea"
+    },
+    {
+      "id": "roof_double_pitch_flat",
+      "name": "Двухскатная крыша (увеличение стоимости)",
+      "categories": [
+        "cabin"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 10000,
+      "hint": "none"
+    },
+    {
+      "id": "ceiling_osb_12_lath",
+      "name": "Настил на потолок ОСБ 12 мм с обрешеткой",
+      "categories": [
+        "house_high"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 1800,
+      "hint": "houseAndVeranda"
+    },
+    {
+      "id": "vent_gap",
+      "name": "Вентзазор",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 2000,
+      "hint": "perimeter"
+    },
+    {
+      "id": "ridge_raise",
+      "name": "Поднятие конька (за каждые +10 см, максимум +150 см)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 3750,
+      "hint": "none"
+    },
+    {
+      "id": "veranda_lined_rafters",
+      "name": "Потолок веранды подшитый по стропилам",
+      "categories": [
+        "house_high"
+      ],
+      "group": "area",
+      "unit": "area",
+      "price": 2000,
+      "hint": "verandaOnly"
+    },
+    {
+      "id": "generator_daily",
+      "name": "Генератор (сутки)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 2500,
+      "hint": "none"
+    },
+    {
+      "id": "material_carry",
+      "name": "Пронос материала свыше 20 м (за каждые 10 м)",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 10000,
+      "hint": "none"
+    },
+    {
+      "id": "long_ladder",
+      "name": "Лестница на всю длину дома",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 20000,
+      "hint": "none"
+    },
+    {
+      "id": "step_with_railing",
+      "name": "Ступень с перилами",
+      "categories": [
+        "house_high",
+        "house_low",
+        "cabin",
+        "hozblok"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 20000,
+      "hint": "none"
+    },
+    {
+      "id": "extension_room",
+      "name": "Пристройка",
+      "categories": [
+        "house_high",
+        "house_low"
+      ],
+      "group": "other",
+      "unit": "quantity",
+      "price": 20000,
+      "hint": "none"
+    }
+  ]
+}
