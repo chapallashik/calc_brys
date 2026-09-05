@@ -114,6 +114,13 @@ body {
 .line .lv { font-size: 13.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .line .lv.sub { font-weight: 400; color: var(--text-muted); font-size: 12.5px; }
 .line .lv.disc { color: #dc3545; }
+.line .ld-admin { color: var(--oak, #C8872A); }
+.admin-badge {
+  background: #FBF0DC; border: 1px dashed var(--oak, #C8872A); border-radius: 8px;
+  padding: 10px 14px; font-size: 11.5px; color: #8A5A1E; margin: 20px 0 0;
+}
+/* Раздел (заголовок + строки) не разрывается между страницами при печати/PDF */
+.print-section, .receipt-total, .receipt-footer { break-inside: avoid; page-break-inside: avoid; }
 
 .subtotal {
   display: flex;
@@ -233,10 +240,14 @@ body {
 /* ─── PRINT BUTTON ─── */
 .print-bar {
   max-width: 700px;
-  margin: 0 auto 24px;
+  margin: 0 auto 4px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+.print-hint {
+  max-width: 700px; margin: 0 auto 20px; text-align: right;
+  font-size: 11.5px; color: var(--text-muted);
 }
 .btn-print {
   background: var(--forest); color: white; border: none; border-radius: 8px;
@@ -251,7 +262,7 @@ body {
 
 @media print {
   body { background: white; padding: 0; }
-  .print-bar { display: none; }
+  .print-bar, .print-hint { display: none; }
   .receipt { box-shadow: none; border-radius: 0; }
 }
 </style>
@@ -261,8 +272,9 @@ body {
 
 <div class="print-bar">
   <button class="btn-close" onclick="window.close()">Закрыть</button>
-  <button class="btn-print" onclick="window.print()">Печать / PDF</button>
+  <button class="btn-print" onclick="window.print()">⬇ Скачать PDF</button>
 </div>
+<div class="print-hint">В открывшемся окне печати выберите принтер «Сохранить как PDF»</div>
 
 <div class="receipt" id="receipt">
   <div style="text-align:center;padding:60px;color:#999">Загрузка данных...</div>
@@ -294,6 +306,7 @@ window.onload = function() {
     return;
   }
 
+  const isAdmin = localStorage.getItem('sruby_role') === 'admin';
   const { g, w, ter, pst, rf, bs, ex, P } = r;
   const k = sec.split('x')[0];
   const secLabel = sec.replace('x', ' × ');
@@ -305,86 +318,101 @@ window.onload = function() {
   const docNum  = 'РС-' + now.getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000);
 
   // строка сметы: наименование, расшифровка, сумма
-  const line = (name, desc, value, cls) => `
+  // Менеджеру/клиенту — только физические величины и итог по строке.
+  // Админу — плюс закупочная цена и % маржи (adminDesc), как в панели результатов.
+  const line = (name, desc, value, cls, adminDesc) => `
     <div class="line">
       <div>
         <div class="ln">${name}</div>
         ${desc ? `<div class="ld">${desc}</div>` : ''}
+        ${isAdmin && adminDesc ? `<div class="ld ld-admin">${adminDesc}</div>` : ''}
       </div>
       <div class="lv${cls ? ' ' + cls : ''}">${value}</div>
     </div>`;
   const title = t => `<div class="section-title">${t}</div>`;
+  // Раздел целиком (заголовок + строки) не должен разрываться между страницами при печати.
+  const section = html => `<div class="print-section">${html}</div>`;
 
   const wallH = g.f1.crowns * g.workH;
 
   // ── Стены и перегородки
-  // Клиенту не показываем закупочные цены и % маржи — только физические величины и итоговую сумму строки.
-  let html = title('Стены и перегородки — брус ' + secLabel + ' мм')
+  let html = section(title('Стены и перегородки — брус ' + secLabel + ' мм')
     + line('Брус профилированный ' + secLabel + ' мм, сосна',
-           `Объём ${n(g.vol, 3)} м³, с запасом на подрезку ${n(g.volR, 3)} м³`,
-           fmt(w.priceKit))
+           `${n(g.mpTotal, 0)} м.п. · ${g.f1.crowns} венцов`,
+           fmt(w.priceKit), '',
+           `себестоимость ${rub(w.costKit)} ₽ · маржа ${P.margin_main}%`)
     + line('Монтаж стенового комплекта',
-           `${n(g.volR, 2)} м³`,
-           fmt(w.priceAsm))
+           `${n(g.mpTotal, 0)} м.п.`,
+           fmt(w.priceAsm), '',
+           `${n(g.volR, 3)} м³ × ${rub(P['assembly_' + k])} ₽/м³ · маржа ${P.margin_assembly}%`)
     + line('Джут межвенцовый',
            `${n(w.juteMP, 0)} м.п.`,
-           fmt(w.priceJuteOnly))
+           fmt(w.priceJuteOnly), '',
+           `× ${rub(P['jute_' + k])} ₽/м.п. · маржа ${P.margin_assembly}%`)
     + line('Шканты',
            `${n(w.juteMP, 0)} шт`,
-           fmt(w.priceDowelOnly));
+           fmt(w.priceDowelOnly), '',
+           `× ${rub(P.dowel)} ₽/шт · маржа ${P.margin_assembly}%`));
 
   // ── Терраса
-  if (ter) html += title('Вылет для террасы и коньковая балка')
+  if (ter) html += section(title('Вылет для террасы и коньковая балка')
     + line('Брус профилированный ' + secLabel + ' мм',
-           `${n(ter.len, 1)} м × ${ter.crowns} венц. = ${n(ter.mp, 0)} м.п. · объём с запасом ${n(ter.volR, 3)} м³`,
-           fmt(ter.priceKit))
-    + line('Монтаж', '', fmt(ter.priceAsm))
-    + line('Джут и шканты', '', fmt(ter.priceJute));
+           `${n(ter.len, 1)} м × ${ter.crowns} венц. = ${n(ter.mp, 0)} м.п.`,
+           fmt(ter.priceKit), '', `себестоимость ${rub(ter.costKit)} ₽`)
+    + line('Монтаж', '', fmt(ter.priceAsm), '', `себестоимость ${rub(ter.costAsm)} ₽`)
+    + line('Джут и шканты', '', fmt(ter.priceJute)));
 
   // ── Опорные столбы
-  if (pst) html += title('Опорные столбы')
+  if (pst) html += section(title('Опорные столбы')
     + line('Брус строганный, ' + pst.qty + ' шт',
            `${pst.qty} шт × ${n(pst.len, 1)} м = ${n(pst.vol, 3)} м³`,
-           fmt(pst.costMat))
+           fmt(pst.costMat), '', `${rub(P.post_price)} ₽/м³`)
     + line('Отстрожка и монтаж',
            `${pst.qty} шт`,
-           fmt(pst.price - pst.costMat));
+           fmt(pst.price - pst.costMat), '', `маржа ${P.post_margin}%`));
 
   // ── Кровля
-  if (rf) html += title('Кровля — ' + n(rf.area, 1) + ' м²')
-    + line('Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, fmt(rf.rafterCost))
-    + line('Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, fmt(rf.obrCost))
-    + line('Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, fmt(rf.membraneCost))
-    + line('Металлочерепица', `${n(rf.area, 1)} м²`, fmt(rf.tilesCost))
-    + line('Метизы и крепёж', `${n(rf.area, 1)} м²`, fmt(rf.hwCost))
-    + line('Монтаж кровли', `${n(rf.area, 1)} м²`, fmt(rf.workCost))
+  if (rf) html += section(title('Кровля — ' + n(rf.area, 1) + ' м²')
+    + line('Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, fmt(rf.rafterCost), '', `${rub(P.roof_board_price)} ₽/м³`)
+    + line('Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, fmt(rf.obrCost), '', `${rub(P.roof_obreshetka_price)} ₽/м³`)
+    + line('Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, fmt(rf.membraneCost), '', `${rub(P.roof_membrane_roll)} ₽/рул.`)
+    + line('Металлочерепица', `${n(rf.area, 1)} м²`, fmt(rf.tilesCost), '', `${rub(P.roof_tiles_sqm)} ₽/м²`)
+    + line('Метизы и крепёж', `${n(rf.area, 1)} м²`, fmt(rf.hwCost), '', `${rub(P.roof_hardware_sqm)} ₽/м²`)
+    + line('Монтаж кровли', `${n(rf.area, 1)} м²`, fmt(rf.workCost), '', `${rub(P.roof_work_sqm)} ₽/м²`)
     + (rf.warmArea ? line('Утепление тёплой кровли',
         `${n(rf.warmArea, 1)} м²`,
         fmt(rf.warmMat + rf.warmWork)) : '')
     + (rf.frontonArea ? line('Фронтоны каркасные, 2 шт',
-        `${n(rf.frontonArea, 1)} м²`, fmt(rf.frontonCost)) : '')
-    + line('Доборные элементы', '', fmt(rf.addonCost));
+        `${n(rf.frontonArea, 1)} м²`, fmt(rf.frontonCost), '', `${rub(P.roof_fronton_sqm)} ₽/м²`) : '')
+    + line('Доборные элементы', '', fmt(rf.addonCost), '', `${P.roof_addon_pct}% от материалов`)
+    + (isAdmin ? line('Себестоимость кровли', '', fmt(rf.totalCost)) : '')
+    + (isAdmin ? line('Маржа на кровлю', '', fmt(rf.clientPrice - rf.totalCost), '', `${P.roof_margin}%`) : ''));
 
   // ── Нижняя обвязка
-  if (bs) html += title('Нижняя обвязка (лиственница)')
+  if (bs) html += section(title('Нижняя обвязка (лиственница)')
     + line(`Брус ${bs.secA * 1000}×${bs.secB * 1000} мм, лиственница`,
            `${n(bs.len, 1)} м.п. · ${n(bs.vol, 3)} м³`,
-           fmt(bs.price));
+           fmt(bs.price), '',
+           `себестоимость ${rub(bs.cost)} ₽ · ${rub(P.base_larch)} + ${rub(P.base_work)} ₽/м³ · маржа ${P.base_margin}%`));
 
   // ── Доп. материалы
-  if (ex && ex.items.length) html += title('Дополнительные материалы')
-    + ex.items.map(i => line(i.name, `${i.qty} шт · ${n(i.vol, 3)} м³`, fmt(i.sum))).join('');
+  if (ex && ex.items.length) html += section(title('Дополнительные материалы')
+    + ex.items.map(i => line(i.name, `${i.qty} шт · ${n(i.vol, 3)} м³`, fmt(i.sum))).join(''));
 
   // ── Надбавки
   if (r.cedar || r.drying) {
-    html += title('Надбавки');
-    if (r.cedar)  html += line('Материал — кедр', `${n(r.volAll, 3)} м³`, fmt(r.cedar));
-    if (r.drying) html += line('Камерная (вакуумная) сушка', `${n(r.volAll, 3)} м³`, fmt(r.drying));
+    let addRows = '';
+    if (r.cedar)  addRows += line('Материал — кедр', `${n(r.volAll, 3)} м³`, fmt(r.cedar), '', `${rub(P.cedar_price)} ₽/м³ · маржа ${P.cedar_margin}%`);
+    if (r.drying) addRows += line('Камерная (вакуумная) сушка', `${n(r.volAll, 3)} м³`, fmt(r.drying), '', `${rub(P.drying)} ₽/м³ · без наценки`);
+    html += section(title('Надбавки') + addRows);
   }
 
   // ── Скидка
-  if (r.discPct) html += title('Акция')
-    + line(`Скидка ${r.discPct}% — только на сруб без сборки`, '', '−' + fmt(r.discNo), 'disc');
+  if (r.discPct) html += section(title('Акция')
+    + line(`Скидка ${r.discPct}% — только на сруб без сборки`, '', '−' + fmt(r.discNo), 'disc',
+           `от ${rub(w.noAssembly)} ₽`));
+
+  if (isAdmin) html += section(`<div class="admin-badge">Режим администратора — показана полная себестоимость и маржа. Менеджер и клиент видят только итоговые суммы по строкам.</div>`);
 
   box.innerHTML = `
     <div class="receipt-header">
@@ -416,16 +444,12 @@ window.onload = function() {
 
     <div class="object-bar">
       <div class="obj-item">
-        <div class="obj-label">Объём чистый</div>
-        <div class="obj-value">${n(g.vol, 2)} м³</div>
-      </div>
-      <div class="obj-item">
-        <div class="obj-label">С запасом +${P.beam_reserve}%</div>
-        <div class="obj-value">${n(g.volR, 2)} м³</div>
-      </div>
-      <div class="obj-item">
         <div class="obj-label">Погонные метры</div>
         <div class="obj-value">${n(g.mpTotal, 0)} м.п.</div>
+      </div>
+      <div class="obj-item">
+        <div class="obj-label">Венцов</div>
+        <div class="obj-value">${g.f1.crowns} шт</div>
       </div>
       ${rf  ? `<div class="obj-item"><div class="obj-label">Кровля</div><div class="obj-value">${n(rf.area, 1)} м²</div></div>` : ''}
       ${bs  ? `<div class="obj-item"><div class="obj-label">Обвязка</div><div class="obj-value">${n(bs.len, 0)} м.п.</div></div>` : ''}
