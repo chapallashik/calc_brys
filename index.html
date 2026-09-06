@@ -2323,7 +2323,9 @@ function renderResults(results, sec) {
     + row('Отстрожка и монтаж', fmt(pst.costWork), { formula: `${pst.qty} шт × ${n(P['post_work_' + k], 0)} ₽` })
     + row('Итого столбы', fmt(pst.price), { accent: true, formula: `маржа ${P.post_margin}%` });
 
-  if (rf) html += head('Кровля · ' + n(rf.area, 1) + ' м²')
+  const isAdmin = localStorage.getItem('sruby_role') === 'admin';
+
+  if (rf) html += head(isAdmin ? 'Кровля · ' + n(rf.area, 1) + ' м²' : 'Кровля')
     + row('Работа', fmt(rf.workCost), { formula: `${n(rf.area, 1)} м² × ${n(P.roof_work_sqm, 0)} ₽` })
     + row('Стропила', fmt(rf.rafterCost), { formula: `${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³` })
     + row('Обрешётка', fmt(rf.obrCost), { formula: `${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³` })

@@ -887,7 +887,7 @@ window.onload = function () {
   const wallGroup = (title) => `
     <div class="ce-group">
       <div class="ce-group-title">Стеновой комплект</div>
-      ${wallBullets.map(b => `<div class="ce-item"><span>${b.name}</span><span class="qty">${b.qty}</span></div>`).join('')}
+      ${wallBullets.map(b => `<div class="ce-item"><span>${b.name}</span></div>`).join('')}
       <div class="ce-subtotal"><span>${title}</span><span>${fmt(wallKitTotal)}</span></div>
     </div>`;
 

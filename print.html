@@ -385,7 +385,7 @@ window.onload = function() {
   if (rf) {
     const roofMult = 1 + P.roof_margin / 100;
     const rv = cost => fmt(isAdmin ? cost : cost * roofMult);
-    html += section(title('Кровля — ' + n(rf.area, 1) + ' м²')
+    html += section(title(isAdmin ? 'Кровля — ' + n(rf.area, 1) + ' м²' : 'Кровля')
       + line('Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, rv(rf.rafterCost), '', `${rub(P.roof_board_price)} ₽/м³`)
       + line('Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, rv(rf.obrCost), '', `${rub(P.roof_obreshetka_price)} ₽/м³`)
       + line('Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, rv(rf.membraneCost), '', `${rub(P.roof_membrane_roll)} ₽/рул.`)
@@ -457,7 +457,7 @@ window.onload = function() {
       </div>
     </div>
 
-    <div class="object-bar">
+    ${isAdmin ? `<div class="object-bar">
       <div class="obj-item">
         <div class="obj-label">Погонные метры</div>
         <div class="obj-value">${n(g.mpTotal, 0)} м.п.</div>
@@ -469,7 +469,7 @@ window.onload = function() {
       ${rf  ? `<div class="obj-item"><div class="obj-label">Кровля</div><div class="obj-value">${n(rf.area, 1)} м²</div></div>` : ''}
       ${bs  ? `<div class="obj-item"><div class="obj-label">Обвязка</div><div class="obj-value">${n(bs.len, 0)} м.п.</div></div>` : ''}
       ${ter ? `<div class="obj-item"><div class="obj-label">Терраса</div><div class="obj-value">${n(ter.mp, 0)} м.п.</div></div>` : ''}
-    </div>
+    </div>` : ''}
 
     <div class="receipt-body">${html}</div>
 
