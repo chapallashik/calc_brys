@@ -912,7 +912,7 @@ window.onload = function () {
         <div class="ce-group-title">Дополнительные материалы без запилов</div>
         ${exFiltered.map(i => {
           const species = Object.keys(extraNames).find(k => i.name.startsWith(k));
-          return `<div class="ce-item"><span>${i.name} · ${extraNames[species]}</span><span class="val">${fmt(i.sum)}</span></div>`;
+          return `<div class="ce-item"><span>${i.name} · ${extraNames[species]} · ${i.qty} шт</span><span class="val">${fmt(i.sum)}</span></div>`;
         }).join('')}
         <div class="ce-subtotal"><span>Стоимость доп. материалов</span><span>${fmt(exTotal)}</span></div>
       </div>`;

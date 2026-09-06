@@ -318,13 +318,15 @@ window.onload = function() {
   const docNum  = 'РС-' + now.getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000);
 
   // строка сметы: наименование, расшифровка, сумма
-  // Менеджеру/клиенту — только физические величины и итог по строке.
-  // Админу — плюс закупочная цена и % маржи (adminDesc), как в панели результатов.
-  const line = (name, desc, value, cls, adminDesc) => `
+  // Менеджеру/клиенту — только заголовок и итоговая (розничная) сумма по строке.
+  // Админу — плюс объёмы/формула (desc) и закупочная цена с маржой (adminDesc).
+  // mgrDesc — необязательная короткая пометка, которую видят все роли (например, кол-во шт. в доп. материалах).
+  const line = (name, desc, value, cls, adminDesc, mgrDesc) => `
     <div class="line">
       <div>
         <div class="ln">${name}</div>
-        ${desc ? `<div class="ld">${desc}</div>` : ''}
+        ${mgrDesc ? `<div class="ld">${mgrDesc}</div>` : ''}
+        ${isAdmin && desc ? `<div class="ld">${desc}</div>` : ''}
         ${isAdmin && adminDesc ? `<div class="ld ld-admin">${adminDesc}</div>` : ''}
       </div>
       <div class="lv${cls ? ' ' + cls : ''}">${value}</div>
@@ -363,30 +365,42 @@ window.onload = function() {
     + line('Джут и шканты', '', fmt(ter.priceJute)));
 
   // ── Опорные столбы
+  // Админу — материал и работа отдельными строками (себестоимость + маржа).
+  // Менеджеру/клиенту — только общий ценник по разделу, без разбивки, чтобы не пугать позицией «работа».
   if (pst) html += section(title('Опорные столбы')
-    + line('Брус строганный, ' + pst.qty + ' шт',
-           `${pst.qty} шт × ${n(pst.len, 1)} м = ${n(pst.vol, 3)} м³`,
-           fmt(pst.costMat), '', `${rub(P.post_price)} ₽/м³`)
-    + line('Отстрожка и монтаж',
-           `${pst.qty} шт`,
-           fmt(pst.price - pst.costMat), '', `маржа ${P.post_margin}%`));
+    + (isAdmin
+        ? line('Брус строганный, ' + pst.qty + ' шт',
+               `${pst.qty} шт × ${n(pst.len, 1)} м = ${n(pst.vol, 3)} м³`,
+               fmt(pst.costMat), '', `${rub(P.post_price)} ₽/м³`)
+          + line('Отстрожка и монтаж',
+               `${pst.qty} шт`,
+               fmt(pst.price - pst.costMat), '', `маржа ${P.post_margin}%`)
+        : line('Опорные столбы, ' + pst.qty + ' шт (со сборкой)', '', fmt(pst.price))));
 
   // ── Кровля
-  if (rf) html += section(title('Кровля — ' + n(rf.area, 1) + ' м²')
-    + line('Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, fmt(rf.rafterCost), '', `${rub(P.roof_board_price)} ₽/м³`)
-    + line('Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, fmt(rf.obrCost), '', `${rub(P.roof_obreshetka_price)} ₽/м³`)
-    + line('Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, fmt(rf.membraneCost), '', `${rub(P.roof_membrane_roll)} ₽/рул.`)
-    + line('Металлочерепица', `${n(rf.area, 1)} м²`, fmt(rf.tilesCost), '', `${rub(P.roof_tiles_sqm)} ₽/м²`)
-    + line('Метизы и крепёж', `${n(rf.area, 1)} м²`, fmt(rf.hwCost), '', `${rub(P.roof_hardware_sqm)} ₽/м²`)
-    + line('Монтаж кровли', `${n(rf.area, 1)} м²`, fmt(rf.workCost), '', `${rub(P.roof_work_sqm)} ₽/м²`)
-    + (rf.warmArea ? line('Утепление тёплой кровли',
-        `${n(rf.warmArea, 1)} м²`,
-        fmt(rf.warmMat + rf.warmWork)) : '')
-    + (rf.frontonArea ? line('Фронтоны каркасные, 2 шт',
-        `${n(rf.frontonArea, 1)} м²`, fmt(rf.frontonCost), '', `${rub(P.roof_fronton_sqm)} ₽/м²`) : '')
-    + line('Доборные элементы', '', fmt(rf.addonCost), '', `${P.roof_addon_pct}% от материалов`)
-    + (isAdmin ? line('Себестоимость кровли', '', fmt(rf.totalCost)) : '')
-    + (isAdmin ? line('Маржа на кровлю', '', fmt(rf.clientPrice - rf.totalCost), '', `${P.roof_margin}%`) : ''));
+  // rf.*Cost — это себестоимость позиции (без наценки), rf.clientPrice = rf.totalCost × (1 + маржа).
+  // Админу показываем себестоимость построчно (как раньше) + отдельно маржу.
+  // Менеджеру/клиенту — те же позиции, но уже в розничных ценах (себестоимость × коэффициент маржи),
+  // чтобы сумма всех строк сходилась с「Кровля для клиента」и не светилась голая закупочная цена.
+  if (rf) {
+    const roofMult = 1 + P.roof_margin / 100;
+    const rv = cost => fmt(isAdmin ? cost : cost * roofMult);
+    html += section(title('Кровля — ' + n(rf.area, 1) + ' м²')
+      + line('Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, rv(rf.rafterCost), '', `${rub(P.roof_board_price)} ₽/м³`)
+      + line('Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, rv(rf.obrCost), '', `${rub(P.roof_obreshetka_price)} ₽/м³`)
+      + line('Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, rv(rf.membraneCost), '', `${rub(P.roof_membrane_roll)} ₽/рул.`)
+      + line('Металлочерепица', `${n(rf.area, 1)} м²`, rv(rf.tilesCost), '', `${rub(P.roof_tiles_sqm)} ₽/м²`)
+      + line('Метизы и крепёж', `${n(rf.area, 1)} м²`, rv(rf.hwCost), '', `${rub(P.roof_hardware_sqm)} ₽/м²`)
+      + line('Монтаж кровли', `${n(rf.area, 1)} м²`, rv(rf.workCost), '', `${rub(P.roof_work_sqm)} ₽/м²`)
+      + (rf.warmArea ? line('Утепление тёплой кровли',
+          `${n(rf.warmArea, 1)} м²`,
+          rv(rf.warmMat + rf.warmWork)) : '')
+      + (rf.frontonArea ? line('Фронтоны каркасные, 2 шт',
+          `${n(rf.frontonArea, 1)} м²`, rv(rf.frontonCost), '', `${rub(P.roof_fronton_sqm)} ₽/м²`) : '')
+      + line('Доборные элементы', '', rv(rf.addonCost), '', `${P.roof_addon_pct}% от материалов`)
+      + (isAdmin ? line('Себестоимость кровли', '', fmt(rf.totalCost)) : '')
+      + (isAdmin ? line('Маржа на кровлю', '', fmt(rf.clientPrice - rf.totalCost), '', `${P.roof_margin}%`) : ''));
+  }
 
   // ── Нижняя обвязка
   if (bs) html += section(title('Нижняя обвязка (лиственница)')
@@ -396,8 +410,9 @@ window.onload = function() {
            `себестоимость ${rub(bs.cost)} ₽ · ${rub(P.base_larch)} + ${rub(P.base_work)} ₽/м³ · маржа ${P.base_margin}%`));
 
   // ── Доп. материалы
+  // Сечение уже указано в наименовании позиции; количество показываем всем, объём в м³ — только админу.
   if (ex && ex.items.length) html += section(title('Дополнительные материалы')
-    + ex.items.map(i => line(i.name, `${i.qty} шт · ${n(i.vol, 3)} м³`, fmt(i.sum))).join(''));
+    + ex.items.map(i => line(i.name, `${i.qty} шт · ${n(i.vol, 3)} м³`, fmt(i.sum), '', '', `${i.qty} шт`)).join(''));
 
   // ── Надбавки
   if (r.cedar || r.drying) {
