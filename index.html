@@ -1198,7 +1198,6 @@ footer {
             <div style="padding-top:12px;">
               <label class="hint" style="display:block;margin-bottom:8px;">Сечение столбов — выбирается отдельно от сечения сруба</label>
               <div class="option-chips" id="post-section-chips" style="margin-bottom:16px;">
-                <div class="chip" data-val="100">100×100 мм</div>
                 <div class="chip selected" data-val="150">150×150 мм</div>
                 <div class="chip" data-val="180">180×180 мм</div>
                 <div class="chip" data-val="200">200×200 мм</div>
@@ -1326,6 +1325,8 @@ footer {
           <button class="btn-calc" onclick="calculate()">Рассчитать стоимость</button>
           <button class="btn-clear" onclick="clearForm()">Новый расчёт</button>
           <button class="btn-print" id="btn-print" onclick="printReceipt()" style="display:none">Распечатать смету
+          </button>
+          <button class="btn-print" id="btn-client-export" onclick="clientExport()" style="display:none">Клиентская выгрузка
           </button>
           <div style="display:flex; gap:8px; margin-top:10px;">
             <button class="btn-print" style="margin-top:0;flex:1;white-space:nowrap;" onclick="saveToFile()">
@@ -2186,6 +2187,7 @@ function calculate() {
   lastResult = { results, selectedSection, P };
   renderResults(results, selectedSection);
   document.getElementById('btn-print').style.display = 'flex';
+  document.getElementById('btn-client-export').style.display = 'flex';
 
   // Данные для вкладок «Для нас» и «Строители» — обновляются при каждом
   // расчёте, поэтому эти вкладки всегда показывают актуальную цифру,
@@ -2413,6 +2415,12 @@ function printReceipt() {
   window.open('print.html', '_blank', 'width=900,height=700');
 }
 
+function clientExport() {
+  if (!lastResult) return;
+  localStorage.setItem('sruby_print_data', JSON.stringify({ ...lastResult, selectedSection }));
+  window.open('client-export.html', '_blank', 'width=1200,height=800');
+}
+
 // ═══════════════════════════════════════════════
 // СОХРАНЕНИЕ ВВЕДЁННЫХ ДАННЫХ
 // Всё, что менеджер набрал, пишется в браузер после каждого изменения.
@@ -2487,9 +2495,11 @@ function applyFormData(f) {
   const baseChipsWrap = document.getElementById('base-section-chips-wrap');
   if (baseChipsWrap) baseChipsWrap.style.display = getB('base_auto_section') ? 'none' : '';
   if (f.postSection) {
-    postSection = f.postSection;
+    // «100×100» убрали из списка (заказчик такие столбы не ставит) — если в старом
+    // сохранённом файле оно осталось, подменяем на 150, чтобы не зависало без подсветки.
+    postSection = f.postSection === '100' ? '150' : f.postSection;
     document.querySelectorAll('#post-section-chips .chip').forEach(c =>
-      c.classList.toggle('selected', c.dataset.val === f.postSection));
+      c.classList.toggle('selected', c.dataset.val === postSection));
   }
   if (f.extrasBaseSection) {
     extrasBaseSection = f.extrasBaseSection;
