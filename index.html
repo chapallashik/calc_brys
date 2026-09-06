@@ -2363,7 +2363,7 @@ function renderResults(results, sec) {
   if (r.discNo) noAsmParts.push(`минус скидка ${fmt(r.discNo)}`);
 
   const withAsmParts = [`Сруб со сборкой ${fmt(w.withAssembly)}`];
-  if (rf)  withAsmParts.push(`Кровля ${fmt(rf.clientPrice)}`);
+  if (rf)  withAsmParts.push(`Кровля (металлочерепица) ${fmt(rf.clientPrice)}`);
   if (bs)  withAsmParts.push(`Обвязка ${fmt(bs.price)}`);
   if (ter) withAsmParts.push(`Терраса со сборкой ${fmt(ter.withAssembly)}`);
   if (pst) withAsmParts.push(`Столбы ${fmt(pst.price)}`);
@@ -2378,7 +2378,7 @@ function renderResults(results, sec) {
       </div>
       <div class="total-sub" style="margin-bottom:10px;">${noAsmParts.join(' + ')}</div>
       <div class="total-row">
-        <div class="total-label">Со сборкой · кровля, обвязка, терраса</div>
+        <div class="total-label">Со сборкой · кровля (металлочерепица), обвязка, терраса</div>
         <div class="total-price">${fmt(r.withAsmFinal)}</div>
       </div>
       <div class="total-sub" style="margin-bottom:10px;">${withAsmParts.join(' + ')}</div>
