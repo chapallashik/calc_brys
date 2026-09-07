@@ -1039,19 +1039,19 @@ footer {
               <div class="form-row">
                 <div class="field">
                   <label>Площадь кровли, м²</label>
-                  <input type="number" id="roof_area" value="69.4" step="0.1" min="1" oninput="suggestRoof();recalcLive()">
+                  <input type="number" id="roof_area" placeholder="0" step="0.1" min="1" oninput="suggestRoof();recalcLive()">
                   <span class="field-hint">Считается на stroy-calc.ru, свесы добавлять вручную</span>
                 </div>
                 <div class="field">
                   <label>Стропил, шт (50×150×6)</label>
-                  <input type="number" id="rafter_count" value="32" step="1" min="0" oninput="recalcLive()">
+                  <input type="number" id="rafter_count" placeholder="0" step="1" min="0" oninput="recalcLive()">
                   <span class="field-hint" id="rafter-hint">—</span>
                 </div>
               </div>
               <div class="form-row">
                 <div class="field">
                   <label>Обрешётки, шт (25×150×6)</label>
-                  <input type="number" id="obr_count" value="27" step="1" min="0" oninput="recalcLive()">
+                  <input type="number" id="obr_count" placeholder="0" step="1" min="0" oninput="recalcLive()">
                   <span class="field-hint" id="obr-hint">—</span>
                 </div>
                 <div class="field"></div>
@@ -1205,11 +1205,11 @@ footer {
               <div class="form-row">
                 <div class="field">
                   <label>Количество, шт</label>
-                  <input type="number" id="post_qty" value="4" step="1" min="0" oninput="recalcLive()">
+                  <input type="number" id="post_qty" placeholder="0" step="1" min="0" oninput="recalcLive()">
                 </div>
                 <div class="field">
                   <label>Длина столба, м</label>
-                  <input type="number" id="post_len" value="3" step="0.5" oninput="recalcLive()">
+                  <input type="number" id="post_len" placeholder="0" step="0.5" oninput="recalcLive()">
                   <span class="field-hint">Кратно 3 м</span>
                 </div>
               </div>
@@ -1718,8 +1718,9 @@ function renderWalls(rows, tbodyId) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><span style="font-size:12px;color:var(--text-muted);padding:4px 8px;background:var(--cream-dark);border-radius:4px;">${rowLabel} ${i + 1}</span></td>
-      <td><input class="wall-input" type="number" value="${row.len}" step="0.1" min="0.1"
-          oninput="${arr}[${i}].len=parseFloat(this.value)||0;recalcLive();${onEdit}"></td>
+      <td><input class="wall-input" type="number" value="${row.len || ''}" placeholder="0" step="0.1" min="0.1"
+          oninput="${arr}[${i}].len=parseFloat(this.value)||0;recalcLive();${onEdit}"
+          onfocus="if(this.value==='0')this.value='';"></td>
       <td><input class="wall-input" type="number" value="${row.qty}" step="1" min="1" max="10" style="width:60px"
           oninput="${arr}[${i}].qty=parseInt(this.value)||1;recalcLive();${onEdit}"></td>
       <td><button class="wall-del" onclick="${arr}.splice(${i},1);renderWalls(${arr},'${tbodyId}');recalcLive();${onEdit}">✕</button></td>
@@ -1865,10 +1866,12 @@ function renderOpenings() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><span style="font-size:12px;color:var(--text-muted);padding:4px 8px;background:var(--cream-dark);border-radius:4px;">Проём</span></td>
-      <td><input class="wall-input" type="number" value="${r.len}" step="0.1" min="0"
-          oninput="openingRows[${i}].len=parseFloat(this.value)||0;recalcLive()"></td>
-      <td><input class="wall-input" type="number" value="${r.h}" step="0.1" min="0"
-          oninput="openingRows[${i}].h=parseFloat(this.value)||0;recalcLive()"></td>
+      <td><input class="wall-input" type="number" value="${r.len || ''}" placeholder="0" step="0.1" min="0"
+          oninput="openingRows[${i}].len=parseFloat(this.value)||0;recalcLive()"
+          onfocus="if(this.value==='0')this.value='';"></td>
+      <td><input class="wall-input" type="number" value="${r.h || ''}" placeholder="0" step="0.1" min="0"
+          oninput="openingRows[${i}].h=parseFloat(this.value)||0;recalcLive()"
+          onfocus="if(this.value==='0')this.value='';"></td>
       <td><input class="wall-input" type="number" value="${r.qty}" step="1" min="1" style="width:60px"
           oninput="openingRows[${i}].qty=parseInt(this.value)||1;recalcLive()"></td>
       <td><button class="wall-del" onclick="openingRows.splice(${i},1);renderOpenings();recalcLive()">✕</button></td>`;
@@ -1887,8 +1890,9 @@ function renderTerrace() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><span style="font-size:12px;color:var(--text-muted);padding:4px 8px;background:var(--cream-dark);border-radius:4px;">Вылет</span></td>
-      <td><input class="wall-input" type="number" value="${r.len}" step="0.1" min="0"
-          oninput="terraceRows[${i}].len=parseFloat(this.value)||0;recalcLive()"></td>
+      <td><input class="wall-input" type="number" value="${r.len || ''}" placeholder="0" step="0.1" min="0"
+          oninput="terraceRows[${i}].len=parseFloat(this.value)||0;recalcLive()"
+          onfocus="if(this.value==='0')this.value='';"></td>
       <td><input class="wall-input" type="number" value="${r.qty}" step="1" min="1" style="width:60px"
           oninput="terraceRows[${i}].qty=parseInt(this.value)||1;recalcLive()"></td>
       <td><button class="wall-del" onclick="terraceRows.splice(${i},1);renderTerrace();recalcLive()">✕</button></td>`;
