@@ -419,11 +419,11 @@ body.role-manager .header-nav a[href="admin.html"] {
 .role-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 10px;
-  padding: 6px 40px;
-  background: rgba(0,0,0,0.15);
   font-size: 12px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-right: 8px;
 }
 .role-bar .role-badge {
   color: rgba(245,240,232,0.55);
@@ -811,6 +811,10 @@ footer {
     <a href="builders.html">Строители</a>
     <a href="settings.html">Администрирование</a>
     <a href="staff.html">Сотрудники</a>
+    <div class="role-bar">
+      <span class="role-badge" id="role-badge">—</span>
+      <button id="logout-btn" onclick="siteLogout()">Выйти</button>
+    </div>
   </nav>
 </header>
 
@@ -882,7 +886,15 @@ async function authCheck() {
 
 function unlock() {
   document.getElementById('auth-overlay').style.display = 'none';
+  const badge = document.getElementById('role-badge');
+  if (badge) badge.textContent = 'Администратор';
   init();
+}
+
+function siteLogout() {
+  localStorage.removeItem('sruby_role');
+  localStorage.removeItem('sruby_user');
+  location.reload();
 }
 
 (async function () {

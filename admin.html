@@ -46,6 +46,13 @@ header {
 .header-nav { background: var(--forest-mid); padding: 0 40px; display: flex; border-top: 1px solid rgba(255,255,255,0.06); }
 .header-nav a { color: rgba(245,240,232,0.6); text-decoration: none; font-size: 13px; padding: 12px 18px; border-bottom: 2px solid transparent; transition: all 0.2s; }
 .header-nav a:hover, .header-nav a.active { color: var(--oak-light); border-bottom-color: var(--oak); }
+.role-bar { display: flex; align-items: center; gap: 10px; font-size: 12px; flex-shrink: 0; margin-left: auto; padding-right: 8px; }
+.role-bar .role-badge { color: rgba(245,240,232,0.55); letter-spacing: 0.03em; }
+.role-bar button {
+  background: none; border: 1px solid rgba(245,240,232,0.25); color: rgba(245,240,232,0.75);
+  border-radius: 6px; padding: 3px 10px; font-size: 11.5px; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.role-bar button:hover { border-color: rgba(245,240,232,0.6); color: var(--cream); }
 
 .container { max-width: 900px; margin: 0 auto; padding: 36px 20px 56px; }
 
@@ -264,6 +271,10 @@ header {
     <a href="builders.html">Строители</a>
     <a href="settings.html">Администрирование</a>
     <a href="staff.html">Сотрудники</a>
+    <div class="role-bar">
+      <span class="role-badge" id="role-badge">—</span>
+      <button id="logout-btn" onclick="siteLogout()">Выйти</button>
+    </div>
   </nav>
 </header>
 
@@ -1011,6 +1022,7 @@ async function preloadAuth() {
     document.getElementById('auth-overlay').style.display = 'none';
     document.getElementById('admin-content').style.display = 'block';
     document.getElementById('sticky-footer').style.display = 'flex';
+    document.getElementById('role-badge').textContent = 'Администратор';
     fillConn();
     loadPrices();
     if (getConn()) testConn();
@@ -1042,6 +1054,7 @@ async function authCheck() {
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('admin-content').style.display = 'block';
   document.getElementById('sticky-footer').style.display = 'flex';
+  document.getElementById('role-badge').textContent = 'Администратор';
   localStorage.setItem('sruby_role', 'admin');
   fillConn();
   loadPrices();
@@ -1292,6 +1305,12 @@ function showToast(msg) {
 }
 
 preloadAuth();
+
+function siteLogout() {
+  localStorage.removeItem('sruby_role');
+  localStorage.removeItem('sruby_user');
+  location.reload();
+}
 
 // Allow pressing Enter in auth
 document.getElementById('auth-input').addEventListener('keyup', e => {
