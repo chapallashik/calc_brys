@@ -790,20 +790,20 @@ footer {
     <a href="builders.html">Строители</a>
   </nav>
   <div class="role-bar">
-    <span class="role-badge" id="role-badge">Режим: менеджер</span>
-    <button id="role-btn" onclick="onRoleBtnClick()">Режим администратора</button>
+    <span class="role-badge" id="role-badge">—</span>
+    <button id="logout-btn" onclick="siteLogout()">Выйти</button>
   </div>
 </header>
 
-<div class="role-auth-overlay" id="role-auth-overlay" style="display:none;">
+<div class="role-auth-overlay" id="site-login-overlay" style="display:flex;">
   <div class="role-auth-box">
-    <h3>Вход для администратора</h3>
-    <p>Тот же пароль, что и в панели цен.</p>
-    <input type="password" id="role-auth-input" placeholder="••••" onkeyup="if(event.key==='Enter')roleAuthCheck()">
-    <div class="err" id="role-auth-error"></div>
+    <h3>Вход в калькулятор</h3>
+    <p>Логин и пароль выдаёт администратор.</p>
+    <input type="text" id="site-login-input" placeholder="Логин" autocomplete="username" autofocus style="margin-bottom:8px;">
+    <input type="password" id="site-pass-input" placeholder="Пароль" autocomplete="current-password" onkeyup="if(event.key==='Enter')siteLoginCheck()">
+    <div class="err" id="site-login-error"></div>
     <div class="role-auth-actions">
-      <button class="secondary" onclick="document.getElementById('role-auth-overlay').style.display='none'">Отмена</button>
-      <button class="primary" onclick="roleAuthCheck()">Войти</button>
+      <button class="primary" style="flex:1;" onclick="siteLoginCheck()">Войти</button>
     </div>
   </div>
 </div>
@@ -2304,14 +2304,16 @@ function recalcLive() { if (lastResult) calculate(); }
 // ВЫВОД
 // ═══════════════════════════════════════════════
 // ═══════════════════════════════════════════════
-// РОЛИ: админ / менеджер
-// Один и тот же пароль, что и в панели цен (хэш хранится в prices.json→auth).
-// Успешный вход запоминается в localStorage, поэтому переход в панель цен
-// пароль повторно не спрашивает.
+// ВХОД НА САЙТ: админ / сотрудник (менеджер)
+// Админ — тот же пароль, что и в панели цен (хэш в prices.json→auth).
+// Сотрудники — из employees.json, публикуются панелью цен (вкладка «Сотрудники»).
+// Успешный вход запоминается в localStorage — при следующем визите вход не спрашивается,
+// пока не нажали «Выйти».
 // ═══════════════════════════════════════════════
 const ROLE_DEFAULT_PASS = 'admin123';
 const ROLE_PBKDF2_ITER = 200000;
 let ROLE_PUBLISHED_AUTH = null;
+let SITE_EMPLOYEES = [];
 
 function roleHex(buf) { return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join(''); }
 async function roleHashPass(pass, saltHex, iter) {
@@ -2323,44 +2325,52 @@ async function roleHashPass(pass, saltHex, iter) {
 
 function applyRole() {
   const isAdmin = localStorage.getItem('sruby_role') === 'admin';
+  const loggedIn = !!localStorage.getItem('sruby_role');
   document.body.classList.toggle('role-manager', !isAdmin);
   const badge = document.getElementById('role-badge');
-  const btn = document.getElementById('role-btn');
-  if (badge) badge.textContent = 'Режим: ' + (isAdmin ? 'администратор' : 'менеджер');
-  if (btn) btn.textContent = isAdmin ? 'Выйти в режим менеджера' : 'Режим администратора';
+  const overlay = document.getElementById('site-login-overlay');
+  const user = localStorage.getItem('sruby_user') || (isAdmin ? 'Администратор' : '');
+  if (badge) badge.textContent = loggedIn ? (user + ' · ' + (isAdmin ? 'администратор' : 'менеджер')) : '—';
+  if (overlay) overlay.style.display = loggedIn ? 'none' : 'flex';
 }
 
-function onRoleBtnClick() {
-  const isAdmin = localStorage.getItem('sruby_role') === 'admin';
-  if (isAdmin) {
-    localStorage.removeItem('sruby_role');
-    applyRole();
-    if (lastResult) renderResults(lastResult.results, selectedSection);
-  } else {
-    document.getElementById('role-auth-overlay').style.display = 'flex';
-    document.getElementById('role-auth-input').value = '';
-    document.getElementById('role-auth-error').textContent = '';
-    document.getElementById('role-auth-input').focus();
-  }
+function siteLogout() {
+  localStorage.removeItem('sruby_role');
+  localStorage.removeItem('sruby_user');
+  location.reload();
 }
 
-async function roleAuthCheck() {
-  const input = document.getElementById('role-auth-input');
-  const err = document.getElementById('role-auth-error');
-  const val = input.value;
-  let ok;
-  if (ROLE_PUBLISHED_AUTH) {
-    ok = (await roleHashPass(val, ROLE_PUBLISHED_AUTH.salt, ROLE_PUBLISHED_AUTH.iter || ROLE_PBKDF2_ITER)) === ROLE_PUBLISHED_AUTH.hash;
+async function siteLoginCheck() {
+  const loginEl = document.getElementById('site-login-input');
+  const passEl  = document.getElementById('site-pass-input');
+  const err = document.getElementById('site-login-error');
+  const login = loginEl.value.trim().toLowerCase();
+  const pass = passEl.value;
+  err.textContent = '';
+  if (!login) { err.textContent = 'Введите логин'; return; }
+
+  if (login === 'admin') {
+    err.textContent = 'Проверяем…';
+    let ok;
+    if (ROLE_PUBLISHED_AUTH) {
+      ok = (await roleHashPass(pass, ROLE_PUBLISHED_AUTH.salt, ROLE_PUBLISHED_AUTH.iter || ROLE_PBKDF2_ITER)) === ROLE_PUBLISHED_AUTH.hash;
+    } else {
+      ok = pass === ROLE_DEFAULT_PASS;
+    }
+    err.textContent = '';
+    if (!ok) { err.textContent = 'Неверный логин или пароль'; passEl.value = ''; return; }
+    localStorage.setItem('sruby_role', 'admin');
+    localStorage.setItem('sruby_user', 'Администратор');
   } else {
-    ok = val === ROLE_DEFAULT_PASS;
+    const emp = SITE_EMPLOYEES.find(e => e.login === login);
+    if (!emp) { err.textContent = 'Неверный логин или пароль'; passEl.value = ''; return; }
+    err.textContent = 'Проверяем…';
+    const ok = (await roleHashPass(pass, emp.salt, emp.iter || ROLE_PBKDF2_ITER)) === emp.hash;
+    err.textContent = '';
+    if (!ok) { err.textContent = 'Неверный логин или пароль'; passEl.value = ''; return; }
+    localStorage.setItem('sruby_role', 'manager');
+    localStorage.setItem('sruby_user', emp.name);
   }
-  if (!ok) {
-    err.textContent = 'Неверный пароль';
-    input.value = '';
-    return;
-  }
-  localStorage.setItem('sruby_role', 'admin');
-  document.getElementById('role-auth-overlay').style.display = 'none';
   applyRole();
   if (lastResult) renderResults(lastResult.results, selectedSection);
 }
@@ -2371,6 +2381,13 @@ async function roleAuthCheck() {
     if (res.ok) {
       const doc = await res.json();
       if (doc && doc.auth && doc.auth.hash) ROLE_PUBLISHED_AUTH = doc.auth;
+    }
+  } catch (e) {}
+  try {
+    const res2 = await fetch('employees.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res2.ok) {
+      const doc2 = await res2.json();
+      if (doc2 && Array.isArray(doc2.employees)) SITE_EMPLOYEES = doc2.employees;
     }
   } catch (e) {}
 })();

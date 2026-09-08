@@ -354,6 +354,53 @@ header {
     </div>
   </div>
 
+  <div class="card" id="employees-card">
+    <div class="card-header">
+      <h2>Сотрудники</h2>
+      <span class="card-hint">вход менеджеров на калькулятор</span>
+    </div>
+    <div class="card-body">
+      <p class="conn-intro">
+        Каждый сотрудник входит на сайт под своим логином и паролем — вместо общего доступа по ссылке.
+        Пароли хранятся так же, как пароль этой панели: только хеш, в открытом виде нигде не сохраняется.
+      </p>
+
+      <div id="employees-list"></div>
+
+      <div class="price-group" style="margin-top: 20px;">
+        <h3>Добавить сотрудника</h3>
+        <div class="price-row">
+          <div class="price-label">Имя</div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="emp_name" placeholder="Иван Петров" spellcheck="false">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Логин
+            <span class="price-sublabel">латиницей, без пробелов</span>
+          </div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="emp_login" placeholder="ivan" spellcheck="false">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Пароль</div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="emp_pass" placeholder="сгенерируется само" spellcheck="false">
+            <button class="btn-draft" type="button" onclick="genEmpPassword('emp_pass')">Сгенерировать</button>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn-draft" id="btn-add-emp" onclick="addEmployee()">Добавить сотрудника</button>
+      </div>
+      <p class="btn-note" style="margin-top:14px">
+        Логин и пароль после добавления показаны один раз — их нужно сразу передать сотруднику
+        (лично или в мессенджере), сохранить их потом будет нельзя, только сменить на новые.
+      </p>
+    </div>
+  </div>
+
   <div class="updated-badge">
     <span id="last-updated">Цены не обновлялись</span>
     <span style="margin-left:auto; opacity:0.6">Источник цен — prices.json в репозитории</span>
@@ -1101,6 +1148,7 @@ async function preloadAuth() {
     document.getElementById('admin-content').style.display = 'block';
     fillConn();
     loadPrices();
+    loadEmployees();
     if (getConn()) testConn();
   }
 }
@@ -1132,6 +1180,7 @@ async function authCheck() {
   localStorage.setItem('sruby_role', 'admin');
   fillConn();
   loadPrices();
+  loadEmployees();
   if (getConn()) testConn();
   if (CONN_FROM_LINK) showToast('Подключение получено по ссылке — настраивать ничего не нужно');
   if (!PUBLISHED_AUTH) showToast('Используется пароль по умолчанию — смените его в блоке «Доступ»');
@@ -1143,13 +1192,14 @@ async function changePass() {
   const p2 = document.getElementById('pass_rep').value;
   if (p1.length < 6) { showToast('Пароль должен быть не короче 6 символов'); return; }
   if (p1 !== p2)     { showToast('Пароли не совпадают'); return; }
-  if (!getConn())    { showToast('Сначала настройте подключение к репозиторию'); return; }
 
   const btn = document.getElementById('btn-pass');
   btn.disabled = true;
   const label = btn.textContent;
-  btn.textContent = 'Меняем…';
+  btn.textContent = 'Проверяем связь…';
   try {
+    if (!(await ensureConn())) return;
+    btn.textContent = 'Меняем…';
     const auth = await makeAuth(p1);
     await pushFile(buildJSON(auth), 'Смена пароля панели');
     PUBLISHED_AUTH = auth;
@@ -1161,6 +1211,143 @@ async function changePass() {
   } finally {
     btn.disabled = false;
     btn.textContent = label;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// СОТРУДНИКИ
+// employees.json публикуется тем же токеном, что и цены.
+// Каждый пароль хранится как PBKDF2-хеш (та же схема, что и пароль админа).
+// ═══════════════════════════════════════════════
+const EMP_PATH = 'employees.json';
+let EMPLOYEES = [];      // текущий список из employees.json
+
+function genEmpPassword(inputId) {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let pass = '';
+  const bytes = crypto.getRandomValues(new Uint8Array(10));
+  bytes.forEach(b => pass += chars[b % chars.length]);
+  document.getElementById(inputId).value = pass;
+  document.getElementById(inputId).type = 'text';
+}
+
+async function loadEmployees() {
+  try {
+    const res = await fetch(EMP_PATH + '?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      EMPLOYEES = (doc && Array.isArray(doc.employees)) ? doc.employees : [];
+    }
+  } catch (e) { EMPLOYEES = []; }
+  renderEmployees();
+}
+
+function renderEmployees() {
+  const box = document.getElementById('employees-list');
+  if (!EMPLOYEES.length) {
+    box.innerHTML = '<p class="conn-intro" style="margin:0;">Сотрудников пока нет.</p>';
+    return;
+  }
+  box.innerHTML = EMPLOYEES.map(e => `
+    <div class="price-row">
+      <div class="price-label">${e.name}
+        <span class="price-sublabel">логин: ${e.login}</span>
+      </div>
+      <div class="price-input-wrap">
+        <button class="btn-draft" onclick="resetEmpPassword('${e.login}')">Сменить пароль</button>
+        <button class="btn-reset" onclick="deleteEmployee('${e.login}')">Удалить</button>
+      </div>
+    </div>`).join('');
+}
+
+function buildEmployeesJSON() {
+  const d = new Date();
+  const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+              + '-' + String(d.getDate()).padStart(2, '0')
+              + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  return JSON.stringify({
+    updated: stamp,
+    comment: 'Файл обновляется автоматически из панели цен (вкладка «Сотрудники»). Вручную не редактировать.',
+    employees: EMPLOYEES,
+  }, null, 2) + '\n';
+}
+
+async function addEmployee() {
+  const name  = document.getElementById('emp_name').value.trim();
+  const login = document.getElementById('emp_login').value.trim().toLowerCase();
+  const pass  = document.getElementById('emp_pass').value;
+  if (!name)  { showToast('Введите имя сотрудника'); return; }
+  if (!/^[a-z0-9._-]{3,}$/.test(login)) { showToast('Логин — латиницей и цифрами, от 3 символов'); return; }
+  if (login === 'admin') { showToast('Логин «admin» зарезервирован'); return; }
+  if (EMPLOYEES.some(e => e.login === login)) { showToast('Такой логин уже есть'); return; }
+  if (pass.length < 6) { showToast('Пароль должен быть не короче 6 символов (или нажмите «Сгенерировать»)'); return; }
+
+  const btn = document.getElementById('btn-add-emp');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Проверяем связь…';
+  try {
+    if (!(await ensureConn())) return;
+    btn.textContent = 'Добавляем…';
+    const auth = await makeAuth(pass);
+    EMPLOYEES.push({ login, name, salt: auth.salt, hash: auth.hash, iter: auth.iter });
+    await pushFile(buildEmployeesJSON(), 'Добавлен сотрудник: ' + name, EMP_PATH);
+    renderEmployees();
+    alert('Сотрудник добавлен.\n\nПередайте ему данные для входа (показываются только сейчас):\n\nЛогин: ' + login + '\nПароль: ' + pass);
+    document.getElementById('emp_name').value = '';
+    document.getElementById('emp_login').value = '';
+    document.getElementById('emp_pass').value = '';
+    showToast('Сотрудник «' + name + '» добавлен');
+  } catch (e) {
+    EMPLOYEES = EMPLOYEES.filter(x => x.login !== login);   // откат локального списка, раз публикация не прошла
+    showToast(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+async function resetEmpPassword(login) {
+  const emp = EMPLOYEES.find(e => e.login === login);
+  if (!emp) return;
+  const newPass = prompt('Новый пароль для «' + emp.name + '» (пусто — сгенерировать автоматически):');
+  if (newPass === null) return;
+  let pass = newPass.trim();
+  if (!pass) {
+    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    const bytes = crypto.getRandomValues(new Uint8Array(10));
+    pass = ''; bytes.forEach(b => pass += chars[b % chars.length]);
+  } else if (pass.length < 6) {
+    showToast('Пароль должен быть не короче 6 символов'); return;
+  }
+  try {
+    if (!(await ensureConn())) return;
+    const auth = await makeAuth(pass);
+    const oldAuth = { salt: emp.salt, hash: emp.hash, iter: emp.iter };
+    emp.salt = auth.salt; emp.hash = auth.hash; emp.iter = auth.iter;
+    await pushFile(buildEmployeesJSON(), 'Смена пароля: ' + emp.name, EMP_PATH);
+    alert('Новый пароль для «' + emp.name + '»:\n\nЛогин: ' + emp.login + '\nПароль: ' + pass);
+    showToast('Пароль обновлён');
+  } catch (e) {
+    showToast(e.message);
+  }
+}
+
+async function deleteEmployee(login) {
+  const emp = EMPLOYEES.find(e => e.login === login);
+  if (!emp) return;
+  if (!confirm('Удалить сотрудника «' + emp.name + '»? Он больше не сможет войти.')) return;
+  const backup = EMPLOYEES;
+  EMPLOYEES = EMPLOYEES.filter(e => e.login !== login);
+  try {
+    if (!(await ensureConn())) { EMPLOYEES = backup; return; }
+    await pushFile(buildEmployeesJSON(), 'Удалён сотрудник: ' + emp.name, EMP_PATH);
+    renderEmployees();
+    showToast('Сотрудник удалён');
+  } catch (e) {
+    EMPLOYEES = backup;
+    renderEmployees();
+    showToast(e.message);
   }
 }
 
@@ -1349,32 +1536,49 @@ function clearConn() {
   showToast('Подключение удалено');
 }
 
-async function ghGet() {
+async function ghGet(path) {
+  path = path || GH_PATH;
   const c = getConn();
   if (!c) throw new Error('Подключение не настроено');
   if (!navigator.onLine) throw new Error('Нет интернета — проверить связь с репозиторием нельзя');
-  const url = `https://api.github.com/repos/${c.repo}/contents/${GH_PATH}?ref=${c.branch}&t=${Date.now()}`;
+  const url = `https://api.github.com/repos/${c.repo}/contents/${path}?ref=${c.branch}&t=${Date.now()}`;
   const res = await fetch(url, {
     headers: { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github+json' },
     cache: 'no-store',
   });
   if (res.status === 401) throw new Error('Токен не принят — проверьте, что он не истёк');
   if (res.status === 403) throw new Error('Нет прав на запись — в токене нужно Contents: Read and write');
-  if (res.status === 404) throw new Error('Не найден репозиторий, ветка или файл prices.json');
+  if (res.status === 404) throw new Error('Не найден репозиторий, ветка или файл ' + path);
   if (!res.ok) throw new Error('GitHub ответил ошибкой ' + res.status);
   return res.json();
 }
 
+// Проверка соединения — теперь ещё и «привратник» для публикации:
+// без успешной проверки ни цены, ни сотрудники в репозиторий не уходят.
+let CONN_OK = false;
+
 async function testConn() {
   connState('проверяем…');
+  CONN_OK = false;
   try {
     const f = await ghGet();
     connState('подключено · ' + getConn().repo, 'ok');
     showToast('Связь есть, файл найден (' + Math.round(f.size / 1024 * 10) / 10 + ' КБ)');
+    CONN_OK = true;
   } catch (e) {
     connState(e.message, 'bad');
     showToast(e.message);
   }
+  return CONN_OK;
+}
+
+// Перед любой публикацией — свежая проверка соединения. Если она не проходит,
+// публикация не запускается вообще (а не падает где-то на середине записи).
+async function ensureConn() {
+  if (!getConn()) { showToast('Сначала настройте подключение в блоке «Подключение»'); return false; }
+  const ok = await testConn();
+  if (!ok) showToast('Публикация остановлена: нет связи с репозиторием (см. «Подключение»)');
+  return ok;
 }
 
 // UTF-8 → base64 (btoa не умеет кириллицу напрямую)
@@ -1386,12 +1590,13 @@ function toBase64(str) {
 }
 
 // Запись файла в репозиторий
-async function pushFile(text, message) {
+async function pushFile(text, message, path) {
+  path = path || GH_PATH;
   const c = getConn();
   if (!c) throw new Error('Подключение не настроено');
-  if (!navigator.onLine) throw new Error('Нет интернета — опубликовать цены сейчас нельзя');
-  const cur = await ghGet();                       // нужен sha текущего файла
-  const res = await fetch(`https://api.github.com/repos/${c.repo}/contents/${GH_PATH}`, {
+  if (!navigator.onLine) throw new Error('Нет интернета — опубликовать сейчас нельзя');
+  const cur = await ghGet(path);                   // нужен sha текущего файла
+  const res = await fetch(`https://api.github.com/repos/${c.repo}/contents/${path}`, {
     method: 'PUT',
     headers: {
       Authorization: 'Bearer ' + c.token,
@@ -1410,16 +1615,13 @@ async function pushFile(text, message) {
 }
 
 async function publish() {
-  if (!getConn()) {
-    showToast('Сначала настройте подключение в блоке «Подключение»');
-    document.getElementById('gh_repo').focus();
-    return;
-  }
   const btn = document.getElementById('btn-publish');
   btn.disabled = true;
   const label = btn.textContent;
-  btn.textContent = 'Публикуем…';
+  btn.textContent = 'Проверяем связь…';
   try {
+    if (!(await ensureConn())) return;
+    btn.textContent = 'Публикуем…';
     await pushFile(buildJSON(), 'Обновление цен из панели');
     localStorage.removeItem('sruby_draft');
     document.querySelectorAll('.price-input').forEach(i => i.classList.remove('changed'));
