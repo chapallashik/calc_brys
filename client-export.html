@@ -810,6 +810,7 @@ body { background: var(--cream); }
   font-weight: 700; font-size: 13.5px;
 }
 .ce-note { font-size: 11px; color: var(--text-muted); margin-top: 10px; line-height: 1.4; }
+.ce-discount { font-size: 12.5px; color: var(--oak); font-weight: 600; margin-top: 8px; padding: 8px 10px; background: rgba(200,135,42,0.1); border-radius: 6px; }
 .ce-total {
   background: var(--forest); color: var(--cream); padding: 18px; text-align: center; margin-top: auto;
 }
@@ -883,34 +884,44 @@ window.onload = function () {
   if (g.fr.mp)  wallBullets.push({ name: 'Фронтоны из профилированного бруса', qty: n0(g.fr.mp) + ' м.п.' });
   if (ter)      wallBullets.push({ name: 'Вылет под террасу', qty: n0(ter.mp) + ' м.п.' });
   if (ridge)    wallBullets.push({ name: 'Коньковая балка', qty: n0(ridge.mp) + ' м.п.' });
-  const wallKitTotal = w.priceKit + (ter ? ter.priceKit : 0) + (ridge ? ridge.priceKit : 0);
+  if (r.cedar)  wallBullets.push({ name: 'Материал — кедр' });
+  if (r.drying) wallBullets.push({ name: 'Камерная (вакуумная) сушка' });
+  // Кедр/сушка — надбавка к материалу, действует одинаково на все 3 варианта.
+  const materialSurcharge = (r.cedar || 0) + (r.drying || 0);
+  const wallKitTotal = w.priceKit + (ter ? ter.priceKit : 0) + (ridge ? ridge.priceKit : 0) + materialSurcharge;
 
-  const wallGroup = (title) => `
+  // Скидка — только на сруб без сборки (варианты 1 и 2), на «со сборкой» не действует.
+  const discountNote = r.discNo
+    ? `<div class="ce-discount">Акционная цена — скидка ${r.discPct}%: −${fmt(r.discNo)}</div>` : '';
+
+  const wallGroup = (title, applyDiscount) => `
     <div class="ce-group">
       <div class="ce-group-title">Стеновой комплект</div>
       ${wallBullets.map(b => `<div class="ce-item"><span>${b.name}</span></div>`).join('')}
       <div class="ce-subtotal"><span>${title}</span><span>${fmt(wallKitTotal)}</span></div>
+      ${applyDiscount ? discountNote : ''}
     </div>`;
 
   // ── Столбец 1: сруб без сборки ──────────────────────────────────
+  const col1Total = wallKitTotal - (r.discNo || 0);
   const col1 = `
     <div class="ce-col">
       <div class="ce-col-head"><div class="num">Вариант 1</div><div class="ttl">Сруб без сборки</div></div>
       <div class="ce-col-body">
-        ${wallGroup('Стоимость сруба')}
+        ${wallGroup('Стоимость сруба', true)}
       </div>
-      <div class="ce-total"><div class="lbl">Итого</div><div class="amt">${fmt(wallKitTotal)}</div></div>
+      <div class="ce-total"><div class="lbl">Итого</div><div class="amt">${fmt(col1Total)}</div></div>
     </div>`;
 
   // ── Столбец 2: сруб + доп. материалы без запилов ────────────────
-  const extraNames = { 'Стропила': 'сосна', 'Обрешётка': 'сосна', 'Обвязка': 'лиственница' };
+  const extraNames = { 'Стропила': 'сосна', 'Обрешётка': 'сосна', 'Обвязка': 'лиственница', 'Лаги': 'сосна', 'Потолочные балки': 'сосна' };
   const exFiltered = (ex ? ex.items.filter(i => Object.keys(extraNames).some(k => i.name.startsWith(k))) : []);
   const exTotal = exFiltered.reduce((s, i) => s + i.sum, 0);
   let col2Extra = '';
   if (exFiltered.length) {
     col2Extra = `
       <div class="ce-group">
-        <div class="ce-group-title">Дополнительные материалы без запилов</div>
+        <div class="ce-group-title">Дополнительные материалы</div>
         ${exFiltered.map(i => {
           const species = Object.keys(extraNames).find(k => i.name.startsWith(k));
           return `<div class="ce-item"><span>${i.name} · ${extraNames[species]}${i.qty ? ' · ' + i.qty + ' шт' : ''}</span><span class="val">${fmt(i.sum)}</span></div>`;
@@ -918,14 +929,13 @@ window.onload = function () {
         <div class="ce-subtotal"><span>Стоимость доп. материалов</span><span>${fmt(exTotal)}</span></div>
       </div>`;
   }
-  const col2Total = wallKitTotal + exTotal;
+  const col2Total = wallKitTotal - (r.discNo || 0) + exTotal;
   const col2 = `
     <div class="ce-col">
       <div class="ce-col-head"><div class="num">Вариант 2</div><div class="ttl">Сруб + доп. материалы</div></div>
       <div class="ce-col-body">
-        ${wallGroup('Стоимость сруба')}
+        ${wallGroup('Стоимость сруба', true)}
         ${col2Extra}
-        <div class="ce-note">Лаги и потолочные балки не входят — ни материал, ни монтаж.</div>
       </div>
       <div class="ce-total"><div class="lbl">Итого</div><div class="amt">${fmt(col2Total)}</div></div>
     </div>`;
@@ -964,7 +974,7 @@ window.onload = function () {
     <div class="ce-col">
       <div class="ce-col-head"><div class="num">Вариант 3</div><div class="ttl">Сруб со сборкой</div></div>
       <div class="ce-col-body">
-        ${wallGroup('Стоимость стенового комплекта')}
+        ${wallGroup('Стоимость стенового комплекта', false)}
         ${matBullets.length ? `
         <div class="ce-group">
           <div class="ce-group-title">Материалы для строительства</div>
