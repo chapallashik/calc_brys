@@ -789,7 +789,7 @@ body { background: var(--cream); }
 .ce-col-head {
   background: var(--forest); color: var(--cream); padding: 16px 18px; text-align: center;
 }
-.ce-col-head .num { font-size: 11px; letter-spacing: 0.08em; opacity: 0.6; text-transform: uppercase; }
+.ce-col-head .num { font-size: 11px; letter-spacing: 0.08em; opacity: 0.85; text-transform: uppercase; }
 .ce-col-head .ttl { font-family: 'Playfair Display', serif; font-size: 16px; margin-top: 2px; }
 .ce-col-body { padding: 18px; flex: 1; }
 .ce-group { margin-bottom: 18px; }
@@ -823,6 +823,11 @@ body { background: var(--cream); }
 .ce-empty { padding: 80px 24px; text-align: center; color: var(--text-muted); max-width:500px; margin:0 auto; }
 .ce-empty a { color: var(--oak); font-weight: 600; }
 @media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
   .ce-top { display: none; }
   body { background: white; }
   .ce-cols { grid-template-columns: repeat(3, 1fr); }
