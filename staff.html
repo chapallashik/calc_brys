@@ -35,13 +35,25 @@ header {
   background:
     repeating-linear-gradient(92deg, transparent, transparent 180px, rgba(255,255,255,0.03) 180px, rgba(255,255,255,0.03) 182px),
     repeating-linear-gradient(88deg, transparent, transparent 90px, rgba(0,0,0,0.04) 90px, rgba(0,0,0,0.04) 91px);
-  padding: 28px 40px;
+  padding: 36px 40px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.header-left h1 { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 26px; font-weight: 700; }
-.header-left p { color: rgba(245,240,232,0.55); font-size: 13px; margin-top: 4px; }
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.header-left p {
+  color: rgba(245,240,232,0.65);
+  font-size: 14px;
+  margin-top: 6px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
 
 .header-nav { background: var(--forest-mid); padding: 0 40px; display: flex; border-top: 1px solid rgba(255,255,255,0.06); }
 .header-nav a { color: rgba(245,240,232,0.6); text-decoration: none; font-size: 13px; padding: 12px 18px; border-bottom: 2px solid transparent; transition: all 0.2s; }
