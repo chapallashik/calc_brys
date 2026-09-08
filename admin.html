@@ -1129,12 +1129,13 @@ function getConn() {
 
 function fillConn() {
   const c = getConn();
-  if (!c) return;
-  document.getElementById('gh_token').value = c.token || '';
+  const tokenEl = document.getElementById('gh_token');
+  if (c && tokenEl) tokenEl.value = c.token || '';
 }
 
 function connState(text, cls) {
   const el = document.getElementById('conn-state');
+  if (!el) return;
   el.textContent = text;
   el.className = 'card-hint' + (cls ? ' ' + cls : '');
 }
