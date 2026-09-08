@@ -2437,7 +2437,7 @@ function renderResults(results, sec) {
 
   if (ter) html += head('Терраса · вылет')
     + row('Объём с запасом', n(ter.volR, 3) + ' м³', { formula: `${n(ter.len, 1)} м × ${ter.crowns} венц. = ${n(ter.mp, 0)} м.п.` })
-    + row('Без сборки', fmt(ter.noAssembly))
+    + row('Без сборки', fmt(ter.noAssembly), { accent: true })
     + row('Со сборкой', fmt(ter.withAssembly), { accent: true, formula: `Без сборки ${fmt(ter.priceKit)} + Монтаж ${fmt(ter.priceAsm)} + Джут и шканты ${fmt(ter.priceJute)}` });
 
   if (ridge) html += head('Коньковая балка')
