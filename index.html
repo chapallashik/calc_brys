@@ -2463,15 +2463,15 @@ function renderResults(results, sec) {
     + row('Доборы', fmt(rf.addonCost), { formula: `${P.roof_addon_pct}% от материалов` })
     + (rf.frontonArea ? row('Каркасный фронтон', fmt(rf.frontonCost), { formula: `${n(rf.frontonArea, 1)} м² × ${n(P.roof_fronton_sqm, 0)} ₽` }) : '')
     + row('Себестоимость', fmt(rf.totalCost), { formula: 'сумма позиций выше', mgrHide: true })
-    + row('Кровля для клиента', fmt(rf.clientPrice), { accent: true, formula: `маржа ${P.roof_margin}%` });
+    + row('Кровля', fmt(rf.clientPrice), { accent: true, formula: `маржа ${P.roof_margin}%` });
 
   if (bs) html += head('Нижняя обвязка · лиственница')
     + row('Объём', n(bs.vol, 3) + ' м³', { formula: `${n(bs.len, 1)} м.п. · брус ${bs.secA * 1000}×${bs.secB * 1000} мм` })
     + row('Материал и работа', fmt(bs.cost), { formula: `${n(P.base_larch, 0)} + ${n(P.base_work, 0)} ₽/м³`, mgrHide: true })
-    + row('Обвязка для клиента', fmt(bs.price), { accent: true, formula: `маржа ${P.base_margin}%` });
+    + row('Обвязка', fmt(bs.price), { accent: true, formula: `маржа ${P.base_margin}%` });
 
   if (ex) html += head('Доп. материалы · для заказа без сборки')
-    + ex.items.map(i => row(i.name, fmt(i.sum), { formula: `${i.qty} шт · ${n(i.vol, 3)} м³` })).join('')
+    + ex.items.map(i => row(i.qty ? `${i.name} — ${i.qty} шт` : i.name, fmt(i.sum), { formula: `${n(i.vol, 3)} м³`, mgrShow: true })).join('')
     + row('Итого материалы', fmt(ex.total), { accent: true, formula: 'сумма позиций выше, без маржи — это цена только на материал для самостоятельной сборки' });
 
   if (r.cedar || r.drying) html += head('Надбавки')
