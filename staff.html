@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Панель администратора — Калькулятор срубов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest: #1C3828;
+  --forest-mid: #2D5240;
+  --forest-light: #3D6B53;
+  --cream: #F5F0E8;
+  --cream-dark: #EAE3D5;
+  --oak: #C8872A;
+  --oak-light: #E8A84A;
+  --text: #1A1A1A;
+  --text-muted: #666;
+  --white: #FFFFFF;
+  --border: #D8D0C0;
+  --shadow: 0 4px 24px rgba(28,56,40,0.12);
+  --radius: 12px;
+  --red: #dc3545;
+  --green: #198754;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+header {
+  background: var(--forest);
+  padding: 0;
+}
+.header-wood {
+  background:
+    repeating-linear-gradient(92deg, transparent, transparent 180px, rgba(255,255,255,0.03) 180px, rgba(255,255,255,0.03) 182px),
+    repeating-linear-gradient(88deg, transparent, transparent 90px, rgba(0,0,0,0.04) 90px, rgba(0,0,0,0.04) 91px);
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left h1 { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 26px; font-weight: 700; }
+.header-left p { color: rgba(245,240,232,0.55); font-size: 13px; margin-top: 4px; }
+
+.header-nav { background: var(--forest-mid); padding: 0 40px; display: flex; border-top: 1px solid rgba(255,255,255,0.06); }
+.header-nav a { color: rgba(245,240,232,0.6); text-decoration: none; font-size: 13px; padding: 12px 18px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.header-nav a:hover, .header-nav a.active { color: var(--oak-light); border-bottom-color: var(--oak); }
+
+.container { max-width: 900px; margin: 0 auto; padding: 36px 20px 56px; }
+
+/* ─── AUTH OVERLAY (тот же стиль, что и вход на сайт в index.html) ── */
+.auth-overlay {
+  position: fixed; inset: 0;
+  background: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.auth-box {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 28px 26px;
+  width: 300px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+}
+.auth-box h2 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 6px; color: var(--forest); }
+.auth-box p { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; }
+.auth-input {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px;
+  font-size: 14px; font-family: 'Inter', sans-serif; margin-bottom: 10px;
+}
+.auth-input:focus { outline: none; border-color: var(--forest-light); }
+.auth-btn {
+  width: 100%; background: var(--oak); color: var(--white); border: none; border-radius: 7px;
+  padding: 9px; font-size: 14px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer;
+}
+.auth-error { color: #B23B3B; font-size: 12px; min-height: 16px; margin-top: 4px; }
+
+/* ─── CARDS ─────────────────── */
+.card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 24px; overflow: hidden; }
+.card-header { background: var(--forest); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
+.card-header h2 { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--cream); font-size: 18px; letter-spacing: 0.01em; }
+.card-header .card-hint { color: rgba(245,240,232,0.5); font-size: 12px; }
+.card-body { padding: 24px 28px 28px; }
+
+/* ─── PRICE TABLE ────────────── */
+.price-group + .price-group { margin-top: 32px; }
+.price-group h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted); margin-bottom: 4px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.price-row {
+  display: flex; align-items: center; gap: 24px; padding: 10px 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+.price-row:last-child { border-bottom: none; }
+.price-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 400; line-height: 1.45; color: var(--text); }
+.price-sublabel { display: block; font-size: 11px; line-height: 1.4; color: var(--text-muted); opacity: 0.75; margin-top: 2px; }
+.price-input-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.price-unit { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 52px; }
+.price-input {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
+  font-size: 15px; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
+  width: 120px; text-align: right; background: var(--cream);
+  transition: border-color 0.2s, background 0.2s;
+}
+.price-input:focus { outline: none; border-color: var(--forest-light); background: var(--white); }
+.price-input.changed { border-color: var(--oak); background: #FEF9F0; }
+
+/* ─── ПОДСВЕТКА СТРОК С МАРЖОЙ ───────────────── */
+/* Работает по всем полям data-key="*margin*" сразу — не нужно помечать
+   каждую строку вручную, новые поля маржи подсветятся сами. */
+.price-row:has(> .price-input[data-key*="margin"]),
+.price-row:has(.price-input-wrap > .price-input[data-key*="margin"]) {
+  background: #FBF0DC;
+  border-radius: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-left: -12px;
+  margin-right: -12px;
+  border-bottom-color: #EAD7AE;
+}
+.price-row:has(.price-input[data-key*="margin"]) .price-label {
+  color: #8A5A1E;
+  font-weight: 600;
+}
+.price-row:has(.price-input[data-key*="margin"]) .price-label::after {
+  content: "МАРЖА";
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #FFF;
+  background: var(--oak);
+  border-radius: 4px;
+  vertical-align: middle;
+}
+.price-input[data-key*="margin"] {
+  color: #A8551F;
+  font-weight: 700;
+  border-color: var(--oak);
+  background: #FFF6E9;
+}
+.price-input[data-key*="margin"]:focus { background: var(--white); }
+
+/* ─── BUTTONS ────────────────── */
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.price-input.wide { width: 280px; text-align: left; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+.conn-intro { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 18px; }
+.conn-intro code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--cream-dark); padding: 1px 5px; border-radius: 4px; }
+.card-hint.ok { color: #6FCF97; }
+.card-hint.bad { color: #F0A0A0; }
+#conn-card.collapsed .card-body { display: none; }
+.btn-draft {
+  background: var(--white); color: var(--forest); border: 1.5px solid var(--forest);
+  border-radius: 8px; padding: 12px 22px; font-family: 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+}
+.btn-draft:hover { background: var(--cream-dark); }
+.btn-note {
+  margin-top: 14px; font-size: 12px; line-height: 1.6; color: var(--text-muted);
+}
+.btn-note b { font-weight: 600; color: var(--text); }
+.btn-note code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 11.5px;
+  background: var(--cream-dark); padding: 1px 5px; border-radius: 4px;
+}
+
+.modal {
+  position: fixed; inset: 0; background: rgba(20,32,25,0.55);
+  display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 200;
+}
+.modal-box {
+  background: var(--white); border-radius: var(--radius); padding: 28px;
+  width: 100%; max-width: 620px; box-shadow: 0 24px 70px rgba(0,0,0,0.3);
+}
+.modal-box h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--forest); margin-bottom: 8px; }
+.modal-box p { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 16px; }
+.modal-box code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+  background: var(--cream-dark); padding: 1px 5px; border-radius: 4px;
+}
+.modal-box textarea {
+  width: 100%; height: 260px; resize: vertical;
+  font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.5;
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 12px;
+  background: var(--cream); color: var(--text);
+}
+.modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+.btn-save {
+  background: var(--green); color: var(--white); border: none; border-radius: 8px;
+  padding: 12px 28px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.btn-save:hover { background: #157347; }
+.btn-reset {
+  background: none; color: var(--red); border: 1.5px solid var(--red); border-radius: 8px;
+  padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-reset:hover { background: var(--red); color: white; }
+.btn-back {
+  background: none; color: var(--forest); border: 1.5px solid var(--forest); border-radius: 8px;
+  padding: 10px 20px; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+.toast {
+  position: fixed; bottom: 30px; right: 30px;
+  background: var(--forest); color: var(--white);
+  border-radius: 10px; padding: 14px 24px;
+  font-size: 14px; font-weight: 500;
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.3s;
+  box-shadow: var(--shadow);
+  z-index: 9999;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.updated-badge {
+  background: var(--cream-dark); border-radius: 6px; padding: 10px 14px;
+  font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+}
+</style>
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<!-- AUTH OVERLAY -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <h2>Сотрудники</h2>
+    <p>Введите пароль для доступа к настройкам</p>
+    <input class="auth-input" type="password" id="auth-input" placeholder="Пароль" onkeyup="if(event.key==='Enter')authCheck()">
+    <button class="auth-btn" onclick="authCheck()">Войти</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-wood">
+    <div class="header-left">
+      <h1>Сотрудники</h1>
+      <p>Вход менеджеров на калькулятор</p>
+    </div>
+    <a href="index.html" class="btn-back">Калькулятор</a>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html">Калькулятор</a>
+    <a href="admin.html">Панель цен</a>
+    <a href="foreus.html">Для нас</a>
+    <a href="builders.html">Строители</a>
+    <a href="settings.html">Администрирование</a>
+    <a href="staff.html" class="active">Сотрудники</a>
+  </nav>
+</header>
+
+<div class="container" id="admin-content" style="display:none">
+
+  <div class="card" id="employees-card">
+    <div class="card-header">
+      <h2>Сотрудники</h2>
+      <span class="card-hint">вход менеджеров на калькулятор</span>
+    </div>
+    <div class="card-body">
+      <div id="employees-list"></div>
+
+      <div class="price-group" style="margin-top: 20px;">
+        <h3>Добавить сотрудника</h3>
+        <div class="price-row">
+          <div class="price-label">Имя</div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="emp_name" placeholder="Иван Петров" spellcheck="false">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Логин
+            <span class="price-sublabel">латиницей, без пробелов</span>
+          </div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="emp_login" placeholder="ivan" spellcheck="false">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label">Пароль</div>
+          <div class="price-input-wrap">
+            <input class="price-input wide" type="text" id="emp_pass" placeholder="сгенерируется само" spellcheck="false">
+            <button class="btn-draft" type="button" onclick="genEmpPassword('emp_pass')">Сгенерировать</button>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn-draft" id="btn-add-emp" onclick="addEmployee()">Добавить сотрудника</button>
+      </div>
+      <p class="btn-note" style="margin-top:14px">
+        Логин и пароль после добавления показаны один раз — их нужно сразу передать сотруднику
+        (лично или в мессенджере), сохранить их потом будет нельзя, только сменить на новые.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ═══════════════════════════════════════════════
+// ВХОД В ПАНЕЛЬ
+// Пароль нигде не хранится в открытом виде: в prices.json лежит
+// только PBKDF2-хеш с солью. Сменить пароль можно прямо из панели —
+// новый хеш публикуется вместе с ценами и действует у всех.
+// ═══════════════════════════════════════════════
+const DEFAULT_PASS = 'admin123';
+const PBKDF2_ITER = 200000;
+let PUBLISHED_AUTH = null;      // {salt, hash, iter} из prices.json
+
+function hex(buf) {
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hashPass(pass, saltHex, iter) {
+  const salt = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+  return hex(bits);
+}
+
+async function makeAuth(pass) {
+  const saltHex = hex(crypto.getRandomValues(new Uint8Array(16)));
+  return { salt: saltHex, iter: PBKDF2_ITER, hash: await hashPass(pass, saltHex, PBKDF2_ITER) };
+}
+
+// Хеш нужен до входа, поэтому читаем файл заранее
+async function preloadAuth() {
+  try {
+    const res = await fetch('prices.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc && doc.auth && doc.auth.hash) PUBLISHED_AUTH = doc.auth;
+    }
+  } catch (e) {}
+
+  // Уже входили как администратор на калькуляторе (index.html) в этом браузере —
+  // не спрашиваем пароль второй раз.
+  if (localStorage.getItem('sruby_role') === 'admin') {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    fillConn();
+    loadEmployees();
+    if (getConn()) testConn();
+  }
+}
+
+const CONN_FROM_LINK = adoptConnFromHash();
+
+async function authCheck() {
+  const input = document.getElementById('auth-input');
+  const err = document.getElementById('auth-error');
+  const val = input.value;
+  err.textContent = '';
+
+  let ok;
+  if (PUBLISHED_AUTH) {
+    err.textContent = 'Проверяем…';
+    ok = (await hashPass(val, PUBLISHED_AUTH.salt, PUBLISHED_AUTH.iter || PBKDF2_ITER)) === PUBLISHED_AUTH.hash;
+  } else {
+    ok = val === DEFAULT_PASS;   // пароль ещё не задавали
+  }
+  err.textContent = '';
+
+  if (!ok) {
+    err.textContent = 'Неверный пароль';
+    input.value = '';
+    return;
+  }
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('admin-content').style.display = 'block';
+  localStorage.setItem('sruby_role', 'admin');
+  fillConn();
+  if (getConn()) testConn();
+  if (CONN_FROM_LINK) showToast('Подключение получено по ссылке — настраивать ничего не нужно');
+  if (!PUBLISHED_AUTH) showToast('Используется пароль по умолчанию — смените его в разделе «Администрирование»');
+}
+
+// ═══════════════════════════════════════════════
+// СОТРУДНИКИ
+// employees.json публикуется тем же токеном, что и цены.
+// Каждый пароль хранится как PBKDF2-хеш (та же схема, что и пароль админа).
+// ═══════════════════════════════════════════════
+const EMP_PATH = 'employees.json';
+let EMPLOYEES = [];
+
+function genEmpPassword(inputId) {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let pass = '';
+  const bytes = crypto.getRandomValues(new Uint8Array(10));
+  bytes.forEach(b => pass += chars[b % chars.length]);
+  document.getElementById(inputId).value = pass;
+  document.getElementById(inputId).type = 'text';
+}
+
+async function loadEmployees() {
+  try {
+    const res = await fetch(EMP_PATH + '?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const doc = await res.json();
+      EMPLOYEES = (doc && Array.isArray(doc.employees)) ? doc.employees : [];
+    }
+  } catch (e) { EMPLOYEES = []; }
+  renderEmployees();
+}
+
+function renderEmployees() {
+  const box = document.getElementById('employees-list');
+  if (!EMPLOYEES.length) {
+    box.innerHTML = '<p class="conn-intro" style="margin:0;">Сотрудников пока нет.</p>';
+    return;
+  }
+  box.innerHTML = EMPLOYEES.map(e => `
+    <div class="price-row">
+      <div class="price-label">${e.name}
+        <span class="price-sublabel">логин: ${e.login}</span>
+      </div>
+      <div class="price-input-wrap">
+        <button class="btn-draft" onclick="resetEmpPassword('${e.login}')">Сменить пароль</button>
+        <button class="btn-reset" onclick="deleteEmployee('${e.login}')">Удалить</button>
+      </div>
+    </div>`).join('');
+}
+
+function buildEmployeesJSON() {
+  const d = new Date();
+  const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+              + '-' + String(d.getDate()).padStart(2, '0')
+              + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  return JSON.stringify({
+    updated: stamp,
+    comment: 'Файл обновляется автоматически из панели цен (раздел «Сотрудники»). Вручную не редактировать.',
+    employees: EMPLOYEES,
+  }, null, 2) + '\n';
+}
+
+async function addEmployee() {
+  const name  = document.getElementById('emp_name').value.trim();
+  const login = document.getElementById('emp_login').value.trim().toLowerCase();
+  const pass  = document.getElementById('emp_pass').value;
+  if (!name)  { showToast('Введите имя сотрудника'); return; }
+  if (!/^[a-z0-9._-]{3,}$/.test(login)) { showToast('Логин — латиницей и цифрами, от 3 символов'); return; }
+  if (login === 'admin') { showToast('Логин «admin» зарезервирован'); return; }
+  if (EMPLOYEES.some(e => e.login === login)) { showToast('Такой логин уже есть'); return; }
+  if (pass.length < 6) { showToast('Пароль должен быть не короче 6 символов (или нажмите «Сгенерировать»)'); return; }
+
+  const btn = document.getElementById('btn-add-emp');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Проверяем связь…';
+  try {
+    if (!(await ensureConn())) return;
+    btn.textContent = 'Добавляем…';
+    const auth = await makeAuth(pass);
+    EMPLOYEES.push({ login, name, salt: auth.salt, hash: auth.hash, iter: auth.iter });
+    await pushFile(buildEmployeesJSON(), 'Добавлен сотрудник: ' + name, EMP_PATH);
+    renderEmployees();
+    alert('Сотрудник добавлен.\n\nПередайте ему данные для входа (показываются только сейчас):\n\nЛогин: ' + login + '\nПароль: ' + pass);
+    document.getElementById('emp_name').value = '';
+    document.getElementById('emp_login').value = '';
+    document.getElementById('emp_pass').value = '';
+    showToast('Сотрудник «' + name + '» добавлен');
+  } catch (e) {
+    EMPLOYEES = EMPLOYEES.filter(x => x.login !== login);
+    showToast(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+async function resetEmpPassword(login) {
+  const emp = EMPLOYEES.find(e => e.login === login);
+  if (!emp) return;
+  const newPass = prompt('Новый пароль для «' + emp.name + '» (пусто — сгенерировать автоматически):');
+  if (newPass === null) return;
+  let pass = newPass.trim();
+  if (!pass) {
+    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    const bytes = crypto.getRandomValues(new Uint8Array(10));
+    pass = ''; bytes.forEach(b => pass += chars[b % chars.length]);
+  } else if (pass.length < 6) {
+    showToast('Пароль должен быть не короче 6 символов'); return;
+  }
+  try {
+    if (!(await ensureConn())) return;
+    const auth = await makeAuth(pass);
+    emp.salt = auth.salt; emp.hash = auth.hash; emp.iter = auth.iter;
+    await pushFile(buildEmployeesJSON(), 'Смена пароля: ' + emp.name, EMP_PATH);
+    alert('Новый пароль для «' + emp.name + '»:\n\nЛогин: ' + emp.login + '\nПароль: ' + pass);
+    showToast('Пароль обновлён');
+  } catch (e) {
+    showToast(e.message);
+  }
+}
+
+async function deleteEmployee(login) {
+  const emp = EMPLOYEES.find(e => e.login === login);
+  if (!emp) return;
+  if (!confirm('Удалить сотрудника «' + emp.name + '»? Он больше не сможет войти.')) return;
+  const backup = EMPLOYEES;
+  EMPLOYEES = EMPLOYEES.filter(e => e.login !== login);
+  try {
+    if (!(await ensureConn())) { EMPLOYEES = backup; return; }
+    await pushFile(buildEmployeesJSON(), 'Удалён сотрудник: ' + emp.name, EMP_PATH);
+    renderEmployees();
+    showToast('Сотрудник удалён');
+  } catch (e) {
+    EMPLOYEES = backup;
+    renderEmployees();
+    showToast(e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// ПОДКЛЮЧЕНИЕ К РЕПОЗИТОРИЮ
+// Панель пишет prices.json/employees.json напрямую через GitHub API.
+// Токен хранится только в этом браузере и никуда больше не уходит.
+// ═══════════════════════════════════════════════
+const GH_PATH = 'prices.json';
+const GH_REPO = 'chapallashik/calc_brys';
+const GH_BRANCH = 'main';
+
+function getConn() {
+  try {
+    const c = JSON.parse(localStorage.getItem('sruby_gh') || 'null');
+    return c && c.token ? { repo: GH_REPO, branch: GH_BRANCH, token: c.token } : null;
+  } catch { return null; }
+}
+
+function fillConn() {
+  const c = getConn();
+  if (!c) return;
+  document.getElementById('gh_token').value = c.token || '';
+}
+
+function connState(text, cls) {
+  const el = document.getElementById('conn-state');
+  el.textContent = text;
+  el.className = 'card-hint' + (cls ? ' ' + cls : '');
+}
+
+// Передача токена коллеге-администратору: уходит в часть адреса после #,
+// которую браузер НЕ отправляет на сервер и не пишет в логи Pages.
+function shareConn() {
+  const c = getConn();
+  if (!c) { showToast('Сначала сохраните подключение'); return; }
+  const payload = toBase64(JSON.stringify({ token: c.token }));
+  const link = location.origin + location.pathname + '#conn=' + encodeURIComponent(payload);
+  navigator.clipboard.writeText(link)
+    .then(() => showToast('Ссылка скопирована. Отправьте её лично, не в общий чат'))
+    .catch(() => prompt('Скопируйте ссылку и отправьте лично:', link));
+}
+
+// Приём токена из ссылки при первом открытии
+function adoptConnFromHash() {
+  const m = location.hash.match(/conn=([^&]+)/);
+  if (!m) return false;
+  try {
+    const json = new TextDecoder().decode(
+      Uint8Array.from(atob(decodeURIComponent(m[1])), ch => ch.charCodeAt(0)));
+    const c = JSON.parse(json);
+    if (c && c.token) {
+      localStorage.setItem('sruby_gh', JSON.stringify({ token: c.token }));
+      history.replaceState(null, '', location.pathname);   // вычищаем адресную строку
+      return true;
+    }
+  } catch (e) {}
+  history.replaceState(null, '', location.pathname);
+  return false;
+}
+
+function saveConn() {
+  const token = document.getElementById('gh_token').value.trim();
+  if (!token) { showToast('Вставьте токен доступа'); return; }
+  localStorage.setItem('sruby_gh', JSON.stringify({ token }));
+  showToast('Подключение сохранено');
+  testConn();
+}
+
+function clearConn() {
+  if (!confirm('Удалить подключение из этого браузера?')) return;
+  localStorage.removeItem('sruby_gh');
+  document.getElementById('gh_token').value = '';
+  connState('не настроено');
+  showToast('Подключение удалено');
+}
+
+async function ghGet(path) {
+  path = path || GH_PATH;
+  const c = getConn();
+  if (!c) throw new Error('Подключение не настроено');
+  if (!navigator.onLine) throw new Error('Нет интернета — проверить связь с репозиторием нельзя');
+  const url = `https://api.github.com/repos/${c.repo}/contents/${path}?ref=${c.branch}&t=${Date.now()}`;
+  const res = await fetch(url, {
+    headers: { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github+json' },
+    cache: 'no-store',
+  });
+  if (res.status === 401) throw new Error('Токен не принят — проверьте, что он не истёк');
+  if (res.status === 403) throw new Error('Нет прав на запись — в токене нужно Contents: Read and write');
+  if (res.status === 404) throw new Error('Не найден репозиторий, ветка или файл ' + path);
+  if (!res.ok) throw new Error('GitHub ответил ошибкой ' + res.status);
+  return res.json();
+}
+
+// Проверка соединения — без успешной проверки ничего в репозиторий не уходит.
+let CONN_OK = false;
+
+async function testConn() {
+  connState('проверяем…');
+  CONN_OK = false;
+  try {
+    const f = await ghGet();
+    connState('подключено · ' + getConn().repo, 'ok');
+    showToast('Связь есть, файл найден (' + Math.round(f.size / 1024 * 10) / 10 + ' КБ)');
+    CONN_OK = true;
+  } catch (e) {
+    connState(e.message, 'bad');
+    showToast(e.message);
+  }
+  return CONN_OK;
+}
+
+// Перед любой публикацией — свежая проверка соединения. Если она не проходит,
+// публикация не запускается вообще (а не падает где-то на середине записи).
+async function ensureConn() {
+  if (!getConn()) { showToast('Сначала настройте подключение выше'); return false; }
+  const ok = await testConn();
+  if (!ok) showToast('Публикация остановлена: нет связи с репозиторием');
+  return ok;
+}
+
+// UTF-8 → base64 (btoa не умеет кириллицу напрямую)
+function toBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+
+// Запись файла в репозиторий
+async function pushFile(text, message, path) {
+  path = path || GH_PATH;
+  const c = getConn();
+  if (!c) throw new Error('Подключение не настроено');
+  if (!navigator.onLine) throw new Error('Нет интернета — опубликовать сейчас нельзя');
+  const cur = await ghGet(path);                   // нужен sha текущего файла
+  const res = await fetch(`https://api.github.com/repos/${c.repo}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: 'Bearer ' + c.token,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message, content: toBase64(text), sha: cur.sha, branch: c.branch }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(res.status === 409
+      ? 'Файл кто-то изменил параллельно — обновите страницу и повторите'
+      : 'Не удалось сохранить: ' + res.status + ' ' + t.slice(0, 120));
+  }
+  return res.json();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+preloadAuth();
+
+// Allow pressing Enter in auth
+document.getElementById('auth-input').addEventListener('keyup', e => {
+  if (e.key === 'Enter') authCheck();
+});
+</script>
+</body>
+</html>

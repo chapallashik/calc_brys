@@ -198,6 +198,14 @@ header {
   cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px;
 }
 .btn-save:hover { background: #157347; }
+.sticky-footer {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: var(--white); border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  padding: 14px 20px; z-index: 50;
+  display: flex; justify-content: center;
+}
+.sticky-footer .btn-save { padding: 13px 40px; font-size: 15px; }
 .btn-reset {
   background: none; color: var(--red); border: 1.5px solid var(--red); border-radius: 8px;
   padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s;
@@ -254,145 +262,14 @@ header {
     <a href="admin.html" class="active">Панель цен</a>
     <a href="foreus.html">Для нас</a>
     <a href="builders.html">Строители</a>
+    <a href="settings.html">Администрирование</a>
+    <a href="staff.html">Сотрудники</a>
   </nav>
 </header>
 
 <div class="container" id="admin-content" style="display:none">
 
-  <div class="card" id="conn-card">
-    <div class="card-header">
-      <h2>Подключение</h2>
-      <span class="card-hint" id="conn-state">не настроено</span>
-    </div>
-    <div class="card-body">
-      <p class="conn-intro">
-        Панель сама записывает цены в файл <code>prices.json</code> вашего репозитория.
-        Нужен токен доступа — вводится один раз и хранится только в этом браузере.
-      </p>
-      <div class="price-group">
-        <div class="price-row">
-          <div class="price-label">Репозиторий
-            <span class="price-sublabel">в формате логин/название</span>
-          </div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="text" id="gh_repo" placeholder="chapallashik/название-репозитория" spellcheck="false">
-          </div>
-        </div>
-        <div class="price-row">
-          <div class="price-label">Ветка
-            <span class="price-sublabel">обычно main</span>
-          </div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="text" id="gh_branch" value="main" spellcheck="false">
-          </div>
-        </div>
-        <div class="price-row">
-          <div class="price-label">Токен доступа
-            <span class="price-sublabel">Fine-grained token с правом Contents: Read and write</span>
-          </div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="password" id="gh_token" placeholder="github_pat_..." spellcheck="false">
-          </div>
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:14px">
-        <button class="btn-draft" onclick="saveConn()">Сохранить подключение</button>
-        <button class="btn-draft" onclick="testConn()">Проверить</button>
-        <button class="btn-draft" onclick="shareConn()">Ссылка для коллеги</button>
-        <button class="btn-reset" onclick="clearConn()">Отключить</button>
-      </div>
-      <p class="btn-note" style="margin-top:14px">
-        Где взять токен: GitHub → Settings → Developer settings → Personal access tokens →
-        Fine-grained tokens → Generate new token. В <b>Repository access</b> выбрать свой репозиторий,
-        в <b>Permissions → Repository permissions → Contents</b> поставить <b>Read and write</b>.
-        Срок действия лучше поставить максимальный, иначе публикация перестанет работать после истечения.
-      </p>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h2>Доступ</h2>
-      <span class="card-hint">пароль к этой панели</span>
-    </div>
-    <div class="card-body">
-      <p class="conn-intro">
-        Калькулятор открыт всем без пароля — пароль закрывает только эту панель.
-        Он не хранится в открытом виде: в репозиторий уходит лишь его хеш.
-        Новый пароль начинает действовать на всех устройствах.
-      </p>
-      <div class="price-group">
-        <div class="price-row">
-          <div class="price-label">Новый пароль
-            <span class="price-sublabel">не короче 6 символов</span>
-          </div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="password" id="pass_new" autocomplete="new-password">
-          </div>
-        </div>
-        <div class="price-row">
-          <div class="price-label">Повторите пароль</div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="password" id="pass_rep" autocomplete="new-password">
-          </div>
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:14px">
-        <button class="btn-draft" id="btn-pass" onclick="changePass()">Сменить пароль</button>
-      </div>
-      <p class="btn-note" style="margin-top:14px">
-        Пароль отсекает случайных посетителей. Реальную защиту даёт токен: без него
-        изменить цены нельзя, даже зная пароль. Поэтому храните токен аккуратнее пароля.
-      </p>
-    </div>
-  </div>
-
-  <div class="card" id="employees-card">
-    <div class="card-header">
-      <h2>Сотрудники</h2>
-      <span class="card-hint">вход менеджеров на калькулятор</span>
-    </div>
-    <div class="card-body">
-      <p class="conn-intro">
-        Каждый сотрудник входит на сайт под своим логином и паролем — вместо общего доступа по ссылке.
-        Пароли хранятся так же, как пароль этой панели: только хеш, в открытом виде нигде не сохраняется.
-      </p>
-
-      <div id="employees-list"></div>
-
-      <div class="price-group" style="margin-top: 20px;">
-        <h3>Добавить сотрудника</h3>
-        <div class="price-row">
-          <div class="price-label">Имя</div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="text" id="emp_name" placeholder="Иван Петров" spellcheck="false">
-          </div>
-        </div>
-        <div class="price-row">
-          <div class="price-label">Логин
-            <span class="price-sublabel">латиницей, без пробелов</span>
-          </div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="text" id="emp_login" placeholder="ivan" spellcheck="false">
-          </div>
-        </div>
-        <div class="price-row">
-          <div class="price-label">Пароль</div>
-          <div class="price-input-wrap">
-            <input class="price-input wide" type="text" id="emp_pass" placeholder="сгенерируется само" spellcheck="false">
-            <button class="btn-draft" type="button" onclick="genEmpPassword('emp_pass')">Сгенерировать</button>
-          </div>
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:14px">
-        <button class="btn-draft" id="btn-add-emp" onclick="addEmployee()">Добавить сотрудника</button>
-      </div>
-      <p class="btn-note" style="margin-top:14px">
-        Логин и пароль после добавления показаны один раз — их нужно сразу передать сотруднику
-        (лично или в мессенджере), сохранить их потом будет нельзя, только сменить на новые.
-      </p>
-    </div>
-  </div>
+  <div id="tab-prices">
 
   <div class="updated-badge">
     <span id="last-updated">Цены не обновлялись</span>
@@ -1021,17 +898,13 @@ header {
     </div>
   </div>
 
-  <div class="btn-row">
-    <button class="btn-save" id="btn-publish" onclick="publish()">Опубликовать для всех</button>
-    <button class="btn-draft" onclick="saveDraft()">Сохранить черновик</button>
-    <button class="btn-reset" onclick="dropDraft()">Убрать черновик</button>
-    <button class="btn-reset" onclick="resetAll()">Заводские значения</button>
+  <div style="height:80px"></div>
   </div>
-  <p class="btn-note">
-    <b>Опубликовать</b> — записывает цены в репозиторий, у всех обновится в течение минуты.<br>
-    <b>Черновик</b> — цены сохраняются только в этом браузере, чтобы прикинуть расчёт, не трогая общие.
-  </p>
 
+</div>
+
+<div class="sticky-footer" id="sticky-footer" style="display:none">
+  <button class="btn-save" id="btn-publish" onclick="publish()">Опубликовать для всех</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1137,9 +1010,9 @@ async function preloadAuth() {
   if (localStorage.getItem('sruby_role') === 'admin') {
     document.getElementById('auth-overlay').style.display = 'none';
     document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('sticky-footer').style.display = 'flex';
     fillConn();
     loadPrices();
-    loadEmployees();
     if (getConn()) testConn();
   }
 }
@@ -1168,178 +1041,13 @@ async function authCheck() {
   }
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('admin-content').style.display = 'block';
+  document.getElementById('sticky-footer').style.display = 'flex';
   localStorage.setItem('sruby_role', 'admin');
   fillConn();
   loadPrices();
-  loadEmployees();
   if (getConn()) testConn();
   if (CONN_FROM_LINK) showToast('Подключение получено по ссылке — настраивать ничего не нужно');
-  if (!PUBLISHED_AUTH) showToast('Используется пароль по умолчанию — смените его в блоке «Доступ»');
-}
-
-// ─── Смена пароля ───────────────────────────────
-async function changePass() {
-  const p1 = document.getElementById('pass_new').value;
-  const p2 = document.getElementById('pass_rep').value;
-  if (p1.length < 6) { showToast('Пароль должен быть не короче 6 символов'); return; }
-  if (p1 !== p2)     { showToast('Пароли не совпадают'); return; }
-
-  const btn = document.getElementById('btn-pass');
-  btn.disabled = true;
-  const label = btn.textContent;
-  btn.textContent = 'Проверяем связь…';
-  try {
-    if (!(await ensureConn())) return;
-    btn.textContent = 'Меняем…';
-    const auth = await makeAuth(p1);
-    await pushFile(buildJSON(auth), 'Смена пароля панели');
-    PUBLISHED_AUTH = auth;
-    document.getElementById('pass_new').value = '';
-    document.getElementById('pass_rep').value = '';
-    showToast('Пароль изменён — действует на всех устройствах');
-  } catch (e) {
-    showToast(e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = label;
-  }
-}
-
-// ═══════════════════════════════════════════════
-// СОТРУДНИКИ
-// employees.json публикуется тем же токеном, что и цены.
-// Каждый пароль хранится как PBKDF2-хеш (та же схема, что и пароль админа).
-// ═══════════════════════════════════════════════
-const EMP_PATH = 'employees.json';
-let EMPLOYEES = [];      // текущий список из employees.json
-
-function genEmpPassword(inputId) {
-  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  let pass = '';
-  const bytes = crypto.getRandomValues(new Uint8Array(10));
-  bytes.forEach(b => pass += chars[b % chars.length]);
-  document.getElementById(inputId).value = pass;
-  document.getElementById(inputId).type = 'text';
-}
-
-async function loadEmployees() {
-  try {
-    const res = await fetch(EMP_PATH + '?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      const doc = await res.json();
-      EMPLOYEES = (doc && Array.isArray(doc.employees)) ? doc.employees : [];
-    }
-  } catch (e) { EMPLOYEES = []; }
-  renderEmployees();
-}
-
-function renderEmployees() {
-  const box = document.getElementById('employees-list');
-  if (!EMPLOYEES.length) {
-    box.innerHTML = '<p class="conn-intro" style="margin:0;">Сотрудников пока нет.</p>';
-    return;
-  }
-  box.innerHTML = EMPLOYEES.map(e => `
-    <div class="price-row">
-      <div class="price-label">${e.name}
-        <span class="price-sublabel">логин: ${e.login}</span>
-      </div>
-      <div class="price-input-wrap">
-        <button class="btn-draft" onclick="resetEmpPassword('${e.login}')">Сменить пароль</button>
-        <button class="btn-reset" onclick="deleteEmployee('${e.login}')">Удалить</button>
-      </div>
-    </div>`).join('');
-}
-
-function buildEmployeesJSON() {
-  const d = new Date();
-  const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
-              + '-' + String(d.getDate()).padStart(2, '0')
-              + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-  return JSON.stringify({
-    updated: stamp,
-    comment: 'Файл обновляется автоматически из панели цен (вкладка «Сотрудники»). Вручную не редактировать.',
-    employees: EMPLOYEES,
-  }, null, 2) + '\n';
-}
-
-async function addEmployee() {
-  const name  = document.getElementById('emp_name').value.trim();
-  const login = document.getElementById('emp_login').value.trim().toLowerCase();
-  const pass  = document.getElementById('emp_pass').value;
-  if (!name)  { showToast('Введите имя сотрудника'); return; }
-  if (!/^[a-z0-9._-]{3,}$/.test(login)) { showToast('Логин — латиницей и цифрами, от 3 символов'); return; }
-  if (login === 'admin') { showToast('Логин «admin» зарезервирован'); return; }
-  if (EMPLOYEES.some(e => e.login === login)) { showToast('Такой логин уже есть'); return; }
-  if (pass.length < 6) { showToast('Пароль должен быть не короче 6 символов (или нажмите «Сгенерировать»)'); return; }
-
-  const btn = document.getElementById('btn-add-emp');
-  btn.disabled = true;
-  const label = btn.textContent;
-  btn.textContent = 'Проверяем связь…';
-  try {
-    if (!(await ensureConn())) return;
-    btn.textContent = 'Добавляем…';
-    const auth = await makeAuth(pass);
-    EMPLOYEES.push({ login, name, salt: auth.salt, hash: auth.hash, iter: auth.iter });
-    await pushFile(buildEmployeesJSON(), 'Добавлен сотрудник: ' + name, EMP_PATH);
-    renderEmployees();
-    alert('Сотрудник добавлен.\n\nПередайте ему данные для входа (показываются только сейчас):\n\nЛогин: ' + login + '\nПароль: ' + pass);
-    document.getElementById('emp_name').value = '';
-    document.getElementById('emp_login').value = '';
-    document.getElementById('emp_pass').value = '';
-    showToast('Сотрудник «' + name + '» добавлен');
-  } catch (e) {
-    EMPLOYEES = EMPLOYEES.filter(x => x.login !== login);   // откат локального списка, раз публикация не прошла
-    showToast(e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = label;
-  }
-}
-
-async function resetEmpPassword(login) {
-  const emp = EMPLOYEES.find(e => e.login === login);
-  if (!emp) return;
-  const newPass = prompt('Новый пароль для «' + emp.name + '» (пусто — сгенерировать автоматически):');
-  if (newPass === null) return;
-  let pass = newPass.trim();
-  if (!pass) {
-    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
-    const bytes = crypto.getRandomValues(new Uint8Array(10));
-    pass = ''; bytes.forEach(b => pass += chars[b % chars.length]);
-  } else if (pass.length < 6) {
-    showToast('Пароль должен быть не короче 6 символов'); return;
-  }
-  try {
-    if (!(await ensureConn())) return;
-    const auth = await makeAuth(pass);
-    const oldAuth = { salt: emp.salt, hash: emp.hash, iter: emp.iter };
-    emp.salt = auth.salt; emp.hash = auth.hash; emp.iter = auth.iter;
-    await pushFile(buildEmployeesJSON(), 'Смена пароля: ' + emp.name, EMP_PATH);
-    alert('Новый пароль для «' + emp.name + '»:\n\nЛогин: ' + emp.login + '\nПароль: ' + pass);
-    showToast('Пароль обновлён');
-  } catch (e) {
-    showToast(e.message);
-  }
-}
-
-async function deleteEmployee(login) {
-  const emp = EMPLOYEES.find(e => e.login === login);
-  if (!emp) return;
-  if (!confirm('Удалить сотрудника «' + emp.name + '»? Он больше не сможет войти.')) return;
-  const backup = EMPLOYEES;
-  EMPLOYEES = EMPLOYEES.filter(e => e.login !== login);
-  try {
-    if (!(await ensureConn())) { EMPLOYEES = backup; return; }
-    await pushFile(buildEmployeesJSON(), 'Удалён сотрудник: ' + emp.name, EMP_PATH);
-    renderEmployees();
-    showToast('Сотрудник удалён');
-  } catch (e) {
-    EMPLOYEES = backup;
-    renderEmployees();
-    showToast(e.message);
-  }
+  if (!PUBLISHED_AUTH) showToast('Используется пароль по умолчанию — смените его в разделе «Администрирование»');
 }
 
 // ═══════════════════════════════════════════════
@@ -1366,37 +1074,17 @@ async function loadPrices() {
     }
   } catch (e) {}
 
-  let prices = { ...PUBLISHED };
-  let draftAt = null;
-  try {
-    const raw = localStorage.getItem('sruby_draft');
-    if (raw) {
-      const d = JSON.parse(raw);
-      if (d && d.prices && d.basedOn === (PUBLISHED_AT || 'defaults')) {
-        prices = { ...prices, ...d.prices };
-        draftAt = d.savedAt;
-      } else {
-        localStorage.removeItem('sruby_draft');
-      }
-    }
-  } catch (e) {}
-
   document.querySelectorAll('.price-input[data-key]').forEach(input => {
     const k = input.dataset.key;
-    if (prices[k] !== undefined) input.value = prices[k];
-    if (draftAt && prices[k] !== PUBLISHED[k]) input.classList.add('changed');
+    if (PUBLISHED[k] !== undefined) input.value = PUBLISHED[k];
+    input.classList.remove('changed');
     input.addEventListener('input', () => input.classList.add('changed'));
   });
 
   const badge = document.getElementById('last-updated');
-  if (!HAS_FILE) {
-    badge.textContent = 'prices.json не загрузился — показаны цены из кода';
-  } else if (draftAt) {
-    badge.textContent = 'Опубликовано ' + PUBLISHED_AT
-      + ' · есть несохранённый черновик от ' + new Date(draftAt).toLocaleString('ru-RU');
-  } else {
-    badge.textContent = 'Опубликовано ' + PUBLISHED_AT + ' · цены едины для всех устройств';
-  }
+  badge.textContent = !HAS_FILE
+    ? 'prices.json не загрузился — показаны цены из кода'
+    : 'Опубликовано ' + PUBLISHED_AT + ' · цены едины для всех устройств';
 }
 
 function collect() {
@@ -1405,34 +1093,6 @@ function collect() {
     prices[input.dataset.key] = parseFloat(input.value) || 0;
   });
   return prices;
-}
-
-// ─── ЧЕРНОВИК: только на этом устройстве ───────
-function saveDraft() {
-  localStorage.setItem('sruby_draft', JSON.stringify({
-    prices: collect(),
-    basedOn: PUBLISHED_AT || 'defaults',
-    savedAt: Date.now(),
-  }));
-  loadPrices();
-  showToast('Черновик сохранён — виден только в этом браузере');
-}
-
-function dropDraft() {
-  if (!confirm('Удалить черновик и вернуться к опубликованным ценам?')) return;
-  localStorage.removeItem('sruby_draft');
-  document.querySelectorAll('.price-input').forEach(i => i.classList.remove('changed'));
-  loadPrices();
-  showToast('Черновик удалён');
-}
-
-function resetAll() {
-  if (!confirm('Подставить заводские значения во все поля? Публикация при этом не произойдёт.')) return;
-  document.querySelectorAll('.price-input[data-key]').forEach(input => {
-    input.value = DEFAULT_PRICES[input.dataset.key];
-    input.classList.add('changed');
-  });
-  showToast('Подставлены заводские значения — не забудьте опубликовать');
 }
 
 // ─── ПУБЛИКАЦИЯ: файл для репозитория ───────────
@@ -1453,20 +1113,23 @@ function buildJSON(authOverride) {
 
 // ═══════════════════════════════════════════════
 // ПОДКЛЮЧЕНИЕ К РЕПОЗИТОРИЮ
-// Панель пишет prices.json напрямую через GitHub API.
+// Панель пишет prices.json/employees.json напрямую через GitHub API.
 // Токен хранится только в этом браузере и никуда больше не уходит.
 // ═══════════════════════════════════════════════
 const GH_PATH = 'prices.json';
+const GH_REPO = 'chapallashik/calc_brys';
+const GH_BRANCH = 'main';
 
 function getConn() {
-  try { return JSON.parse(localStorage.getItem('sruby_gh') || 'null'); } catch { return null; }
+  try {
+    const c = JSON.parse(localStorage.getItem('sruby_gh') || 'null');
+    return c && c.token ? { repo: GH_REPO, branch: GH_BRANCH, token: c.token } : null;
+  } catch { return null; }
 }
 
 function fillConn() {
   const c = getConn();
   if (!c) return;
-  document.getElementById('gh_repo').value = c.repo || '';
-  document.getElementById('gh_branch').value = c.branch || 'main';
   document.getElementById('gh_token').value = c.token || '';
 }
 
@@ -1476,19 +1139,19 @@ function connState(text, cls) {
   el.className = 'card-hint' + (cls ? ' ' + cls : '');
 }
 
-// Передача настроек коллеге: всё уходит в часть адреса после #,
+// Передача токена коллеге-администратору: уходит в часть адреса после #,
 // которую браузер НЕ отправляет на сервер и не пишет в логи Pages.
 function shareConn() {
   const c = getConn();
   if (!c) { showToast('Сначала сохраните подключение'); return; }
-  const payload = toBase64(JSON.stringify(c));
+  const payload = toBase64(JSON.stringify({ token: c.token }));
   const link = location.origin + location.pathname + '#conn=' + encodeURIComponent(payload);
   navigator.clipboard.writeText(link)
     .then(() => showToast('Ссылка скопирована. Отправьте её лично, не в общий чат'))
     .catch(() => prompt('Скопируйте ссылку и отправьте лично:', link));
 }
 
-// Приём настроек из ссылки при первом открытии
+// Приём токена из ссылки при первом открытии
 function adoptConnFromHash() {
   const m = location.hash.match(/conn=([^&]+)/);
   if (!m) return false;
@@ -1496,10 +1159,8 @@ function adoptConnFromHash() {
     const json = new TextDecoder().decode(
       Uint8Array.from(atob(decodeURIComponent(m[1])), ch => ch.charCodeAt(0)));
     const c = JSON.parse(json);
-    if (c && c.repo && c.token) {
-      localStorage.setItem('sruby_gh', JSON.stringify({
-        repo: c.repo, branch: c.branch || 'main', token: c.token,
-      }));
+    if (c && c.token) {
+      localStorage.setItem('sruby_gh', JSON.stringify({ token: c.token }));
       history.replaceState(null, '', location.pathname);   // вычищаем адресную строку
       return true;
     }
@@ -1509,12 +1170,9 @@ function adoptConnFromHash() {
 }
 
 function saveConn() {
-  const repo = document.getElementById('gh_repo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, '');
-  const branch = document.getElementById('gh_branch').value.trim() || 'main';
   const token = document.getElementById('gh_token').value.trim();
-  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { showToast('Репозиторий указывается как логин/название'); return; }
   if (!token) { showToast('Вставьте токен доступа'); return; }
-  localStorage.setItem('sruby_gh', JSON.stringify({ repo, branch, token }));
+  localStorage.setItem('sruby_gh', JSON.stringify({ token }));
   showToast('Подключение сохранено');
   testConn();
 }
@@ -1614,7 +1272,6 @@ async function publish() {
     if (!(await ensureConn())) return;
     btn.textContent = 'Публикуем…';
     await pushFile(buildJSON(), 'Обновление цен из панели');
-    localStorage.removeItem('sruby_draft');
     document.querySelectorAll('.price-input').forEach(i => i.classList.remove('changed'));
     await loadPrices();
     showToast('Цены опубликованы — появятся у всех в течение минуты');
