@@ -412,7 +412,7 @@ window.onload = function() {
   // ── Доп. материалы
   // Сечение уже указано в наименовании позиции; количество показываем всем, объём в м³ — только админу.
   if (ex && ex.items.length) html += section(title('Дополнительные материалы')
-    + ex.items.map(i => line(i.name, `${i.qty} шт · ${n(i.vol, 3)} м³`, fmt(i.sum), '', '', `${i.qty} шт`)).join(''));
+    + ex.items.map(i => line(i.name, i.qty ? `${i.qty} шт · ${n(i.vol, 3)} м³` : `${n(i.vol, 3)} м³`, fmt(i.sum), '', '', i.qty ? `${i.qty} шт` : '')).join(''));
 
   // ── Надбавки
   if (r.cedar || r.drying) {

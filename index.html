@@ -1232,23 +1232,12 @@ footer {
             </label>
             <span class="toggle-label" onclick="document.getElementById('has_extras').click()">Для заказа без сборки (лаги, обвязка, балки)</span>
           </div>
-          <div class="collapsible collapsed" id="extras-block" style="max-height:520px;">
+          <div class="collapsible collapsed" id="extras-block" style="max-height:420px;">
             <div style="padding-top:12px;">
-              <label class="hint" style="display:block;margin-bottom:8px;">Сечение обвязки — своё для этой позиции, не связано с блоком «Нижняя обвязка»</label>
-              <div class="option-chips" id="extras-base-chips" style="margin-bottom:16px;">
-                <div class="chip" data-val="100">100×150 мм</div>
-                <div class="chip selected" data-val="150">150×150 мм</div>
-                <div class="chip" data-val="180">180×150 мм</div>
-                <div class="chip" data-val="200">200×150 мм</div>
-              </div>
-              <div class="form-row three">
+              <div class="form-row">
                 <div class="field">
                   <label>Лаги 50×150×6, шт</label>
                   <input type="number" id="extra_lag_qty" value="14" step="1" min="0" oninput="recalcLive()">
-                </div>
-                <div class="field">
-                  <label>Обвязка, шт</label>
-                  <input type="number" id="extra_obv_qty" value="10" step="1" min="0" oninput="recalcLive()">
                 </div>
                 <div class="field">
                   <label>Потолочные балки, шт</label>
@@ -1256,7 +1245,7 @@ footer {
                 </div>
               </div>
               <div class="notice" style="margin-top:8px;">
-                Стропила и обрешётка берутся из блока «Кровля». Считается отдельной строкой и не входит в итог со сборкой.
+                Стропила, обрешётка и обвязка берутся из блоков «Кровля» и «Нижняя обвязка» — тех же данных, что уже введены выше. Считается отдельной строкой и не входит в итог со сборкой.
               </div>
             </div>
           </div>
@@ -2125,21 +2114,26 @@ function toggleBaseAutoMode() {
 
 // ── БЛОК 7. Доп. материалы для варианта «без сборки» ───────────────
 // Лист «Для заказчика », строки 23–30
-function calcExtras(P) {
+// Стропила/обрешётка — из блока «Кровля» (те же поля rafter_count/obr_count).
+// Обвязка — из блока «Нижняя обвязка» (bs): то же сечение и та же суммарная длина,
+// чтобы не вводить одни и те же брусья дважды.
+function calcExtras(P, bs) {
   if (!getB('has_extras')) return null;
-  const k = extrasBaseSection;
-  const obvW = (P['base_w_' + k] || 100) / 1000;
-  const obvH = (P['base_h_' + k] || 150) / 1000;
   const items = [
     ['Стропила 50×150×6',       0.05, 0.15, 6, P.roof_board_price, getV('rafter_count')],
     ['Обрешётка 25×150×6',      0.025, 0.15, 6, P.roof_board_price, getV('obr_count')],
     ['Лаги 50×150×6',           0.05, 0.15, 6, P.extra_lag_price,  getV('extra_lag_qty')],
-    [`Обвязка ${Math.round(obvW*1000)}×${Math.round(obvH*1000)}×6`, obvW, obvH, 6, P.extra_lag_price,  getV('extra_obv_qty')],
     ['Потолочные балки 50×150×6',0.05, 0.15, 6, P.roof_board_price, getV('extra_beam_qty')],
   ].map(([name, t, w, l, price, qty]) => {
     const volOne = t * w * l;
     return { name, volOne, qty, vol: volOne * qty, price, sum: volOne * qty * price };
   }).filter(x => x.qty > 0);
+  if (bs && bs.vol > 0) {
+    items.push({
+      name: `Обвязка ${Math.round(bs.secA * 1000)}×${Math.round(bs.secB * 1000)}, ${fmtN(bs.len, 1)} м.п.`,
+      volOne: bs.vol, qty: null, vol: bs.vol, price: P.base_larch, sum: bs.vol * P.base_larch,
+    });
+  }
   const total = items.reduce((s, x) => s + x.sum, 0);
   return { items, total };
 }
@@ -2157,7 +2151,7 @@ function calculate() {
     const pst = calcPosts(P);
     const rf  = calcRoof(P);
     const bs  = calcBase(P, sec);
-    const ex  = calcExtras(P);
+    const ex  = calcExtras(P, bs);
 
     // Общий объём бруса (сруб + терраса) — база для сушки и кедра
     const volAll = g.volR + (ter ? ter.volR : 0);
