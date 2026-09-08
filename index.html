@@ -408,6 +408,9 @@ body.role-manager .res-row:not(.accent),
 body.role-manager .res-formula {
   display: none !important;
 }
+body.role-manager .res-row.mgr-show {
+  display: flex !important;
+}
 
 body.role-manager .header-nav a[href="admin.html"],
 body.role-manager .header-nav a[href="foreus.html"],
@@ -2405,7 +2408,7 @@ function renderResults(results, sec) {
 
   // Строка результата: подпись, значение и необязательная формула мелким шрифтом
   const row = (label, value, opt = {}) => `
-    <div class="res-row${opt.accent ? ' accent' : ''}${opt.mgrHide ? ' mgr-hide' : ''}">
+    <div class="res-row${opt.accent ? ' accent' : ''}${opt.mgrHide ? ' mgr-hide' : ''}${opt.mgrShow ? ' mgr-show' : ''}">
       <div class="res-label">${label}${opt.formula ? `<span class="res-formula">${opt.formula}</span>` : ''}</div>
       <div class="res-value">${value}</div>
     </div>`;
@@ -2427,9 +2430,9 @@ function renderResults(results, sec) {
     + row('Материал и работа', fmt(w.costKit), { formula: `${n(g.volR, 3)} м³ × (${n(P['pine_' + k], 0)} + ${n(P['work_' + k], 0)}) ₽/м³`, mgrHide: true })
     + row('Маржа', fmt(w.priceKit - w.costKit), { formula: `${P.margin_main}%`, mgrHide: true })
     + row('Комплект без сборки', fmt(w.priceKit), { accent: true, formula: 'материал и работа + маржа (см. выше)' })
-    + row('Монтаж сруба', fmt(w.priceAsm), { formula: `${n(g.volR, 3)} м³ × ${n(P['assembly_' + k], 0)} ₽ + ${P.margin_assembly}%` })
-    + row('Джут', fmt(w.priceJuteOnly), { formula: `${n(w.juteMP, 0)} м.п. × ${P['jute_' + k]} ₽ + ${P.margin_assembly}%` })
-    + row('Шканты', fmt(w.priceDowelOnly), { formula: `${n(w.juteMP, 0)} шт × ${P.dowel} ₽ + ${P.margin_assembly}%` })
+    + row('Монтаж сруба', fmt(w.priceAsm), { formula: `${n(g.volR, 3)} м³ × ${n(P['assembly_' + k], 0)} ₽ + ${P.margin_assembly}%`, mgrShow: true })
+    + row('Джут', fmt(w.priceJuteOnly), { formula: `${n(w.juteMP, 0)} м.п. × ${P['jute_' + k]} ₽ + ${P.margin_assembly}%`, mgrShow: true })
+    + row('Шканты', fmt(w.priceDowelOnly), { formula: `${n(w.juteMP, 0)} шт × ${P.dowel} ₽ + ${P.margin_assembly}%`, mgrShow: true })
     + row('Сруб со сборкой', fmt(w.withAssembly), { accent: true, formula: `Комплект без сборки ${fmt(w.priceKit)} + Монтаж ${fmt(w.priceAsm)} + Джут ${fmt(w.priceJuteOnly)} + Шканты ${fmt(w.priceDowelOnly)}` });
 
   if (ter) html += head('Терраса · вылет')
