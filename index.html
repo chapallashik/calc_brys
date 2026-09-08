@@ -787,8 +787,8 @@ footer {
     <a href="admin.html">Панель цен</a>
     <a href="foreus.html">Для нас</a>
     <a href="builders.html">Строители</a>
-    <a href="settings.html">Администрирование</a>
-    <a href="staff.html">Сотрудники</a>
+    <a href="settings.html" id="nav-settings">Администрирование</a>
+    <a href="staff.html" id="nav-staff">Сотрудники</a>
     <div class="role-bar">
       <span class="role-badge" id="role-badge">—</span>
       <button id="logout-btn" onclick="siteLogout()">Выйти</button>
@@ -2333,6 +2333,10 @@ function applyRole() {
   const user = localStorage.getItem('sruby_user') || (isAdmin ? 'Администратор' : '');
   if (badge) badge.textContent = loggedIn ? (isAdmin ? user : user + ' · менеджер') : '—';
   if (overlay) overlay.style.display = loggedIn ? 'none' : 'flex';
+  const navSettings = document.getElementById('nav-settings');
+  const navStaff = document.getElementById('nav-staff');
+  if (navSettings) navSettings.style.display = isAdmin ? '' : 'none';
+  if (navStaff) navStaff.style.display = isAdmin ? '' : 'none';
 }
 
 function siteLogout() {
