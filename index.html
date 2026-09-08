@@ -999,11 +999,13 @@ footer {
                 <div id="fr-summary-formula" style="margin-top:6px;font-size:11px;line-height:1.5;opacity:0.75;font-variant-numeric:tabular-nums;"></div>
               </div>
 
-              <label class="hint" style="display:block;margin:18px 0 8px;">Коньковая балка — из профилированного бруса, вместе с фронтонами, чтобы не забыть добавить</label>
-              <div class="form-row one">
+              <div class="section-toggle" style="margin-top:18px;">
+                <span style="font-size:14px;font-weight:600;color:var(--text);">Добавление коньковой балки</span>
+              </div>
+              <div class="form-row one" style="margin-top:12px;">
                 <div class="field">
                   <label>Высота коньковой балки, м</label>
-                  <input type="number" id="ridge_h" value="0.25" step="0.005" oninput="recalcLive();updateRidgeSummary()">
+                  <input type="number" id="ridge_h" value="0.25" step="0.005" oninput="recalcLive();updateRidgeSummary();">
                   <span class="field-hint">0,25 = 2 венца при рабочей высоте 125 мм</span>
                 </div>
               </div>
@@ -1634,6 +1636,7 @@ function updatePerimeterDisplay() {
 function onDimChange() {
   updatePerimeterDisplay();
   updateFloorbeamSummary();
+  updateRidgeSummary();
   if (lastResult) calculate();
 }
 
