@@ -998,6 +998,29 @@ footer {
                 &nbsp;·&nbsp; М.п.: <strong id="fr-mp-display" style="color:var(--text)">—</strong>
                 <div id="fr-summary-formula" style="margin-top:6px;font-size:11px;line-height:1.5;opacity:0.75;font-variant-numeric:tabular-nums;"></div>
               </div>
+
+              <label class="hint" style="display:block;margin:18px 0 8px;">Коньковая балка — из профилированного бруса, вместе с фронтонами, чтобы не забыть добавить</label>
+              <div class="form-row one">
+                <div class="field">
+                  <label>Высота коньковой балки, м</label>
+                  <input type="number" id="ridge_h" value="0.25" step="0.005" oninput="recalcLive();updateRidgeSummary()">
+                  <span class="field-hint">0,25 = 2 венца при рабочей высоте 125 мм</span>
+                </div>
+              </div>
+              <table class="walls-table">
+                <thead>
+                  <tr><th>Брус</th><th>Длина, м</th><th>Кол-во</th><th></th></tr>
+                </thead>
+                <tbody id="ridge-body"></tbody>
+              </table>
+              <button class="btn-add-wall" onclick="addRidge()">+ Добавить брус</button>
+
+              <div style="background:var(--cream-dark);border-radius:8px;padding:12px 14px;margin:14px 0 4px;font-size:13px;color:var(--text-muted);">
+                Сумма длин: <strong id="ridge-perimeter-display" style="color:var(--text)">0 м</strong>
+                &nbsp;·&nbsp; Венцов: <strong id="ridge-crowns-display" style="color:var(--text)">—</strong>
+                &nbsp;·&nbsp; М.п.: <strong id="ridge-mp-display" style="color:var(--text)">—</strong>
+                <div id="ridge-summary-formula" style="margin-top:6px;font-size:11px;line-height:1.5;opacity:0.75;font-variant-numeric:tabular-nums;"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1168,7 +1191,7 @@ footer {
               <input type="checkbox" id="has_terrace" onchange="toggleBlock('has_terrace','terrace-block')">
               <span class="toggle-slider"></span>
             </label>
-            <span class="toggle-label" onclick="document.getElementById('has_terrace').click()">Вылет для террасы и коньковая балка</span>
+            <span class="toggle-label" onclick="document.getElementById('has_terrace').click()">Вылет для террасы</span>
           </div>
           <div class="collapsible collapsed" id="terrace-block" style="max-height:1200px;">
             <div style="padding-top:16px;">
@@ -1890,6 +1913,47 @@ function renderTerrace() {
 }
 function addTerrace() { terraceRows.push({ len: 0, qty: 1 }); renderTerrace(); recalcLive(); }
 
+// ── Коньковая балка — из профилированного бруса, вместе с фронтонами
+// (перенесена сюда из террасы: имеет смысл только когда фронтоны из бруса)
+let ridgeRows = [{ len: 0, qty: 1 }];
+function renderRidge() {
+  const tb = document.getElementById('ridge-body');
+  if (!tb) return;
+  tb.innerHTML = '';
+  ridgeRows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="font-size:12px;color:var(--text-muted);padding:4px 8px;background:var(--cream-dark);border-radius:4px;">Брус ${i + 1}</span></td>
+      <td><input class="wall-input" type="number" value="${r.len || ''}" placeholder="0" step="0.1" min="0"
+          oninput="ridgeRows[${i}].len=parseFloat(this.value)||0;recalcLive();updateRidgeSummary()"
+          onfocus="if(this.value==='0')this.value='';"></td>
+      <td><input class="wall-input" type="number" value="${r.qty}" step="1" min="1" style="width:60px"
+          oninput="ridgeRows[${i}].qty=parseInt(this.value)||1;recalcLive();updateRidgeSummary()"></td>
+      <td><button class="wall-del" onclick="ridgeRows.splice(${i},1);renderRidge();recalcLive();updateRidgeSummary()">✕</button></td>`;
+    tb.appendChild(tr);
+  });
+  updateRidgeSummary();
+}
+function addRidge() { ridgeRows.push({ len: 0, qty: 1 }); renderRidge(); recalcLive(); updateRidgeSummary(); }
+function updateRidgeSummary() {
+  const workH = (parseFloat(document.getElementById('beam_work_h')?.value) || 125) / 1000;
+  const h  = parseFloat(document.getElementById('ridge_h')?.value) || 0.25;
+  const t = rowsMP(ridgeRows, h, workH);
+  const el = id => document.getElementById(id);
+  if (el('ridge-perimeter-display')) el('ridge-perimeter-display').textContent = fmtN(t.len, 1) + ' м';
+  if (el('ridge-crowns-display'))    el('ridge-crowns-display').textContent    = t.crowns + ' шт';
+  if (el('ridge-mp-display'))        el('ridge-mp-display').textContent        = t.mp.toFixed(0) + ' м.п.';
+  const fEl = el('ridge-summary-formula');
+  if (fEl) {
+    const lenParts = ridgeRows
+      .filter(r => (r.len || 0) > 0)
+      .map(r => (r.qty && r.qty > 1) ? `${fmtN(r.len)}×${r.qty}` : fmtN(r.len));
+    fEl.innerHTML = (lenParts.length ? `Сумма длин = ${lenParts.join(' + ')} = ${fmtN(t.len)} м<br>` : '')
+      + `Венцов = округл(${fmtN(h)} м ÷ ${fmtN(workH * 1000)} мм) = ${t.crowns} шт<br>`
+      + `М.п. = ${fmtN(t.len)} м × ${t.crowns} венц. = ${t.mp.toFixed(0)} м.п.`;
+  }
+}
+
 // Ориентировочное кол-во стропил/обрешётки (типовые данные листа «Площадь Кровли ч.1.»)
 function suggestRoof() {
   const a = parseFloat(document.getElementById('roof_area')?.value) || 0;
@@ -2025,6 +2089,37 @@ function calcTerrace(P, sectionKey) {
   };
 }
 
+// ── БЛОК 3б. Коньковая балка — из профилированного бруса (вместе с фронтонами)
+// Считается так же, как вылет террасы (тот же брус, тот же принцип цены),
+// но зависит от «Добавить фронтоны», а не от террасы.
+function calcRidge(P, sectionKey) {
+  if (!getB('has_frontons')) return null;
+  const k = sectionKey.split('x')[0];
+  const [wMm, hMm] = sectionKey.split('x').map(Number);
+  const workH = getV('beam_work_h') / 1000 || 0.125;
+
+  const t = rowsMP(ridgeRows, getV('ridge_h'), workH);
+  if (t.mp <= 0) return null;
+  const vol  = t.mp * (wMm / 1000) * (hMm / 1000);
+  const volR = vol * (1 + P.beam_reserve / 100);
+
+  const costKit  = volR * (P['pine_' + k] + P['ter_work_' + k]);
+  const priceKit = costKit * (1 + P.margin_main / 100);
+  const costAsm  = volR * P['assembly_' + k];
+  const priceAsm = costAsm * (1 + P.margin_assembly / 100);
+
+  const juteMP    = t.mp * (1 + P.ter_jute_reserve / 100);
+  const priceJute = (juteMP * P['ter_jute_' + k] + juteMP * P.dowel) * (1 + P.margin_assembly / 100);
+
+  return {
+    mp: t.mp, crowns: t.crowns, len: t.len, vol, volR, juteMP,
+    costKit, costAsm,
+    priceKit, priceAsm, priceJute,
+    noAssembly: priceKit,
+    withAssembly: priceKit + priceAsm + priceJute,
+  };
+}
+
 // ── БЛОК 4. Опорные столбы ─────────────────────────────────────────
 // Лист «Расчет по столбам опор СКР»
 function calcPosts(P) {
@@ -2148,24 +2243,25 @@ function calculate() {
     const g   = calcVolumes(sec, P);
     const w   = calcWalls(g, P, sec);
     const ter = calcTerrace(P, sec);
+    const ridge = calcRidge(P, sec);
     const pst = calcPosts(P);
     const rf  = calcRoof(P);
     const bs  = calcBase(P, sec);
     const ex  = calcExtras(P, bs);
 
-    // Общий объём бруса (сруб + терраса) — база для сушки и кедра
-    const volAll = g.volR + (ter ? ter.volR : 0);
+    // Общий объём бруса (сруб + терраса + коньковая балка) — база для сушки и кедра
+    const volAll = g.volR + (ter ? ter.volR : 0) + (ridge ? ridge.volR : 0);
 
     // Камерная сушка: 5000 ₽/м³ (лист «Разное »)
     const drying = getB('has_drying') ? volAll * P.drying : 0;
     // Кедр: доплата = объём × 4000 × 1,25 (лист 2, столбец R)
     const cedar = getB('is_cedar') ? volAll * P.cedar_price * (1 + P.cedar_margin / 100) : 0;
 
-    // «Без сборки» = стеновой комплект + терраса (лист «Финал по Акции» B12)
-    let noAsm = w.noAssembly + (ter ? ter.noAssembly : 0);
-    // «Со сборкой» = стены+джут+монтаж + кровля + обвязка + терраса + столбы (B28)
+    // «Без сборки» = стеновой комплект + терраса + коньковая балка (лист «Финал по Акции» B12)
+    let noAsm = w.noAssembly + (ter ? ter.noAssembly : 0) + (ridge ? ridge.noAssembly : 0);
+    // «Со сборкой» = стены+джут+монтаж + кровля + обвязка + терраса + коньковая балка + столбы (B28)
     let withAsm = w.withAssembly + (rf ? rf.clientPrice : 0) + (bs ? bs.price : 0)
-                + (ter ? ter.withAssembly : 0) + (pst ? pst.price : 0);
+                + (ter ? ter.withAssembly : 0) + (ridge ? ridge.withAssembly : 0) + (pst ? pst.price : 0);
 
     noAsm  += cedar + drying;
     withAsm += cedar + drying;
@@ -2176,7 +2272,7 @@ function calculate() {
     const discNo  = w.noAssembly * discPct / 100;
 
     results[sec] = {
-      g, w, ter, pst, rf, bs, ex, volAll, drying, cedar,
+      g, w, ter, ridge, pst, rf, bs, ex, volAll, drying, cedar,
       noAsm, withAsm, discPct, discNo,
       noAsmFinal: noAsm - discNo, withAsmFinal: withAsm, P,
     };
@@ -2279,7 +2375,7 @@ applyRole();
 
 function renderResults(results, sec) {
   const r = results[sec];
-  const { g, w, ter, pst, rf, bs, ex, P } = r;
+  const { g, w, ter, ridge, pst, rf, bs, ex, P } = r;
   const k = sec.split('x')[0];
 
   // Строка результата: подпись, значение и необязательная формула мелким шрифтом
@@ -2311,10 +2407,15 @@ function renderResults(results, sec) {
     + row('Шканты', fmt(w.priceDowelOnly), { formula: `${n(w.juteMP, 0)} шт × ${P.dowel} ₽ + ${P.margin_assembly}%` })
     + row('Сруб со сборкой', fmt(w.withAssembly), { accent: true, formula: `Комплект без сборки ${fmt(w.priceKit)} + Монтаж ${fmt(w.priceAsm)} + Джут ${fmt(w.priceJuteOnly)} + Шканты ${fmt(w.priceDowelOnly)}` });
 
-  if (ter) html += head('Терраса · вылет и коньковая балка')
+  if (ter) html += head('Терраса · вылет')
     + row('Объём с запасом', n(ter.volR, 3) + ' м³', { formula: `${n(ter.len, 1)} м × ${ter.crowns} венц. = ${n(ter.mp, 0)} м.п.` })
     + row('Без сборки', fmt(ter.noAssembly))
     + row('Со сборкой', fmt(ter.withAssembly), { accent: true, formula: `Без сборки ${fmt(ter.priceKit)} + Монтаж ${fmt(ter.priceAsm)} + Джут и шканты ${fmt(ter.priceJute)}` });
+
+  if (ridge) html += head('Коньковая балка')
+    + row('Объём с запасом', n(ridge.volR, 3) + ' м³', { formula: `${n(ridge.len, 1)} м × ${ridge.crowns} венц. = ${n(ridge.mp, 0)} м.п.` })
+    + row('Без сборки', fmt(ridge.noAssembly))
+    + row('Со сборкой', fmt(ridge.withAssembly), { accent: true, formula: `Без сборки ${fmt(ridge.priceKit)} + Монтаж ${fmt(ridge.priceAsm)} + Джут и шканты ${fmt(ridge.priceJute)}` });
 
   if (pst) html += head('Опорные столбы')
     + row('Материал', fmt(pst.costMat), { formula: `${pst.qty} шт × ${n(pst.len, 1)} м = ${n(pst.vol, 3)} м³` })
@@ -2356,6 +2457,7 @@ function renderResults(results, sec) {
   // чтобы можно было быстро понять, в каком блоке искать расхождение.
   const noAsmParts = [`Сруб без сборки ${fmt(w.priceKit)}`];
   if (ter) noAsmParts.push(`Терраса без сборки ${fmt(ter.noAssembly)}`);
+  if (ridge) noAsmParts.push(`Коньковая балка ${fmt(ridge.noAssembly)}`);
   if (r.cedar)  noAsmParts.push(`Кедр ${fmt(r.cedar)}`);
   if (r.drying) noAsmParts.push(`Сушка ${fmt(r.drying)}`);
   if (r.discNo) noAsmParts.push(`минус скидка ${fmt(r.discNo)}`);
@@ -2364,6 +2466,7 @@ function renderResults(results, sec) {
   if (rf)  withAsmParts.push(`Кровля (металлочерепица) ${fmt(rf.clientPrice)}`);
   if (bs)  withAsmParts.push(`Обвязка ${fmt(bs.price)}`);
   if (ter) withAsmParts.push(`Терраса со сборкой ${fmt(ter.withAssembly)}`);
+  if (ridge) withAsmParts.push(`Коньковая балка ${fmt(ridge.withAssembly)}`);
   if (pst) withAsmParts.push(`Столбы ${fmt(pst.price)}`);
   if (r.cedar)  withAsmParts.push(`Кедр ${fmt(r.cedar)}`);
   if (r.drying) withAsmParts.push(`Сушка ${fmt(r.drying)}`);
@@ -2441,7 +2544,7 @@ const TOGGLE_PAIRS = [
 
 function collectForm() {
   const f = { fields: {}, checks: {}, sec: selectedSection, baseSection, postSection, extrasBaseSection,
-              wallRows, wallRows2, floorbeamRows, frontonRows, baseRows, openingRows, terraceRows,
+              wallRows, wallRows2, floorbeamRows, frontonRows, baseRows, openingRows, terraceRows, ridgeRows,
               synteponBags: localStorage.getItem('sruby_syntepon_bags') || '1',
               savedAt: Date.now() };
   document.querySelectorAll('.calc-left input, .calc-left select').forEach(el => {
@@ -2481,6 +2584,7 @@ function applyFormData(f) {
   if (Array.isArray(f.baseRows)) baseRows = f.baseRows;
   if (Array.isArray(f.openingRows)) openingRows = f.openingRows;
   if (Array.isArray(f.terraceRows)) terraceRows = f.terraceRows;
+  if (Array.isArray(f.ridgeRows)) ridgeRows = f.ridgeRows;
 
   if (f.sec) {
     selectedSection = f.sec;
@@ -2572,6 +2676,7 @@ function loadFromFile(event) {
     renderWalls(baseRows, 'walls-body-base');
     renderOpenings();
     renderTerrace();
+    renderRidge();
     updatePerimeterDisplay();
     updateFloorbeamSummary();
     updateFrontonSummary();
@@ -2619,6 +2724,7 @@ renderWalls(baseRows, 'walls-body-base');
 fillPresets();
 renderOpenings();
 renderTerrace();
+renderRidge();
 suggestRoof();
 updatePerimeterDisplay();
 updateFloorbeamSummary();

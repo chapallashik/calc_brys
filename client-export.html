@@ -868,7 +868,7 @@ window.onload = function () {
     document.getElementById('empty-state').style.display = 'block';
     return;
   }
-  const { g, w, ter, pst, rf, bs, ex, P } = r;
+  const { g, w, ter, ridge, pst, rf, bs, ex, P } = r;
   const secLabel = sec.replace('x', ' × ') + ' мм';
 
   document.getElementById('wrap').style.display = 'block';
@@ -877,12 +877,13 @@ window.onload = function () {
 
   // ── Стеновой комплект — список позиций (без цены за штуку) + одна общая цена ──
   const wallBullets = [];
-  wallBullets.push({ name: 'Стены и перегородки', qty: n0(g.f1.mp) + ' м.п.' });
-  if (g.f2.mp)  wallBullets.push({ name: '2-й этаж', qty: n0(g.f2.mp) + ' м.п.' });
+  wallBullets.push({ name: 'Стены и перегородки (1 этаж)', qty: n0(g.f1.mp) + ' м.п.' });
+  if (g.f2.mp)  wallBullets.push({ name: 'Стены и перегородки (2 этаж)', qty: n0(g.f2.mp) + ' м.п.' });
   if (g.fb.mp)  wallBullets.push({ name: 'Венец перекрытия', qty: n0(g.fb.mp) + ' м.п.' });
   if (g.fr.mp)  wallBullets.push({ name: 'Фронтоны из профилированного бруса', qty: n0(g.fr.mp) + ' м.п.' });
-  if (ter)      wallBullets.push({ name: 'Вылет под террасу и коньковый брус', qty: n0(ter.mp) + ' м.п.' });
-  const wallKitTotal = w.priceKit + (ter ? ter.priceKit : 0);
+  if (ter)      wallBullets.push({ name: 'Вылет под террасу', qty: n0(ter.mp) + ' м.п.' });
+  if (ridge)    wallBullets.push({ name: 'Коньковая балка', qty: n0(ridge.mp) + ' м.п.' });
+  const wallKitTotal = w.priceKit + (ter ? ter.priceKit : 0) + (ridge ? ridge.priceKit : 0);
 
   const wallGroup = (title) => `
     <div class="ce-group">
@@ -953,7 +954,10 @@ window.onload = function () {
     if (rf.frontonArea) workBullets.push('Устройство каркасных фронтонов');
   }
   if (ter) workBullets.push('Монтаж террасы');
-  const worksTotal = (w.priceAsm + w.priceJuteOnly + w.priceDowelOnly) + (ter ? ter.priceAsm + ter.priceJute : 0);
+  if (ridge) workBullets.push('Монтаж коньковой балки');
+  const worksTotal = (w.priceAsm + w.priceJuteOnly + w.priceDowelOnly)
+    + (ter ? ter.priceAsm + ter.priceJute : 0)
+    + (ridge ? ridge.priceAsm + ridge.priceJute : 0);
 
   const col3Total = wallKitTotal + materialsTotal + worksTotal;
   const col3 = `
