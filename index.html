@@ -419,11 +419,11 @@ body.role-manager .header-nav a[href="builders.html"] {
 .role-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 10px;
-  padding: 6px 40px;
-  background: rgba(0,0,0,0.15);
   font-size: 12px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-right: 8px;
 }
 .role-bar .role-badge {
   color: rgba(245,240,232,0.55);
@@ -781,7 +781,6 @@ footer {
       <h1>Калькулятор срубов</h1>
       <p>Профилированный брус · Рубка в чашу · Под ключ</p>
     </div>
-
   </div>
   <nav class="header-nav">
     <a href="index.html" class="active">Калькулятор</a>
@@ -790,11 +789,11 @@ footer {
     <a href="builders.html">Строители</a>
     <a href="settings.html">Администрирование</a>
     <a href="staff.html">Сотрудники</a>
+    <div class="role-bar">
+      <span class="role-badge" id="role-badge">—</span>
+      <button id="logout-btn" onclick="siteLogout()">Выйти</button>
+    </div>
   </nav>
-  <div class="role-bar">
-    <span class="role-badge" id="role-badge">—</span>
-    <button id="logout-btn" onclick="siteLogout()">Выйти</button>
-  </div>
 </header>
 
 <div class="role-auth-overlay" id="site-login-overlay" style="display:flex;">
@@ -2332,7 +2331,7 @@ function applyRole() {
   const badge = document.getElementById('role-badge');
   const overlay = document.getElementById('site-login-overlay');
   const user = localStorage.getItem('sruby_user') || (isAdmin ? 'Администратор' : '');
-  if (badge) badge.textContent = loggedIn ? (user + ' · ' + (isAdmin ? 'администратор' : 'менеджер')) : '—';
+  if (badge) badge.textContent = loggedIn ? (isAdmin ? user : user + ' · менеджер') : '—';
   if (overlay) overlay.style.display = loggedIn ? 'none' : 'flex';
 }
 
