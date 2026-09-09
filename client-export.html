@@ -830,10 +830,10 @@ body { background: var(--cream); }
   }
   .ce-top { display: none; }
   body { background: white; margin: 0; }
-  .ce-wrap { margin: 0 !important; padding: 0 !important; max-width: none !important; }
+  .ce-wrap { margin: 0 !important; padding: 10mm !important; max-width: none !important; box-sizing: border-box !important; }
   .ce-cols { grid-template-columns: repeat(3, 1fr); }
   .ce-col { box-shadow: none; break-inside: avoid; }
-  @page { size: A4 portrait; margin: 10mm; }
+  @page { size: A4 portrait; margin: 0; }
 }
 </style>
 </head>
@@ -875,18 +875,23 @@ function printFitToPage() {
   const cols = document.getElementById('ce-cols');
   wrap.style.zoom = 1;
 
-  // A4 (210×297мм) минус поля @page (10мм со всех сторон), в CSS-пикселях (96dpi).
-  const pageWidthPx  = (210 - 20) * 96 / 25.4;
-  const pageHeightPx = (297 - 20) * 96 / 25.4 * 0.97; // небольшой запас на округление
+  // A4 (210×297мм) целиком — поля страницы теперь нулевые, отступ обеспечивает
+  // padding самого блока (border-box), поэтому меряем по полной ширине/высоте листа.
+  const pageWidthPx  = 210 * 96 / 25.4;
+  const pageHeightPx = 297 * 96 / 25.4 * 0.97; // небольшой запас на округление
 
   const prevWidth = wrap.style.width, prevMaxWidth = wrap.style.maxWidth;
+  const prevPadding = wrap.style.padding, prevBoxSizing = wrap.style.boxSizing;
   const prevCols = cols.style.gridTemplateColumns;
   wrap.style.width = wrap.style.maxWidth = pageWidthPx + 'px';
+  wrap.style.padding = '10mm';           // как будет при печати (padding вместо полей страницы)
+  wrap.style.boxSizing = 'border-box';   // чтобы padding не увеличивал итоговую ширину
   cols.style.gridTemplateColumns = 'repeat(3, 1fr)'; // как будет при печати, а не как на узком экране
 
   const contentHeight = wrap.scrollHeight;
 
   wrap.style.width = prevWidth; wrap.style.maxWidth = prevMaxWidth;
+  wrap.style.padding = prevPadding; wrap.style.boxSizing = prevBoxSizing;
   cols.style.gridTemplateColumns = prevCols;
 
   if (contentHeight > pageHeightPx) {
