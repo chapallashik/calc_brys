@@ -832,6 +832,7 @@ body { background: var(--cream); }
   body { background: white; }
   .ce-cols { grid-template-columns: repeat(3, 1fr); }
   .ce-col { box-shadow: none; break-inside: avoid; }
+  @page { size: A4 portrait; margin: 10mm; }
 }
 </style>
 </head>
@@ -839,7 +840,7 @@ body { background: var(--cream); }
 
 <div class="ce-top">
   <button class="secondary" onclick="window.close()">Закрыть</button>
-  <button onclick="window.print()">⬇ Скачать PDF</button>
+  <button onclick="printFitToPage()">⬇ Скачать PDF</button>
 </div>
 
 <div class="ce-wrap" id="wrap" style="display:none;">
@@ -860,6 +861,30 @@ body { background: var(--cream); }
 <script>
 function fmt(n) { return Math.round(n || 0).toLocaleString('ru-RU') + ' ₽'; }
 function n0(v) { return Math.round(v || 0).toLocaleString('ru-RU'); }
+
+// Гарантированно уместить всю выгрузку на одном листе A4, даже если
+// одна из колонок сильно длиннее других. Меряем реальную высоту
+// содержимого и, если она больше высоты печатной страницы, сжимаем
+// через zoom (а не transform — zoom реально уменьшает раскладку,
+// поэтому лишняя страница не появляется).
+function printFitToPage() {
+  const wrap = document.getElementById('wrap');
+  wrap.style.zoom = 1;
+
+  // A4, минус поля @page (10mm сверху и снизу), в CSS-пикселях (96dpi),
+  // с небольшим запасом на погрешности округления браузера.
+  const pageHeightPx = (297 - 20) * 96 / 25.4 * 0.96;
+  const contentHeight = wrap.scrollHeight;
+
+  if (contentHeight > pageHeightPx) {
+    wrap.style.zoom = pageHeightPx / contentHeight;
+  }
+
+  window.print();
+
+  // Возвращаем как было для экрана (печать уже прошла синхронно к этому моменту)
+  setTimeout(() => { wrap.style.zoom = 1; }, 300);
+}
 
 window.onload = function () {
   let data = null;
