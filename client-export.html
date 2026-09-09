@@ -863,18 +863,30 @@ function fmt(n) { return Math.round(n || 0).toLocaleString('ru-RU') + ' ₽'; }
 function n0(v) { return Math.round(v || 0).toLocaleString('ru-RU'); }
 
 // Гарантированно уместить всю выгрузку на одном листе A4, даже если
-// одна из колонок сильно длиннее других. Меряем реальную высоту
-// содержимого и, если она больше высоты печатной страницы, сжимаем
-// через zoom (а не transform — zoom реально уменьшает раскладку,
-// поэтому лишняя страница не появляется).
+// одна из колонок сильно длиннее других. На экране блок гораздо шире
+// печатной страницы, поэтому меряем высоту не «как на экране», а как
+// будет при печати: временно сжимаем до ширины A4 и трёх колонок,
+// меряем реальную высоту в этой раскладке, и только потом решаем,
+// нужно ли ещё сжимать через zoom (а не transform — zoom реально
+// уменьшает раскладку, поэтому лишняя страница не появляется).
 function printFitToPage() {
   const wrap = document.getElementById('wrap');
+  const cols = document.getElementById('ce-cols');
   wrap.style.zoom = 1;
 
-  // A4, минус поля @page (10mm сверху и снизу), в CSS-пикселях (96dpi),
-  // с небольшим запасом на погрешности округления браузера.
-  const pageHeightPx = (297 - 20) * 96 / 25.4 * 0.96;
+  // A4 (210×297мм) минус поля @page (10мм со всех сторон), в CSS-пикселях (96dpi).
+  const pageWidthPx  = (210 - 20) * 96 / 25.4;
+  const pageHeightPx = (297 - 20) * 96 / 25.4 * 0.97; // небольшой запас на округление
+
+  const prevWidth = wrap.style.width, prevMaxWidth = wrap.style.maxWidth;
+  const prevCols = cols.style.gridTemplateColumns;
+  wrap.style.width = wrap.style.maxWidth = pageWidthPx + 'px';
+  cols.style.gridTemplateColumns = 'repeat(3, 1fr)'; // как будет при печати, а не как на узком экране
+
   const contentHeight = wrap.scrollHeight;
+
+  wrap.style.width = prevWidth; wrap.style.maxWidth = prevMaxWidth;
+  cols.style.gridTemplateColumns = prevCols;
 
   if (contentHeight > pageHeightPx) {
     wrap.style.zoom = pageHeightPx / contentHeight;
