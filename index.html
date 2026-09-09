@@ -1259,7 +1259,7 @@ footer {
               <input type="checkbox" id="has_extras" onchange="toggleBlock('has_extras','extras-block')">
               <span class="toggle-slider"></span>
             </label>
-            <span class="toggle-label" onclick="document.getElementById('has_extras').click()">Для заказа без сборки (лаги, обвязка, балки)</span>
+            <span class="toggle-label" onclick="document.getElementById('has_extras').click()">Для заказа без сборки (лаги, балки)</span>
           </div>
           <div class="collapsible collapsed" id="extras-block" style="max-height:420px;">
             <div style="padding-top:12px;">
@@ -1274,7 +1274,7 @@ footer {
                 </div>
               </div>
               <div class="notice" style="margin-top:8px;">
-                Стропила, обрешётка и обвязка берутся из блоков «Кровля» и «Нижняя обвязка» — тех же данных, что уже введены выше. Считается отдельной строкой и не входит в итог со сборкой.
+                Стропила, обрешётка и обвязка берутся из блоков «Кровля» и «Нижняя обвязка» — тех же данных, что уже введены выше.
               </div>
             </div>
           </div>
@@ -2287,7 +2287,7 @@ function calculate() {
 
   lastResult = { results, selectedSection, P };
   renderResults(results, selectedSection);
-  document.getElementById('btn-print').style.display = 'flex';
+  document.getElementById('btn-print').style.display = (localStorage.getItem('sruby_role') === 'admin') ? 'flex' : 'none';
   document.getElementById('btn-client-export').style.display = 'flex';
 
   // Данные для вкладок «Для нас» и «Строители» — обновляются при каждом
@@ -2340,6 +2340,8 @@ function applyRole() {
   const navStaff = document.getElementById('nav-staff');
   if (navSettings) navSettings.style.display = isAdmin ? '' : 'none';
   if (navStaff) navStaff.style.display = isAdmin ? '' : 'none';
+  const btnPrint = document.getElementById('btn-print');
+  if (btnPrint && btnPrint.style.display !== 'none') btnPrint.style.display = isAdmin ? 'flex' : 'none';
 }
 
 function siteLogout() {
@@ -2511,7 +2513,7 @@ function renderResults(results, sec) {
         <div class="total-price">${fmt(r.withAsmFinal)}</div>
       </div>
       <div class="total-sub" style="margin-bottom:10px;">${withAsmParts.join(' + ')}</div>
-      <div class="total-sub">Расчёт ориентировочный. Доставка, разъезды рабочих и лаги — вне расчёта.</div>
+      <div class="total-sub">Расчёт ориентировочный. Доставка, разъезды рабочих, лаги и потолочные балки — вне расчёта.</div>
     </div>`;
 
   document.getElementById('results-body').innerHTML = html;
