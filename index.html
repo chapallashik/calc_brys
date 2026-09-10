@@ -2216,20 +2216,23 @@ function toggleBaseAutoMode() {
 
 // ── БЛОК 7. Доп. материалы для варианта «без сборки» ───────────────
 // Лист «Для заказчика », строки 23–30
-// Стропила/обрешётка — из блока «Кровля» (те же поля rafter_count/obr_count).
-// Обвязка — из блока «Нижняя обвязка» (bs): то же сечение и та же суммарная длина.
+// Стропила/обрешётка — из блока «Кровля» (те же поля rafter_count/obr_count),
+// но только если сама «Кровля» включена (rf посчитан) — иначе цифры в полях
+// могут быть старыми, оставшимися от момента, когда кровля считалась.
+// Обвязка — из блока «Нижняя обвязка» (bs), по тому же принципу.
 // Эти три позиции не зависят от переключателя «Для заказа без сборки» —
-// они уже есть в данных, введённых выше, и должны быть видны всегда.
+// они уже есть в данных, введённых выше, и должны быть видны всегда,
+// пока соответствующий раздел сам включён.
 // Переключатель управляет только лагами и потолочными балками — тем,
 // что он буквально и обещает («Для заказа без сборки (лаги, балки)»).
-function calcExtras(P, bs) {
-  const items = [
+function calcExtras(P, bs, rf) {
+  const items = rf ? [
     ['Стропила 50×150×6',       0.05, 0.15, 6, P.roof_board_price, getV('rafter_count')],
     ['Обрешётка 25×150×6',      0.025, 0.15, 6, P.roof_board_price, getV('obr_count')],
   ].map(([name, t, w, l, price, qty]) => {
     const volOne = t * w * l;
     return { name, volOne, qty, vol: volOne * qty, price, sum: volOne * qty * price };
-  }).filter(x => x.qty > 0);
+  }).filter(x => x.qty > 0) : [];
 
   if (getB('has_extras')) {
     items.push(...[
@@ -2267,7 +2270,7 @@ function calculate() {
     const pst = calcPosts(P);
     const rf  = calcRoof(P);
     const bs  = calcBase(P, sec);
-    const ex  = calcExtras(P, bs);
+    const ex  = calcExtras(P, bs, rf);
 
     // Общий объём бруса (сруб + терраса + коньковая балка) — база для сушки и кедра
     const volAll = g.volR + (ter ? ter.volR : 0) + (ridge ? ridge.volR : 0);
