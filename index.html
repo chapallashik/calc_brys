@@ -2217,25 +2217,38 @@ function toggleBaseAutoMode() {
 // ── БЛОК 7. Доп. материалы для варианта «без сборки» ───────────────
 // Лист «Для заказчика », строки 23–30
 // Стропила/обрешётка — из блока «Кровля» (те же поля rafter_count/obr_count).
-// Обвязка — из блока «Нижняя обвязка» (bs): то же сечение и та же суммарная длина,
-// чтобы не вводить одни и те же брусья дважды.
+// Обвязка — из блока «Нижняя обвязка» (bs): то же сечение и та же суммарная длина.
+// Эти три позиции не зависят от переключателя «Для заказа без сборки» —
+// они уже есть в данных, введённых выше, и должны быть видны всегда.
+// Переключатель управляет только лагами и потолочными балками — тем,
+// что он буквально и обещает («Для заказа без сборки (лаги, балки)»).
 function calcExtras(P, bs) {
-  if (!getB('has_extras')) return null;
   const items = [
     ['Стропила 50×150×6',       0.05, 0.15, 6, P.roof_board_price, getV('rafter_count')],
     ['Обрешётка 25×150×6',      0.025, 0.15, 6, P.roof_board_price, getV('obr_count')],
-    ['Лаги 50×150×6',           0.05, 0.15, 6, P.extra_lag_price,  getV('extra_lag_qty')],
-    ['Потолочные балки 50×150×6',0.05, 0.15, 6, P.roof_board_price, getV('extra_beam_qty')],
   ].map(([name, t, w, l, price, qty]) => {
     const volOne = t * w * l;
     return { name, volOne, qty, vol: volOne * qty, price, sum: volOne * qty * price };
   }).filter(x => x.qty > 0);
+
+  if (getB('has_extras')) {
+    items.push(...[
+      ['Лаги 50×150×6',            0.05, 0.15, 6, P.extra_lag_price,  getV('extra_lag_qty')],
+      ['Потолочные балки 50×150×6', 0.05, 0.15, 6, P.roof_board_price, getV('extra_beam_qty')],
+    ].map(([name, t, w, l, price, qty]) => {
+      const volOne = t * w * l;
+      return { name, volOne, qty, vol: volOne * qty, price, sum: volOne * qty * price };
+    }).filter(x => x.qty > 0));
+  }
+
   if (bs && bs.vol > 0) {
     items.push({
       name: `Обвязка ${Math.round(bs.secA * 1000)}×${Math.round(bs.secB * 1000)}, ${fmtN(bs.len, 1)} м.п.`,
       volOne: bs.vol, qty: null, vol: bs.vol, price: P.base_larch, sum: bs.vol * P.base_larch,
     });
   }
+
+  if (!items.length) return null;
   const total = items.reduce((s, x) => s + x.sum, 0);
   return { items, total };
 }
