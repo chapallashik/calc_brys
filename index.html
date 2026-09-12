@@ -1645,28 +1645,24 @@ function onDimChange() {
 }
 
 function baseWallLen() {
-  const own = baseRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
-  return own > 0 ? own : floor1WallLen();
+  return baseRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
 }
 
 function updateBaseSummary() {
-  const ownLen = baseRows.reduce((s, r) => s + (r.len || 0) * (r.qty || 1), 0);
   const len = baseWallLen();
   const el = id => document.getElementById(id);
   const nfmt = v => Number(v).toLocaleString('ru-RU', { maximumFractionDigits: 3 });
 
-  if (el('base-perimeter-display')) el('base-perimeter-display').textContent = (ownLen > 0 ? nfmt(len) + ' м' : 'авто (' + nfmt(len) + ' м)');
+  if (el('base-perimeter-display')) el('base-perimeter-display').textContent = nfmt(len) + ' м';
 
   const fEl = el('base-summary-formula');
   if (fEl) {
-    if (ownLen > 0) {
-      const lenParts = baseRows
-        .filter(r => (r.len || 0) > 0)
-        .map(r => (r.qty && r.qty > 1) ? `${nfmt(r.len)}×${r.qty}` : nfmt(r.len));
-      fEl.innerHTML = `Сумма длин = ${lenParts.join(' + ')} = ${nfmt(len)} м`;
-    } else {
-      fEl.innerHTML = `Сумма длин = авто = сумма длин стен 1-го этажа = ${nfmt(len)} м`;
-    }
+    const lenParts = baseRows
+      .filter(r => (r.len || 0) > 0)
+      .map(r => (r.qty && r.qty > 1) ? `${nfmt(r.len)}×${r.qty}` : nfmt(r.len));
+    fEl.innerHTML = lenParts.length
+      ? `Сумма длин = ${lenParts.join(' + ')} = ${nfmt(len)} м`
+      : 'Брусья обвязки не введены — обвязка не считается';
   }
 }
 
