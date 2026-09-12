@@ -1027,10 +1027,11 @@ function buildRows() {
     rows.push({ key, section, name, secLbl, vol, unit, price, editablePrice: defPrice != null, cost, marginPct, marginRub, final, sub });
   };
 
-  // 1. Работа — стеновой комплект (сруб + терраса), одной строкой, как в экселе
-  const asmVol = r.g.volR + (r.ter ? r.ter.volR : 0);
+  // 1. Работа — стеновой комплект (сруб + терраса + коньковая балка), одной строкой, как в экселе
+  const asmVol = r.g.volR + (r.ter ? r.ter.volR : 0) + (r.ridge ? r.ridge.volR : 0);
+  const asmSub = [r.ter ? 'терраса' : null, r.ridge ? 'коньковая балка' : null].filter(Boolean);
   addRow('wall_assembly', 'Работа', 'Стеновой комплект, сборка', secLabel, asmVol, 'м³', P['assembly_' + k],
-    null, P.margin_assembly, r.ter ? 'сруб + терраса' : 'сруб');
+    null, P.margin_assembly, asmSub.length ? 'сруб + ' + asmSub.join(' + ') : 'сруб');
 
   // 2–3. Столбы опорные (материал + работа), если включены
   if (r.pst) {
@@ -1051,8 +1052,8 @@ function buildRows() {
       null, P.base_margin);
   }
 
-  // 6–7. Джут и шканты (сруб + терраса вместе, запас уже учтён)
-  const juteMPTotal = r.w.juteMP + (r.ter ? r.ter.juteMP : 0);
+  // 6–7. Джут и шканты (сруб + терраса + коньковая балка вместе, запас уже учтён)
+  const juteMPTotal = r.w.juteMP + (r.ter ? r.ter.juteMP : 0) + (r.ridge ? r.ridge.juteMP : 0);
   addRow('jute', 'Материал', 'Джут (запас +20%)', secLabel, juteMPTotal, 'м.п.', P['jute_' + k],
     null, P.margin_assembly);
   addRow('dowel', 'Материал', 'Шканты (запас +20%)', secLabel, juteMPTotal, 'шт', P.dowel,

@@ -970,6 +970,8 @@ function render() {
   const wallCost = r.w.costKit;
   const terRetail = r.ter ? r.ter.priceKit : 0;
   const terCost = r.ter ? r.ter.costKit : 0;
+  const ridgeRetail = r.ridge ? r.ridge.priceKit : 0;
+  const ridgeCost = r.ridge ? r.ridge.costKit : 0;
 
   // Кедр — доплата поверх сосны, независимо от того, включена ли галочка «Кедр»
   // в текущем расчёте (та же формула, что и в блоке «Надбавки»).
@@ -981,8 +983,8 @@ function render() {
   const dryingRetail = curDry ? r.volAll * P.drying : 0;
   const dryingCost = dryingRetail; // на сушку наценка не начисляется
 
-  const kitRetail = wallRetail + terRetail + cedarRetail;
-  const kitCost   = wallCost + terCost + cedarCost;
+  const kitRetail = wallRetail + terRetail + ridgeRetail + cedarRetail;
+  const kitCost   = wallCost + terCost + ridgeCost + cedarCost;
 
   const totalRetail = kitRetail + dryingRetail;
   const totalCost    = kitCost + dryingCost;
@@ -993,14 +995,17 @@ function render() {
   const secLabel = curSec.replace('x', '×') + ' мм, ' + matLabel;
 
   let rows = '';
-  const retailSub = `${secLabel}, без сборки: сруб ${fmt(wallRetail)}` + (r.ter ? ` + терраса ${fmt(terRetail)}` : '') + (cedarRetail ? ` + кедр ${fmt(cedarRetail)}` : '');
+  const retailSub = `${secLabel}, без сборки: сруб ${fmt(wallRetail)}`
+    + (r.ter ? ` + терраса ${fmt(terRetail)}` : '')
+    + (r.ridge ? ` + коньковая балка ${fmt(ridgeRetail)}` : '')
+    + (cedarRetail ? ` + кедр ${fmt(cedarRetail)}` : '');
   rows += `<tr><td>Стеновой комплект — розница<div class="fu-sub">${retailSub}</div></td><td class="val">${fmt(kitRetail)}</td></tr>`;
   rows += dryingRetail
     ? `<tr><td>Сушка — розница</td><td class="val">${fmt(dryingRetail)}</td></tr>`
     : `<tr><td style="color:var(--text-muted);">Сушка — розница <span class="fu-sub">(переключатель «Без сушки» выше)</span></td><td class="val" style="color:var(--text-muted);">—</td></tr>`;
   rows += `<tr class="total"><td>Общее итого — розница</td><td class="val">${fmt(totalRetail)}</td></tr>`;
-  const costSub = r.ter
-    ? `сруб ${fmt(wallCost)} + терраса ${fmt(terCost)}${cedarCost ? ' + кедр ' + fmt(cedarCost) : ''}`
+  const costSub = (r.ter || r.ridge)
+    ? `сруб ${fmt(wallCost)}` + (r.ter ? ` + терраса ${fmt(terCost)}` : '') + (r.ridge ? ` + коньковая балка ${fmt(ridgeCost)}` : '') + (cedarCost ? ' + кедр ' + fmt(cedarCost) : '')
     : '';
   rows += `<tr><td style="padding-top:18px;">Стеновой комплект — себестоимость${costSub ? `<div class="fu-sub">${costSub}</div>` : ''}</td><td class="val" style="padding-top:18px;">${fmt(kitCost)}</td></tr>`;
   rows += dryingCost
