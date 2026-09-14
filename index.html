@@ -1441,7 +1441,7 @@ const DEFAULT_PRICES = {
 // чтобы на разных устройствах не расходились цифры.
 // ═══════════════════════════════════════════════
 let PRICES = { ...DEFAULT_PRICES };
-let PRICES_META = { updated: null, source: 'defaults', draft: false };
+let PRICES_META = { updated: null, source: 'defaults', local: false };
 
 function getPrices() { return PRICES; }
 
@@ -1457,26 +1457,40 @@ async function loadPrices() {
 
   if (published) {
     PRICES = { ...DEFAULT_PRICES, ...published.prices };
-    PRICES_META = { updated: published.updated || null, source: 'published', draft: false };
+    PRICES_META = { updated: published.updated || null, source: 'published', local: false };
   }
 
-  // Черновик применяем только если он сделан поверх текущей опубликованной версии
-  try {
-    const raw = localStorage.getItem('sruby_draft');
-    if (raw) {
-      const d = JSON.parse(raw);
-      if (d && d.prices && d.basedOn === (PRICES_META.updated || 'defaults')) {
-        PRICES = { ...PRICES, ...d.prices };
-        PRICES_META.draft = true;
-        PRICES_META.draftAt = d.savedAt || null;
-      } else {
-        localStorage.removeItem('sruby_draft');   // устарел — выбрасываем
-      }
-    }
-  } catch (e) {}
+  // Индивидуальные цены под конкретный расчёт — сохраняются кнопкой в панели цен
+  // или приходят вместе с загруженным файлом расчёта. Действуют только в этом
+  // браузере/расчёте поверх общих цен, независимо от того, когда общие менялись.
+  applyLocalPrices();
 
   renderPriceBanner();
   return PRICES;
+}
+
+// Накладывает сохранённые индивидуальные цены (если есть) поверх текущих PRICES.
+function applyLocalPrices() {
+  try {
+    const raw = localStorage.getItem('sruby_local_prices');
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.prices && Object.keys(d.prices).length) {
+        PRICES = { ...PRICES, ...d.prices };
+        PRICES_META.local = true;
+        PRICES_META.localAt = d.savedAt || null;
+        PRICES_META.localFields = Object.keys(d.prices).length;
+        return;
+      }
+    }
+  } catch (e) {}
+  PRICES_META.local = false;
+}
+
+// Сброс индивидуальных цен — вызывается «Новым расчётом»
+function clearLocalPrices() {
+  localStorage.removeItem('sruby_local_prices');
+  PRICES_META.local = false;
 }
 
 // ═══════════════════════════════════════════════
@@ -1515,11 +1529,11 @@ function renderPriceBanner() {
     el.style.display = '';
     return;
   }
-  if (PRICES_META.draft) {
-    const when = PRICES_META.draftAt ? new Date(PRICES_META.draftAt).toLocaleString('ru-RU') : '';
+  if (PRICES_META.local) {
+    const when = PRICES_META.localAt ? new Date(PRICES_META.localAt).toLocaleString('ru-RU') : '';
     el.className = 'price-banner draft';
-    el.innerHTML = 'Действуют <b>черновые цены</b>, сохранённые только на этом устройстве'
-      + (when ? ' — ' + when : '') + '. У остальных цены другие, пока черновик не опубликован.';
+    el.innerHTML = 'Для этого расчёта действуют <b>индивидуальные цены</b> (' + (PRICES_META.localFields || '') + ' полей отличаются от общих)'
+      + (when ? ', сохранены ' + when : '') + '. «Новый расчёт» вернёт общие цены.';
     el.style.display = '';
   } else if (PRICES_META.source === 'published') {
     el.className = 'price-banner';
@@ -2678,6 +2692,12 @@ function saveToFile() {
   const data = collectForm();
   data.name = name;
   data.exportedAt = Date.now();
+  // Если для этого расчёта сохранены индивидуальные цены — кладём их в файл,
+  // чтобы при следующей загрузке этого расчёта они подтянулись автоматически.
+  try {
+    const raw = localStorage.getItem('sruby_local_prices');
+    if (raw) { const d = JSON.parse(raw); if (d && d.prices) data.localPrices = d.prices; }
+  } catch (e) {}
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const safeName = name
@@ -2709,6 +2729,15 @@ function loadFromFile(event) {
       return;
     }
     skipSave = true; // не даём фоновому автосохранению перезаписать localStorage раньше времени
+    // Индивидуальные цены, сохранённые вместе с этим расчётом — если есть,
+    // подставляем поверх общих (если нет — общие цены продолжают действовать как есть).
+    if (f.localPrices && Object.keys(f.localPrices).length) {
+      localStorage.setItem('sruby_local_prices', JSON.stringify({ prices: f.localPrices, savedAt: Date.now() }));
+    } else {
+      localStorage.removeItem('sruby_local_prices');
+    }
+    applyLocalPrices();
+    renderPriceBanner();
     applyFormData(f);
     if (f.synteponBags) { try { localStorage.setItem('sruby_syntepon_bags', f.synteponBags); } catch (e) {} }
     renderWalls(wallRows, 'walls-body');
@@ -2741,6 +2770,7 @@ function clearForm() {
   skipSave = true;                 // иначе beforeunload запишет форму обратно
   clearTimeout(saveTimer);
   localStorage.removeItem(FORM_KEY);
+  localStorage.removeItem('sruby_local_prices'); // индивидуальные цены — только для этого расчёта
   location.reload();
 }
 

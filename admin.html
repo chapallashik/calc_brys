@@ -221,10 +221,19 @@ header {
   position: fixed; left: 0; right: 0; bottom: 0;
   background: var(--white); border-top: 1px solid var(--border);
   box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-  padding: 14px 20px; z-index: 50;
-  display: flex; justify-content: center;
+  padding: 12px 20px; z-index: 50;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
 .sticky-footer .btn-save { padding: 13px 40px; font-size: 15px; }
+.sticky-footer-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.local-prices-status {
+  font-size: 12.5px; color: var(--oak); background: rgba(200,135,42,0.1);
+  border-radius: 6px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;
+}
+.local-prices-status button {
+  background: none; border: none; color: var(--red); font-size: 12px; cursor: pointer;
+  text-decoration: underline; font-family: 'Inter', sans-serif; padding: 0;
+}
 .btn-reset {
   background: none; color: var(--red); border: 1.5px solid var(--red); border-radius: 8px;
   padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s;
@@ -927,7 +936,11 @@ header {
 </div>
 
 <div class="sticky-footer" id="sticky-footer" style="display:none">
-  <button class="btn-save" id="btn-publish" onclick="publish()">Опубликовать для всех</button>
+  <div class="local-prices-status" id="local-prices-status" style="display:none"></div>
+  <div class="sticky-footer-buttons">
+    <button class="btn-save" id="btn-publish" onclick="publish()">Опубликовать для всех</button>
+    <button class="btn-draft" id="btn-save-local" onclick="saveLocalPrices()">Сохранить для этого расчёта</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1037,6 +1050,7 @@ async function preloadAuth() {
     document.getElementById('role-badge').textContent = 'Администратор';
     fillConn();
     loadPrices();
+    renderLocalPricesStatus();
     if (getConn()) testConn();
   }
 }
@@ -1070,6 +1084,7 @@ async function authCheck() {
   localStorage.setItem('sruby_role', 'admin');
   fillConn();
   loadPrices();
+  renderLocalPricesStatus();
   if (getConn()) testConn();
   if (CONN_FROM_LINK) showToast('Подключение получено по ссылке — настраивать ничего не нужно');
   if (!PUBLISHED_AUTH) showToast('Используется пароль по умолчанию — смените его в разделе «Администрирование»');
@@ -1118,6 +1133,53 @@ function collect() {
     prices[input.dataset.key] = parseFloat(input.value) || 0;
   });
   return prices;
+}
+
+// ═══════════════════════════════════════════════
+// ИНДИВИДУАЛЬНЫЕ ЦЕНЫ ДЛЯ ОДНОГО РАСЧЁТА
+// В отличие от «Опубликовать для всех» (уходит в репозиторий, видно всем),
+// эта кнопка сохраняет только изменённые поля в этом браузере — их подхватит
+// калькулятор на этой же вкладке/устройстве, пока не нажмут «Новый расчёт»,
+// или пока их явно не сбросят здесь. В общий прайс (prices.json) ничего не уходит.
+// ═══════════════════════════════════════════════
+function collectChanged() {
+  const prices = {};
+  document.querySelectorAll('.price-input[data-key].changed').forEach(input => {
+    prices[input.dataset.key] = parseFloat(input.value) || 0;
+  });
+  return prices;
+}
+
+function saveLocalPrices() {
+  const prices = collectChanged();
+  const n = Object.keys(prices).length;
+  if (!n) { showToast('Нет изменённых полей — правьте цену, чтобы её можно было сохранить индивидуально'); return; }
+  localStorage.setItem('sruby_local_prices', JSON.stringify({ prices, savedAt: Date.now() }));
+  showToast('Сохранено для текущего расчёта: изменено полей — ' + n);
+  renderLocalPricesStatus();
+}
+
+function clearLocalPrices() {
+  if (!confirm('Убрать индивидуальные цены? Расчёт на этом устройстве вернётся к общим ценам.')) return;
+  localStorage.removeItem('sruby_local_prices');
+  renderLocalPricesStatus();
+  showToast('Индивидуальные цены убраны');
+}
+
+function renderLocalPricesStatus() {
+  const el = document.getElementById('local-prices-status');
+  if (!el) return;
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem('sruby_local_prices') || 'null'); } catch (e) {}
+  if (d && d.prices && Object.keys(d.prices).length) {
+    const n = Object.keys(d.prices).length;
+    const when = d.savedAt ? new Date(d.savedAt).toLocaleString('ru-RU') : '';
+    el.innerHTML = 'Для текущего расчёта на этом устройстве сохранены индивидуальные цены (' + n + ' полей'
+      + (when ? ', ' + when : '') + ') <button onclick="clearLocalPrices()">сбросить</button>';
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
 }
 
 // ─── ПУБЛИКАЦИЯ: файл для репозитория ───────────
