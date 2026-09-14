@@ -118,14 +118,15 @@ header {
 .price-row:last-child { border-bottom: none; }
 .price-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 400; line-height: 1.45; color: var(--text); }
 .name-input {
-  display: block; width: 100%; max-width: 420px; margin-top: 4px;
+  display: block; width: 100%; margin-top: 4px;
   font-size: 12px; padding: 4px 8px; border-radius: 5px; height: auto;
 }
 .name-input::placeholder { color: var(--text-muted); opacity: 0.55; }
+.price-row:has(.name-input) { flex-wrap: wrap; }
+.price-row:has(.name-input) .price-label { flex-basis: 100%; }
 @media (max-width: 560px) {
   .price-row { flex-wrap: wrap; }
   .price-label { flex-basis: 100%; }
-  .name-input { max-width: 100%; }
 }
 .price-sublabel { display: block; font-size: 11px; line-height: 1.4; color: var(--text-muted); opacity: 0.75; margin-top: 2px; }
 .price-input-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
