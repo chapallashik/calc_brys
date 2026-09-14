@@ -2496,7 +2496,7 @@ function renderResults(results, sec) {
     + row(NAMES.roof_tiles_sqm_name || 'Металлочерепица', fmt(rf.tilesCost))
     + row(NAMES.roof_hardware_sqm_name || 'Метизы и крепёж', fmt(rf.hwCost))
     + (rf.warmArea ? row('Тёплая кровля', fmt(rf.warmMat + rf.warmWork), { formula: `${n(rf.warmArea, 1)} м² · материал и работа` }) : '')
-    + row(NAMES.roof_addon_pct_name || 'Доборы', fmt(rf.addonCost), { formula: `${P.roof_addon_pct}% от материалов` })
+    + row('Доборы', fmt(rf.addonCost), { formula: `${P.roof_addon_pct}% от материалов` })
     + (rf.frontonArea ? row('Каркасный фронтон', fmt(rf.frontonCost), { formula: `${n(rf.frontonArea, 1)} м² × ${n(P.roof_fronton_sqm, 0)} ₽` }) : '')
     + row('Себестоимость', fmt(rf.totalCost), { formula: 'сумма позиций выше', mgrHide: true })
     + row('Кровля · материал + работа', fmt(rf.clientPrice), { accent: true, formula: `маржа ${P.roof_margin}%` });

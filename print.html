@@ -410,7 +410,7 @@ window.onload = function() {
           rv(rf.warmMat + rf.warmWork)) : '')
       + (rf.frontonArea ? line('Фронтоны каркасные, 2 шт',
           `${n(rf.frontonArea, 1)} м²`, rv(rf.frontonCost), '', `${rub(P.roof_fronton_sqm)} ₽/м²`) : '')
-      + line(NAMES.roof_addon_pct_name || 'Доборные элементы', '', rv(rf.addonCost), '', `${P.roof_addon_pct}% от материалов`)
+      + line('Доборные элементы', '', rv(rf.addonCost), '', `${P.roof_addon_pct}% от материалов`)
       + (isAdmin ? line('Себестоимость кровли', '', fmt(rf.totalCost)) : '')
       + (isAdmin ? line('Маржа на кровлю', '', fmt(rf.clientPrice - rf.totalCost), '', `${P.roof_margin}%`) : ''));
   }
