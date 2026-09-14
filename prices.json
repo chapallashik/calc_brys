@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-14 16:07",
+  "updated": "2026-09-14 16:18",
   "comment": "Файл обновляется автоматически из панели цен. Вручную не редактировать.",
   "prices": {
     "pine_100": 21000,
@@ -14,7 +14,7 @@
     "assembly_150": 7000,
     "assembly_180": 7000,
     "assembly_200": 7000,
-    "beam_reserve": 7,
+    "beam_reserve": 5,
     "margin_main": 25,
     "margin_assembly": 10,
     "jute_100": 6,
