@@ -1470,16 +1470,23 @@ async function loadPrices() {
 }
 
 // Накладывает сохранённые индивидуальные цены (если есть) поверх текущих PRICES.
+let NAMES = {}; // индивидуальные названия позиций (например, «Гибкая металлочерепица») —
+                 // всегда только для этого расчёта, никогда не приходят из общего прайса.
+
 function applyLocalPrices() {
+  NAMES = {};
   try {
     const raw = localStorage.getItem('sruby_local_prices');
     if (raw) {
       const d = JSON.parse(raw);
-      if (d && d.prices && Object.keys(d.prices).length) {
-        PRICES = { ...PRICES, ...d.prices };
+      const priceKeys = (d && d.prices) ? Object.keys(d.prices) : [];
+      const nameKeys = (d && d.names) ? Object.keys(d.names) : [];
+      if (priceKeys.length) PRICES = { ...PRICES, ...d.prices };
+      if (nameKeys.length) NAMES = { ...d.names };
+      if (priceKeys.length || nameKeys.length) {
         PRICES_META.local = true;
         PRICES_META.localAt = d.savedAt || null;
-        PRICES_META.localFields = Object.keys(d.prices).length;
+        PRICES_META.localFields = priceKeys.length + nameKeys.length;
         return;
       }
     }
@@ -1490,6 +1497,7 @@ function applyLocalPrices() {
 // Сброс индивидуальных цен — вызывается «Новым расчётом»
 function clearLocalPrices() {
   localStorage.removeItem('sruby_local_prices');
+  NAMES = {};
   PRICES_META.local = false;
 }
 
@@ -2482,13 +2490,13 @@ function renderResults(results, sec) {
 
   if (rf) html += head(isAdmin ? 'Кровля · ' + n(rf.area, 1) + ' м²' : 'Кровля')
     + row('Работа', fmt(rf.workCost), { formula: `${n(rf.area, 1)} м² × ${n(P.roof_work_sqm, 0)} ₽` })
-    + row('Стропила', fmt(rf.rafterCost), { formula: `${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³` })
-    + row('Обрешётка', fmt(rf.obrCost), { formula: `${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³` })
-    + row('Мембрана', fmt(rf.membraneCost))
-    + row('Металлочерепица', fmt(rf.tilesCost))
-    + row('Метизы и крепёж', fmt(rf.hwCost))
+    + row(NAMES.roof_board_price_name || 'Стропила', fmt(rf.rafterCost), { formula: `${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³` })
+    + row(NAMES.roof_obreshetka_price_name || 'Обрешётка', fmt(rf.obrCost), { formula: `${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³` })
+    + row(NAMES.roof_membrane_roll_name || 'Мембрана', fmt(rf.membraneCost))
+    + row(NAMES.roof_tiles_sqm_name || 'Металлочерепица', fmt(rf.tilesCost))
+    + row(NAMES.roof_hardware_sqm_name || 'Метизы и крепёж', fmt(rf.hwCost))
     + (rf.warmArea ? row('Тёплая кровля', fmt(rf.warmMat + rf.warmWork), { formula: `${n(rf.warmArea, 1)} м² · материал и работа` }) : '')
-    + row('Доборы', fmt(rf.addonCost), { formula: `${P.roof_addon_pct}% от материалов` })
+    + row(NAMES.roof_addon_pct_name || 'Доборы', fmt(rf.addonCost), { formula: `${P.roof_addon_pct}% от материалов` })
     + (rf.frontonArea ? row('Каркасный фронтон', fmt(rf.frontonCost), { formula: `${n(rf.frontonArea, 1)} м² × ${n(P.roof_fronton_sqm, 0)} ₽` }) : '')
     + row('Себестоимость', fmt(rf.totalCost), { formula: 'сумма позиций выше', mgrHide: true })
     + row('Кровля · материал + работа', fmt(rf.clientPrice), { accent: true, formula: `маржа ${P.roof_margin}%` });
@@ -2692,11 +2700,15 @@ function saveToFile() {
   const data = collectForm();
   data.name = name;
   data.exportedAt = Date.now();
-  // Если для этого расчёта сохранены индивидуальные цены — кладём их в файл,
+  // Если для этого расчёта сохранены индивидуальные цены/названия — кладём их в файл,
   // чтобы при следующей загрузке этого расчёта они подтянулись автоматически.
   try {
     const raw = localStorage.getItem('sruby_local_prices');
-    if (raw) { const d = JSON.parse(raw); if (d && d.prices) data.localPrices = d.prices; }
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.prices && Object.keys(d.prices).length) data.localPrices = d.prices;
+      if (d && d.names && Object.keys(d.names).length) data.localNames = d.names;
+    }
   } catch (e) {}
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2729,10 +2741,14 @@ function loadFromFile(event) {
       return;
     }
     skipSave = true; // не даём фоновому автосохранению перезаписать localStorage раньше времени
-    // Индивидуальные цены, сохранённые вместе с этим расчётом — если есть,
-    // подставляем поверх общих (если нет — общие цены продолжают действовать как есть).
-    if (f.localPrices && Object.keys(f.localPrices).length) {
-      localStorage.setItem('sruby_local_prices', JSON.stringify({ prices: f.localPrices, savedAt: Date.now() }));
+    // Индивидуальные цены/названия, сохранённые вместе с этим расчётом — если есть,
+    // подставляем поверх общих (если нет — общие продолжают действовать как есть).
+    const hasLocalPrices = f.localPrices && Object.keys(f.localPrices).length;
+    const hasLocalNames = f.localNames && Object.keys(f.localNames).length;
+    if (hasLocalPrices || hasLocalNames) {
+      localStorage.setItem('sruby_local_prices', JSON.stringify({
+        prices: f.localPrices || {}, names: f.localNames || {}, savedAt: Date.now(),
+      }));
     } else {
       localStorage.removeItem('sruby_local_prices');
     }

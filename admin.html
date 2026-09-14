@@ -117,6 +117,11 @@ header {
 }
 .price-row:last-child { border-bottom: none; }
 .price-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 400; line-height: 1.45; color: var(--text); }
+.name-input {
+  display: block; width: 100%; max-width: 260px; margin-top: 4px;
+  font-size: 12px; padding: 4px 8px; border-radius: 5px; height: auto;
+}
+.name-input::placeholder { color: var(--text-muted); opacity: 0.55; }
 .price-sublabel { display: block; font-size: 11px; line-height: 1.4; color: var(--text-muted); opacity: 0.75; margin-top: 2px; }
 .price-input-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .price-unit { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 52px; }
@@ -521,21 +526,27 @@ header {
       <div class="price-group">
         <h3>Материалы</h3>
         <div class="price-row">
-          <div class="price-label">Доска обрезная (стропила)</div>
+          <div class="price-label">Доска обрезная (стропила)
+            <input class="price-input name-input" type="text" data-name-key="roof_board_price_name" placeholder="Стропила" spellcheck="false">
+          </div>
           <div class="price-input-wrap">
             <input class="price-input" type="number" data-key="roof_board_price" value="">
             <span class="price-unit">₽/м³</span>
           </div>
         </div>
         <div class="price-row">
-          <div class="price-label">Доска обрезная (обрешётка)</div>
+          <div class="price-label">Доска обрезная (обрешётка)
+            <input class="price-input name-input" type="text" data-name-key="roof_obreshetka_price_name" placeholder="Обрешётка" spellcheck="false">
+          </div>
           <div class="price-input-wrap">
             <input class="price-input" type="number" data-key="roof_obreshetka_price" value="">
             <span class="price-unit">₽/м³</span>
           </div>
         </div>
         <div class="price-row">
-          <div class="price-label">Мембрана — цена рулона</div>
+          <div class="price-label">Мембрана — цена рулона
+            <input class="price-input name-input" type="text" data-name-key="roof_membrane_roll_name" placeholder="Мембрана" spellcheck="false">
+          </div>
           <div class="price-input-wrap">
             <input class="price-input" type="number" data-key="roof_membrane_roll" value="">
             <span class="price-unit">₽/рул.</span>
@@ -549,21 +560,27 @@ header {
           </div>
         </div>
         <div class="price-row">
-          <div class="price-label">Металлочерепица</div>
+          <div class="price-label">Кровельное покрытие
+            <input class="price-input name-input" type="text" data-name-key="roof_tiles_sqm_name" placeholder="Металлочерепица" spellcheck="false">
+          </div>
           <div class="price-input-wrap">
             <input class="price-input" type="number" data-key="roof_tiles_sqm" value="">
             <span class="price-unit">₽/м²</span>
           </div>
         </div>
         <div class="price-row">
-          <div class="price-label">Метизы и крепёж</div>
+          <div class="price-label">Метизы и крепёж
+            <input class="price-input name-input" type="text" data-name-key="roof_hardware_sqm_name" placeholder="Метизы и крепёж" spellcheck="false">
+          </div>
           <div class="price-input-wrap">
             <input class="price-input" type="number" data-key="roof_hardware_sqm" value="">
             <span class="price-unit">₽/м²</span>
           </div>
         </div>
         <div class="price-row">
-          <div class="price-label">Доборы (% от материалов)</div>
+          <div class="price-label">Доборы (% от материалов)
+            <input class="price-input name-input" type="text" data-name-key="roof_addon_pct_name" placeholder="Доборы" spellcheck="false">
+          </div>
           <div class="price-input-wrap">
             <input class="price-input" type="number" data-key="roof_addon_pct" value="" step="1">
             <span class="price-unit">%</span>
@@ -1130,6 +1147,21 @@ async function loadPrices() {
     });
   });
 
+  // Названия позиций (например, «Металлочерепица») никогда не берутся из общего
+  // прайса — они бывают только индивидуальными для конкретного расчёта, поэтому
+  // при обычной загрузке панели поле всегда пустое (плейсхолдер = текущее общее название).
+  document.querySelectorAll('.price-input[data-name-key]').forEach(input => {
+    const k = input.dataset.nameKey;
+    input.value = '';
+    input.classList.remove('changed', 'local-override');
+    input.title = '';
+    input.addEventListener('input', () => {
+      input.classList.add('changed');
+      input.classList.remove('local-override');
+      OVERRIDE_UNTOUCHED.delete(k);
+    });
+  });
+
   // Если для этого расчёта сохранены индивидуальные цены — подставляем их поверх
   // общих прямо в поля, иначе панель визуально врёт, что действуют общие цены.
   // Помечаем такие поля отдельно: пока их не тронули руками, «Опубликовать для
@@ -1144,6 +1176,16 @@ async function loadPrices() {
           if (input) {
             input.value = v; input.classList.add('changed', 'local-override');
             input.title = 'Индивидуальная цена для этого расчёта — не уйдёт в общий прайс при публикации';
+            OVERRIDE_UNTOUCHED.add(k);
+          }
+        });
+      }
+      if (d && d.names) {
+        Object.entries(d.names).forEach(([k, v]) => {
+          const input = document.querySelector('.price-input[data-name-key="' + k + '"]');
+          if (input) {
+            input.value = v; input.classList.add('changed', 'local-override');
+            input.title = 'Индивидуальное название для этого расчёта — не уйдёт в общий прайс при публикации';
             OVERRIDE_UNTOUCHED.add(k);
           }
         });
@@ -1179,23 +1221,28 @@ function collectChanged() {
   document.querySelectorAll('.price-input[data-key].changed').forEach(input => {
     prices[input.dataset.key] = parseFloat(input.value) || 0;
   });
-  return prices;
+  const names = {};
+  document.querySelectorAll('.price-input[data-name-key].changed').forEach(input => {
+    const v = input.value.trim();
+    if (v) names[input.dataset.nameKey] = v;
+  });
+  return { prices, names };
 }
 
 function saveLocalPrices() {
-  const prices = collectChanged();
-  const n = Object.keys(prices).length;
-  if (!n) { showToast('Нет изменённых полей — правьте цену, чтобы её можно было сохранить индивидуально'); return; }
-  localStorage.setItem('sruby_local_prices', JSON.stringify({ prices, savedAt: Date.now() }));
+  const { prices, names } = collectChanged();
+  const n = Object.keys(prices).length + Object.keys(names).length;
+  if (!n) { showToast('Нет изменённых полей — правьте цену или название, чтобы сохранить индивидуально'); return; }
+  localStorage.setItem('sruby_local_prices', JSON.stringify({ prices, names, savedAt: Date.now() }));
   showToast('Сохранено для текущего расчёта: изменено полей — ' + n);
   renderLocalPricesStatus();
 }
 
 function clearLocalPrices() {
-  if (!confirm('Убрать индивидуальные цены? Расчёт на этом устройстве вернётся к общим ценам.')) return;
+  if (!confirm('Убрать индивидуальные цены и названия? Расчёт на этом устройстве вернётся к общим.')) return;
   localStorage.removeItem('sruby_local_prices');
   renderLocalPricesStatus();
-  showToast('Индивидуальные цены убраны');
+  showToast('Индивидуальные цены и названия убраны');
 }
 
 function renderLocalPricesStatus() {
@@ -1203,10 +1250,10 @@ function renderLocalPricesStatus() {
   if (!el) return;
   let d = null;
   try { d = JSON.parse(localStorage.getItem('sruby_local_prices') || 'null'); } catch (e) {}
-  if (d && d.prices && Object.keys(d.prices).length) {
-    const n = Object.keys(d.prices).length;
+  const n = d ? Object.keys(d.prices || {}).length + Object.keys(d.names || {}).length : 0;
+  if (n) {
     const when = d.savedAt ? new Date(d.savedAt).toLocaleString('ru-RU') : '';
-    el.innerHTML = 'Для текущего расчёта на этом устройстве сохранены индивидуальные цены (' + n + ' полей'
+    el.innerHTML = 'Для текущего расчёта на этом устройстве сохранены индивидуальные цены/названия (' + n + ' полей'
       + (when ? ', ' + when : '') + ') <button onclick="clearLocalPrices()">сбросить</button>';
     el.style.display = 'flex';
   } else {

@@ -919,6 +919,12 @@ window.onload = function () {
   }
   const { g, w, ter, ridge, pst, rf, bs, ex, P } = r;
   const secLabel = sec.replace('x', ' × ') + ' мм';
+  let NAMES = {};
+  try {
+    const lp = JSON.parse(localStorage.getItem('sruby_local_prices') || 'null');
+    if (lp && lp.names) NAMES = lp.names;
+  } catch (e) {}
+  const lcFirst = s => s ? s.charAt(0).toLowerCase() + s.slice(1) : s;
 
   document.getElementById('wrap').style.display = 'block';
   document.getElementById('ce-disc').style.display = 'block';
@@ -998,9 +1004,9 @@ window.onload = function () {
   const matBullets = [];
   if (bs) matBullets.push('Обвязка — лиственница, ' + Math.round(bs.secA * 1000) + '×' + Math.round(bs.secB * 1000) + ' мм');
   if (rf) {
-    matBullets.push('Стропила — сосна, 50×150 мм');
-    matBullets.push('Обрешётка — сосна, 25×150 мм');
-    matBullets.push('Кровельный материал — металлочерепица');
+    matBullets.push((NAMES.roof_board_price_name || 'Стропила') + ' — сосна, 50×150 мм');
+    matBullets.push((NAMES.roof_obreshetka_price_name || 'Обрешётка') + ' — сосна, 25×150 мм');
+    matBullets.push('Кровельный материал — ' + lcFirst(NAMES.roof_tiles_sqm_name || 'металлочерепица'));
     if (rf.warmArea)   matBullets.push('Утепление по крыше');
     if (rf.frontonArea) matBullets.push('Фронтоны каркасного типа');
   }

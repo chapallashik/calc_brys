@@ -307,6 +307,11 @@ window.onload = function() {
   }
 
   const isAdmin = localStorage.getItem('sruby_role') === 'admin';
+  let NAMES = {};
+  try {
+    const lp = JSON.parse(localStorage.getItem('sruby_local_prices') || 'null');
+    if (lp && lp.names) NAMES = lp.names;
+  } catch (e) {}
   const { g, w, ter, ridge, pst, rf, bs, ex, P } = r;
   const k = sec.split('x')[0];
   const secLabel = sec.replace('x', ' × ');
@@ -394,18 +399,18 @@ window.onload = function() {
     const roofMult = 1 + P.roof_margin / 100;
     const rv = cost => fmt(isAdmin ? cost : cost * roofMult);
     html += section(title(isAdmin ? 'Кровля — ' + n(rf.area, 1) + ' м²' : 'Кровля')
-      + line('Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, rv(rf.rafterCost), '', `${rub(P.roof_board_price)} ₽/м³`)
-      + line('Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, rv(rf.obrCost), '', `${rub(P.roof_obreshetka_price)} ₽/м³`)
-      + line('Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, rv(rf.membraneCost), '', `${rub(P.roof_membrane_roll)} ₽/рул.`)
-      + line('Металлочерепица', `${n(rf.area, 1)} м²`, rv(rf.tilesCost), '', `${rub(P.roof_tiles_sqm)} ₽/м²`)
-      + line('Метизы и крепёж', `${n(rf.area, 1)} м²`, rv(rf.hwCost), '', `${rub(P.roof_hardware_sqm)} ₽/м²`)
+      + line(NAMES.roof_board_price_name || 'Стропильная система', `доска 50×150×6, ${rf.rafterCount} шт · ${n(rf.rafterVol, 3)} м³`, rv(rf.rafterCost), '', `${rub(P.roof_board_price)} ₽/м³`)
+      + line(NAMES.roof_obreshetka_price_name || 'Обрешётка', `доска 25×150×6, ${rf.obrCount} шт · ${n(rf.obrVol, 3)} м³`, rv(rf.obrCost), '', `${rub(P.roof_obreshetka_price)} ₽/м³`)
+      + line(NAMES.roof_membrane_roll_name || 'Гидроизоляционная мембрана', `${n(rf.area / P.roof_membrane_roll_area, 1)} рул.`, rv(rf.membraneCost), '', `${rub(P.roof_membrane_roll)} ₽/рул.`)
+      + line(NAMES.roof_tiles_sqm_name || 'Металлочерепица', `${n(rf.area, 1)} м²`, rv(rf.tilesCost), '', `${rub(P.roof_tiles_sqm)} ₽/м²`)
+      + line(NAMES.roof_hardware_sqm_name || 'Метизы и крепёж', `${n(rf.area, 1)} м²`, rv(rf.hwCost), '', `${rub(P.roof_hardware_sqm)} ₽/м²`)
       + line('Монтаж кровли', `${n(rf.area, 1)} м²`, rv(rf.workCost), '', `${rub(P.roof_work_sqm)} ₽/м²`)
       + (rf.warmArea ? line('Утепление тёплой кровли',
           `${n(rf.warmArea, 1)} м²`,
           rv(rf.warmMat + rf.warmWork)) : '')
       + (rf.frontonArea ? line('Фронтоны каркасные, 2 шт',
           `${n(rf.frontonArea, 1)} м²`, rv(rf.frontonCost), '', `${rub(P.roof_fronton_sqm)} ₽/м²`) : '')
-      + line('Доборные элементы', '', rv(rf.addonCost), '', `${P.roof_addon_pct}% от материалов`)
+      + line(NAMES.roof_addon_pct_name || 'Доборные элементы', '', rv(rf.addonCost), '', `${P.roof_addon_pct}% от материалов`)
       + (isAdmin ? line('Себестоимость кровли', '', fmt(rf.totalCost)) : '')
       + (isAdmin ? line('Маржа на кровлю', '', fmt(rf.clientPrice - rf.totalCost), '', `${P.roof_margin}%`) : ''));
   }
