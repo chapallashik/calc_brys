@@ -128,6 +128,7 @@ header {
 }
 .price-input:focus { outline: none; border-color: var(--forest-light); background: var(--white); }
 .price-input.changed { border-color: var(--oak); background: #FEF9F0; }
+.price-input.local-override { border-style: dashed; border-color: var(--forest-light); background: #EAF3EE; }
 
 /* ─── ПОДСВЕТКА СТРОК С МАРЖОЙ ───────────────── */
 /* Работает по всем полям data-key="*margin*" сразу — не нужно помечать
@@ -1099,6 +1100,9 @@ async function authCheck() {
 let PUBLISHED = { ...DEFAULT_PRICES };
 let PUBLISHED_AT = null;
 let HAS_FILE = false;
+let OVERRIDE_UNTOUCHED = new Set(); // ключи, где сейчас показан индивидуальный override,
+                                     // который админ не трогал руками в этой сессии —
+                                     // такие поля publish() не должен принимать за общую цену.
 
 async function loadPrices() {
   try {
@@ -1114,12 +1118,38 @@ async function loadPrices() {
     }
   } catch (e) {}
 
+  OVERRIDE_UNTOUCHED = new Set();
   document.querySelectorAll('.price-input[data-key]').forEach(input => {
     const k = input.dataset.key;
     if (PUBLISHED[k] !== undefined) input.value = PUBLISHED[k];
     input.classList.remove('changed');
-    input.addEventListener('input', () => input.classList.add('changed'));
+    input.addEventListener('input', () => {
+      input.classList.add('changed');
+      input.classList.remove('local-override');
+      OVERRIDE_UNTOUCHED.delete(k);
+    });
   });
+
+  // Если для этого расчёта сохранены индивидуальные цены — подставляем их поверх
+  // общих прямо в поля, иначе панель визуально врёт, что действуют общие цены.
+  // Помечаем такие поля отдельно: пока их не тронули руками, «Опубликовать для
+  // всех» не должен принять индивидуальную цену за новую общую.
+  try {
+    const raw = localStorage.getItem('sruby_local_prices');
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.prices) {
+        Object.entries(d.prices).forEach(([k, v]) => {
+          const input = document.querySelector('.price-input[data-key="' + k + '"]');
+          if (input) {
+            input.value = v; input.classList.add('changed', 'local-override');
+            input.title = 'Индивидуальная цена для этого расчёта — не уйдёт в общий прайс при публикации';
+            OVERRIDE_UNTOUCHED.add(k);
+          }
+        });
+      }
+    }
+  } catch (e) {}
 
   const badge = document.getElementById('last-updated');
   badge.textContent = !HAS_FILE
@@ -1128,9 +1158,11 @@ async function loadPrices() {
 }
 
 function collect() {
-  const prices = { ...DEFAULT_PRICES };
+  const prices = { ...DEFAULT_PRICES, ...PUBLISHED };
   document.querySelectorAll('.price-input[data-key]').forEach(input => {
-    prices[input.dataset.key] = parseFloat(input.value) || 0;
+    const k = input.dataset.key;
+    if (OVERRIDE_UNTOUCHED.has(k)) return; // индивидуальная цена, её не публикуем
+    prices[k] = parseFloat(input.value) || 0;
   });
   return prices;
 }
