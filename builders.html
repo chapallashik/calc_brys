@@ -99,11 +99,13 @@ header {
 .header-nav a {
   color: rgba(245,240,232,0.6);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 15px;
   padding: 12px 18px;
   border-bottom: 2px solid transparent;
   transition: all 0.2s;
 }
+.header-nav a.nav-gap { margin-left: 90px; }
+.header-nav a.nav-gap-lg { margin-left: auto; }
 .header-nav a:hover, .header-nav a.active {
   color: var(--oak-light);
   border-bottom-color: var(--oak);
@@ -424,7 +426,6 @@ body.role-manager .header-nav a[href="admin.html"] {
   gap: 10px;
   font-size: 12px;
   flex-shrink: 0;
-  margin-left: auto;
   padding-right: 8px;
 }
 .role-bar .role-badge {
@@ -852,10 +853,10 @@ footer {
   </div>
   <nav class="header-nav">
     <a href="index.html">Калькулятор</a>
-    <a href="admin.html">Панель цен</a>
     <a href="foreus.html">Для нас</a>
     <a href="builders.html" class="active">Строители</a>
-    <a href="settings.html">Администрирование</a>
+    <a href="admin.html" class="nav-gap">Панель цен</a>
+    <a href="settings.html" class="nav-gap-lg">Администрирование</a>
     <a href="staff.html">Сотрудники</a>
     <div class="role-bar">
       <span class="role-badge" id="role-badge">—</span>
