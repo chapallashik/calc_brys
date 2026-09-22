@@ -2452,6 +2452,12 @@ function syncStickyOffset() {
 }
 syncStickyOffset();
 window.addEventListener('resize', syncStickyOffset);
+// Шрифты (Google Fonts) подгружаются асинхронно — до их загрузки высота меню
+// временная (на системном шрифте), поэтому меряем ещё раз после их готовности.
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(syncStickyOffset).catch(() => {});
+}
+setTimeout(syncStickyOffset, 400); // подстраховка, если Font Loading API недоступен
 
 function renderResults(results, sec) {
   const r = results[sec];
@@ -2579,6 +2585,7 @@ function updateStickyPriceBar(results, sec) {
       <div class="spb-price">${fmt(d.withAsmFinal)}</div>
     </div>`).join('');
   bar.style.display = '';
+  syncStickyOffset();
 }
 
 function switchSection(sec) {
