@@ -93,6 +93,9 @@ header {
   display: flex;
   gap: 0;
   border-top: 1px solid rgba(255,255,255,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 70;
 }
 .header-nav a {
   color: #FFFFFF;
@@ -2417,6 +2420,7 @@ async function siteLoginCheck() {
     localStorage.setItem('sruby_user', emp.name);
   }
   applyRole();
+  syncStickyOffset();
   if (lastResult) renderResults(lastResult.results, selectedSection);
 }
 
@@ -2437,6 +2441,17 @@ async function siteLoginCheck() {
   } catch (e) {}
 })();
 applyRole();
+
+// Панель сечений (sticky-price-bar) должна вставать точно под меню (header-nav),
+// которое теперь тоже закреплено сверху. Высоту меню не хардкодим — меряем реально,
+// чтобы не разъехалось при переносе текста на узких экранах.
+function syncStickyOffset() {
+  const nav = document.querySelector('.header-nav');
+  const bar = document.getElementById('sticky-price-bar');
+  if (nav && bar) bar.style.top = nav.offsetHeight + 'px';
+}
+syncStickyOffset();
+window.addEventListener('resize', syncStickyOffset);
 
 function renderResults(results, sec) {
   const r = results[sec];
