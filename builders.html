@@ -1044,10 +1044,12 @@ function buildRows() {
       null, P.post_margin);
   }
 
-  // 4–5. Обвязка (материал + работа), если включена
+  // 4–5. Обвязка (материал + работа), если включена.
+  // Сечение берём из уже посчитанного r.bs (то же сечение, по которому и
+  // считался объём), а не отдельной переменной — иначе при переключении
+  // вкладки сечения сруба подпись не совпадала с реальным объёмом.
   if (r.bs) {
-    const baseK = STORE.baseSection || '150';
-    const baseSecLbl = `${P['base_w_' + baseK] || 150}×${P['base_h_' + baseK] || 150} мм`;
+    const baseSecLbl = `${Math.round(r.bs.secA * 1000)}×${Math.round(r.bs.secB * 1000)} мм`;
     addRow('obvyazka_material', 'Материал', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_larch,
       null, P.base_margin);
     addRow('obvyazka_work', 'Работа', 'Обвязка, лиственница', baseSecLbl, r.bs.vol, 'м³', P.base_work,
