@@ -417,6 +417,39 @@ body.role-manager .res-row.mgr-show {
   display: flex !important;
 }
 
+/* Предпросмотр «как у менеджера» — только для блока итогов, по кнопке с глазом (видна админу).
+   Те же правила, что выше, но без скрытия вкладок меню. */
+#results-body.view-as-manager .res-row:not(.accent),
+#results-body.view-as-manager .res-formula {
+  display: none !important;
+}
+#results-body.view-as-manager .res-row.mgr-show {
+  display: flex !important;
+}
+.eye-btn {
+  margin-left: auto;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(245,240,232,0.35);
+  color: var(--cream);
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.eye-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(245,240,232,0.7); }
+.eye-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.eye-btn .eye-off { display: none; }
+.eye-btn.active { background: var(--oak); border-color: var(--oak); color: var(--forest); font-weight: 600; }
+.eye-btn.active .eye-on { display: none; }
+.eye-btn.active .eye-off { display: block; }
+.eye-btn .eye-label { display: none; }
+.eye-btn.active .eye-label { display: inline; }
+
 body.role-manager .header-nav a[href="admin.html"],
 body.role-manager .header-nav a[href="foreus.html"],
 body.role-manager .header-nav a[href="builders.html"] {
@@ -1332,6 +1365,11 @@ footer {
         <div class="card-header">
           <span class="step-num" style="background:var(--oak-light)">₽</span>
           <h2>Итог расчёта</h2>
+          <button class="eye-btn" id="eye-btn" type="button" onclick="toggleResultsView()" title="Показать итоги так, как их видит менеджер">
+            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19C5 19 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94M9.9 5.24A9.1 9.1 0 0 1 12 5c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg>
+            <span class="eye-label">Вид менеджера</span>
+          </button>
         </div>
         <div id="price-banner" class="price-banner" style="display:none"></div>
         <div class="card-body" id="results-body">
@@ -2363,8 +2401,33 @@ async function roleHashPass(pass, saltHex, iter) {
   return roleHex(bits);
 }
 
+// Предпросмотр итогов «как у менеджера» (только для админа, только на время сессии)
+let resultsAsManager = false;
+
+function toggleResultsView() {
+  resultsAsManager = !resultsAsManager;
+  syncResultsView();
+  if (lastResult) renderResults(lastResult.results, selectedSection);
+}
+
+function syncResultsView() {
+  const body = document.getElementById('results-body');
+  const btn = document.getElementById('eye-btn');
+  if (body) body.classList.toggle('view-as-manager', resultsAsManager);
+  if (btn) {
+    btn.classList.toggle('active', resultsAsManager);
+    btn.title = resultsAsManager
+      ? 'Сейчас итоги показаны как у менеджера — нажмите, чтобы вернуть полный вид'
+      : 'Показать итоги так, как их видит менеджер';
+  }
+}
+
 function applyRole() {
   const isAdmin = localStorage.getItem('sruby_role') === 'admin';
+  if (!isAdmin) resultsAsManager = false;
+  const eyeBtn = document.getElementById('eye-btn');
+  if (eyeBtn) eyeBtn.style.display = isAdmin ? 'flex' : 'none';
+  syncResultsView();
   const loggedIn = !!localStorage.getItem('sruby_role');
   document.body.classList.toggle('role-manager', !isAdmin);
   const badge = document.getElementById('role-badge');
@@ -2506,7 +2569,7 @@ function renderResults(results, sec) {
     + row('Отстрожка и монтаж', fmt(pst.costWork), { formula: `${pst.qty} шт × ${n(P['post_work_' + k], 0)} ₽` })
     + row('Итого столбы', fmt(pst.price), { accent: true, formula: `маржа ${P.post_margin}%` });
 
-  const isAdmin = localStorage.getItem('sruby_role') === 'admin';
+  const isAdmin = localStorage.getItem('sruby_role') === 'admin' && !resultsAsManager;
 
   if (rf) html += head(isAdmin ? 'Кровля · ' + n(rf.area, 1) + ' м²' : 'Кровля')
     + row('Работа', fmt(rf.workCost), { formula: `${n(rf.area, 1)} м² × ${n(P.roof_work_sqm, 0)} ₽` })
