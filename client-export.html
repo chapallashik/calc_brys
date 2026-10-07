@@ -808,8 +808,9 @@ body { background: var(--cream); }
 .ce-subtotal {
   display: flex; justify-content: space-between; align-items: baseline;
   margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border);
-  font-weight: 700; font-size: 13.5px;
+  font-weight: 700; font-size: 13.5px; gap: 10px;
 }
+.ce-subtotal span:last-child { white-space: nowrap; }
 .ce-note { font-size: 11px; color: var(--text-muted); margin-top: 10px; line-height: 1.4; }
 .ce-discount { font-size: 12.5px; color: var(--oak); font-weight: 600; margin-top: 8px; padding: 8px 10px; background: rgba(200,135,42,0.1); border-radius: 6px; }
 .ce-total {
@@ -861,7 +862,7 @@ body { background: var(--cream); }
 </div>
 
 <script>
-function fmt(n) { return Math.round(n || 0).toLocaleString('ru-RU') + ' ₽'; }
+function fmt(n) { return Math.round(n || 0).toLocaleString('ru-RU') + '\u00A0₽'; }
 function n0(v) { return Math.round(v || 0).toLocaleString('ru-RU'); }
 
 // Гарантированно уместить всю выгрузку на одном листе A4, даже если
@@ -956,7 +957,7 @@ window.onload = function () {
     return `
     <div class="ce-group">
       <div class="ce-group-title">Стеновой комплект</div>
-      ${wallBullets.map(b => `<div class="ce-item"><span>${b.name}</span>${b.price ? `<span class="val">+${fmt(b.price)}</span>` : ''}</div>`).join('')}
+      ${wallBullets.map(b => `<div class="ce-item"><span>${b.name}</span>${b.price ? `<span class="val">${fmt(b.price)}</span>` : ''}</div>`).join('')}
       <div class="ce-subtotal"><span>${label}</span><span>${fmt(wallKitTotal)}</span></div>
       ${applyDiscount ? discountNote : ''}
     </div>`;
@@ -1037,7 +1038,7 @@ window.onload = function () {
     <div class="ce-col">
       <div class="ce-col-head"><div class="num">Вариант 3</div><div class="ttl">Сруб со сборкой</div></div>
       <div class="ce-col-body">
-        ${wallGroup('Стоимость стенового комплекта', true)}
+        ${wallGroup('Стоимость сруба', true)}
         ${matBullets.length ? `
         <div class="ce-group">
           <div class="ce-group-title">Материалы для строительства</div>
