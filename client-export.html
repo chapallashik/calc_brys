@@ -939,8 +939,10 @@ window.onload = function () {
   if (g.fr.mp)  wallBullets.push({ name: 'Фронтоны из профилированного бруса', qty: n0(g.fr.mp) + ' м.п.' });
   if (ter)      wallBullets.push({ name: 'Вылет под террасу', qty: n0(ter.mp) + ' м.п.' });
   if (ridge)    wallBullets.push({ name: 'Коньковая балка', qty: n0(ridge.mp) + ' м.п.' });
-  if (r.cedar)  wallBullets.push({ name: 'Материал — кедр' });
-  if (r.drying) wallBullets.push({ name: 'Камерная (вакуумная) сушка' });
+  // У кедра и сушки показываем сумму доплаты — клиенты регулярно спрашивают,
+  // насколько кедр и сушка удорожают комплект (та же цифра, что в блоке «Надбавки»).
+  if (r.cedar)  wallBullets.push({ name: 'Материал — кедр', price: r.cedar });
+  if (r.drying) wallBullets.push({ name: 'Камерная (вакуумная) сушка', price: r.drying });
   // Кедр/сушка — надбавка к материалу, действует одинаково на все 3 варианта.
   const materialSurcharge = (r.cedar || 0) + (r.drying || 0);
   const wallKitTotal = w.priceKit + (ter ? ter.priceKit : 0) + (ridge ? ridge.priceKit : 0) + materialSurcharge;
@@ -954,7 +956,7 @@ window.onload = function () {
     return `
     <div class="ce-group">
       <div class="ce-group-title">Стеновой комплект</div>
-      ${wallBullets.map(b => `<div class="ce-item"><span>${b.name}</span></div>`).join('')}
+      ${wallBullets.map(b => `<div class="ce-item"><span>${b.name}</span>${b.price ? `<span class="val">+${fmt(b.price)}</span>` : ''}</div>`).join('')}
       <div class="ce-subtotal"><span>${label}</span><span>${fmt(wallKitTotal)}</span></div>
       ${applyDiscount ? discountNote : ''}
     </div>`;
