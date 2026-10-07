@@ -2308,15 +2308,16 @@ function calculate() {
     noAsm  += cedar + drying;
     withAsm += cedar + drying;
 
-    // Скидка — ТОЛЬКО на сам сруб без сборки (материал+работа профилирования),
-    // не распространяется на террасу, кедр, сушку и на цену «со сборкой».
+    // Скидка — только на стеновой комплект (материал+работа профилирования),
+    // не распространяется на террасу, кедр и сушку. Действует и на «без сборки»,
+    // и на «со сборкой» — одна и та же сумма скидки вычитается из обоих итогов.
     const discPct = getB('has_discount') ? getV('discount_pct') : 0;
     const discNo  = w.noAssembly * discPct / 100;
 
     results[sec] = {
       g, w, ter, ridge, pst, rf, bs, ex, volAll, drying, cedar,
       noAsm, withAsm, discPct, discNo,
-      noAsmFinal: noAsm - discNo, withAsmFinal: withAsm, P,
+      noAsmFinal: noAsm - discNo, withAsmFinal: withAsm - discNo, P,
     };
   });
 
@@ -2534,7 +2535,7 @@ function renderResults(results, sec) {
     + (r.drying ? row('Камерная сушка', fmt(r.drying), { accent: true, formula: `${n(r.volAll, 3)} м³ × ${n(P.drying, 0)} ₽` }) : '');
 
   if (r.discPct) html += head('Акция')
-    + row('Скидка на сруб без сборки', '−' + fmt(r.discNo), { accent: true, formula: `${r.discPct}% от ${fmt(w.noAssembly)} · на террасу, кедр, сушку и «со сборкой» не действует` });
+    + row('Скидка на стеновой комплект', '−' + fmt(r.discNo), { accent: true, formula: `${r.discPct}% от ${fmt(w.noAssembly)} · вычитается и из «без сборки», и из «со сборкой»; на террасу, кедр и сушку не действует` });
 
   // Разбивка «из чего сложился итог» — для двух главных цифр внизу,
   // чтобы можно было быстро понять, в каком блоке искать расхождение.
@@ -2554,6 +2555,7 @@ function renderResults(results, sec) {
   if (pst) withAsmParts.push(`Столбы ${fmt(pst.price)}`);
   if (r.cedar)  withAsmParts.push(`Кедр ${fmt(r.cedar)}`);
   if (r.drying) withAsmParts.push(`Сушка ${fmt(r.drying)}`);
+  if (r.discNo) withAsmParts.push(`минус скидка ${fmt(r.discNo)}`);
 
   html += `
     <div class="total-block">

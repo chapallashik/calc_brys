@@ -437,7 +437,7 @@ window.onload = function() {
 
   // ── Скидка
   if (r.discPct) html += section(title('Акция')
-    + line(`Скидка ${r.discPct}% — только на сруб без сборки`, '', '−' + fmt(r.discNo), 'disc',
+    + line(`Скидка ${r.discPct}% на стеновой комплект`, '', '−' + fmt(r.discNo), 'disc',
            `от ${rub(w.noAssembly)} ₽`));
 
   if (isAdmin) html += section(`<div class="admin-badge">Режим администратора — показана полная себестоимость и маржа. Менеджер и клиент видят только итоговые суммы по строкам.</div>`);
@@ -505,7 +505,7 @@ window.onload = function() {
         ${pst ? `<div>Опорные столбы — ${fmt(pst.price)}</div>` : ''}
         ${r.cedar  ? `<div>Кедр — ${fmt(r.cedar)}</div>` : ''}
         ${r.drying ? `<div>Камерная сушка — ${fmt(r.drying)}</div>` : ''}
-        ${r.discNo ? `<div style="color:#F0A0A0">Скидка на сруб без сборки — −${fmt(r.discNo)}</div>` : ''}
+        ${r.discNo ? `<div style="color:#F0A0A0">Скидка на стеновой комплект — −${fmt(r.discNo)}</div>` : ''}
       </div>
     </div>
 

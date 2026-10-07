@@ -1030,12 +1030,12 @@ window.onload = function () {
     + (ter ? ter.priceAsm + ter.priceJute : 0)
     + (ridge ? ridge.priceAsm + ridge.priceJute : 0);
 
-  const col3Total = wallKitTotal + materialsTotal + worksTotal;
+  const col3Total = wallKitTotal - (r.discNo || 0) + materialsTotal + worksTotal;
   const col3 = `
     <div class="ce-col">
       <div class="ce-col-head"><div class="num">Вариант 3</div><div class="ttl">Сруб со сборкой</div></div>
       <div class="ce-col-body">
-        ${wallGroup('Стоимость стенового комплекта', false)}
+        ${wallGroup('Стоимость стенового комплекта', true)}
         ${matBullets.length ? `
         <div class="ce-group">
           <div class="ce-group-title">Материалы для строительства</div>
@@ -1049,7 +1049,7 @@ window.onload = function () {
         </div>
         <div class="ce-note">Лаги и потолочные балки не входят — ни материал, ни монтаж.</div>
       </div>
-      <div class="ce-total"><div class="lbl">Итого со сборкой</div><div class="amt">${fmt(col3Total)}</div></div>
+      <div class="ce-total"><div class="lbl">${r.discNo ? 'Итого со сборкой и скидкой' : 'Итого со сборкой'}</div><div class="amt">${fmt(col3Total)}</div></div>
     </div>`;
 
   document.getElementById('ce-cols').innerHTML = col1 + col2 + col3;
