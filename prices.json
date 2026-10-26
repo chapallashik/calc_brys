@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17 14:03",
+  "updated": "2026-10-26 12:46",
   "comment": "Файл обновляется автоматически из панели цен. Вручную не редактировать.",
   "prices": {
     "pine_100": 21000,
@@ -64,7 +64,7 @@
     "roof_addon_pct": 10,
     "roof_fronton_sqm": 3000,
     "roof_margin": 10,
-    "base_larch": 23000,
+    "base_larch": 24000,
     "base_work": 11000,
     "base_margin": 25,
     "base_w_100": 100,
